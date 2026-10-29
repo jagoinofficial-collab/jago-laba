@@ -1,0 +1,637 @@
+<!-- =========================================================
+     MODUL: HUTANG KONVEKSI (EMPLOYEE WAGE LIABILITY ENGINE)
+     ========================================================= -->
+                    <div v-if="currentTab === 'hutang_konveksi'" class="space-y-6 w-full">
+                        <!-- 1. Executive Header -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
+                                        <i class="fa-solid fa-vault mr-1"></i> Wage Liability Engine
+                                    </span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                                        <i class="fa-solid fa-arrows-split-up-and-left mr-1"></i> FIFO Settlement
+                                    </span>
+                                </div>
+                                <h3 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Hutang Konveksi</h3>
+                                <p class="text-xs lg:text-sm text-slate-500 font-semibold mt-0.5">Pengelolaan kewajiban hak upah pekerja Potong & Jahit yang disimpan di perusahaan. Pencairan dana kas aman dengan alokasi FIFO.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2.5 justify-end">
+                                <button type="button" @click="bukaModalHutangKonveksiManual()" class="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 px-5 py-3.5 rounded-2xl text-sm font-black btn-active shadow-lg shadow-amber-400/25 flex items-center justify-center gap-2 cursor-pointer transition-all">
+                                    <i class="fa-solid fa-plus-circle text-slate-950"></i> + Input Hutang Manual
+                                </button>
+                                <button @click="generateAndSavePDF('Bukti_Saldo_Hutang_Konveksi', { id_pegawai: 'SEMUA', nama_pegawai: 'Seluruh Pegawai', total_saldo: totalHutangKonveksi, total_disimpan: totalHutangKonveksi, total_diambil: totalBayarHutangKonveksiBulanIni, divisi: 'Semua' })" class="bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-5 py-3.5 rounded-2xl text-sm font-black btn-active shadow-lg shadow-purple-600/25 flex items-center justify-center gap-2 cursor-pointer">
+                                    <i class="fa-solid fa-print text-amber-300"></i> Cetak Rekap Saldo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 2. 5 Executive KPI Stat Cards -->
+                        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                            <!-- Total Saldo Hutang -->
+                            <div class="jl-kpi-card card-pro col-span-2 lg:col-span-1 bg-gradient-to-br from-[#0b132b] via-[#1c2541] to-[#0e1738] p-5 rounded-3xl border border-amber-400/30 text-white shadow-xl relative overflow-hidden group">
+                                <div class="absolute -right-6 -bottom-6 w-24 h-24 rounded-full bg-amber-400/10 blur-xl"></div>
+                                <div class="relative z-10 flex items-center justify-between">
+                                    <div>
+                                        <span class="text-slate-300 text-[10px] font-bold uppercase tracking-wider">Total Saldo Hutang</span>
+                                        <div class="text-xl lg:text-2xl font-black text-amber-400 mt-2 tracking-tight">{{ formatRupiah(totalHutangKonveksi) }}</div>
+                                        <div class="text-[10px] font-semibold text-slate-300 mt-1 flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Kewajiban upah aktif
+                                        </div>
+                                    </div>
+                                    <div class="jl-kpi-spin-frame shrink-0">
+                                        <div class="jl-kpi-spin-inner-dark">
+                                            <i class="fa-solid fa-vault text-amber-400 text-lg"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Saldo Potong -->
+                            <div class="jl-kpi-card card-pro bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm border-l-4 border-l-blue-500 flex items-center justify-between group">
+                                <div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Hutang Potong</span>
+                                    <div class="text-lg lg:text-xl font-black text-blue-600 mt-2 tracking-tight">{{ formatRupiah(totalHutangPotong) }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 mt-1">Divisi Cutting</div>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-scissors text-blue-500 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Saldo Jahit -->
+                            <div class="jl-kpi-card card-pro bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm border-l-4 border-l-purple-500 flex items-center justify-between group">
+                                <div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Hutang Jahit</span>
+                                    <div class="text-lg lg:text-xl font-black text-purple-600 mt-2 tracking-tight">{{ formatRupiah(totalHutangJahit) }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 mt-1">Divisi Sewing</div>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-shirt text-purple-500 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dibayar Bulan Ini -->
+                            <div class="jl-kpi-card card-pro bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between group">
+                                <div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Dicairkan Bln Ini</span>
+                                    <div class="text-lg lg:text-xl font-black text-emerald-600 mt-2 tracking-tight">{{ formatRupiah(totalBayarHutangKonveksiBulanIni) }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 mt-1">Pengambilan dana</div>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-hand-holding-dollar text-emerald-500 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pegawai Ber-saldo -->
+                            <div class="jl-kpi-card card-pro bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm border-l-4 border-l-cyan-500 flex items-center justify-between group">
+                                <div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Pekerja Ber-Saldo</span>
+                                    <div class="text-lg lg:text-xl font-black text-slate-900 mt-2 tracking-tight">{{ jumlahPegawaiHutangKonveksi }} <span class="text-xs font-semibold text-slate-400">Pekerja</span></div>
+                                    <div class="text-[10px] font-bold text-cyan-600 mt-1">Memiliki simpanan upah</div>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-users-gear text-cyan-500 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. Toolbar Pencarian & Filter -->
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+                            <div class="relative w-full md:w-96">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input v-model="searchHutangKonveksi" type="text" placeholder="Cari nama pekerja, kode pegawai, atau SPK..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:border-blue-600 outline-none transition-all">
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                                <select v-model="filterDivisiHutangKonveksi" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                                    <option value="semua">Semua Divisi</option>
+                                    <option value="potong">Khusus Potong</option>
+                                    <option value="jahit">Khusus Jahit</option>
+                                </select>
+                                <select v-model="filterStatusHutangKonveksi" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                                    <option value="semua">Semua Status</option>
+                                    <option value="aktif">Saldo Aktif (> Rp0)</option>
+                                    <option value="lunas">Lunas (Rp0)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 4. Empty State -->
+                        <div v-if="!filteredHutangKonveksiByPegawai.length" class="bg-white p-12 text-center rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="w-16 h-16 mx-auto rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl mb-4">
+                                <i class="fa-solid fa-vault"></i>
+                            </div>
+                            <h4 class="font-black text-slate-900 text-lg">Tidak Ada Data Hutang Konveksi</h4>
+                            <p class="text-sm text-slate-500 font-semibold mt-1">Belum ada hak upah yang disimpan atau tidak cocok dengan filter pencarian.</p>
+                        </div>
+
+                        <!-- 5. Desktop Grouped Table (Per Pegawai) -->
+                        <div v-else class="hidden md:block overflow-hidden bg-white rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-slate-50 border-b border-slate-200/80 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                            <th class="py-3.5 px-4">Pekerja</th>
+                                            <th class="py-3.5 px-4">Divisi Operasional</th>
+                                            <th class="py-3.5 px-4 text-right">Total Disimpan</th>
+                                            <th class="py-3.5 px-4 text-right">Total Diambil</th>
+                                            <th class="py-3.5 px-4 text-right">Saldo Saat Ini</th>
+                                            <th class="py-3.5 px-4 text-center">SPK Aktif</th>
+                                            <th class="py-3.5 px-4 text-center">Status</th>
+                                            <th class="py-3.5 px-4 text-center">Aksi Manajemen</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                                        <tr v-for="p in filteredHutangKonveksiByPegawai" :key="p.id_pegawai" class="hover:bg-purple-50/30 transition-colors">
+                                            <td class="py-3.5 px-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 font-black text-sm flex items-center justify-center shrink-0 border border-purple-200">
+                                                        {{ (p.nama_pegawai || 'P').charAt(0).toUpperCase() }}
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-black text-slate-900">{{ p.nama_pegawai }}</p>
+                                                        <p class="text-[10px] font-mono text-slate-400">ID: {{ p.id_pegawai }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="py-3.5 px-4">
+                                                <span v-if="p.divisi === 'potong'" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200 uppercase">
+                                                    <i class="fa-solid fa-scissors mr-1"></i> Potong
+                                                </span>
+                                                <span v-else-if="p.divisi === 'jahit'" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-purple-50 text-purple-700 border border-purple-200 uppercase">
+                                                    <i class="fa-solid fa-shirt mr-1"></i> Jahit
+                                                </span>
+                                                <span v-else class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-200 uppercase">
+                                                    <i class="fa-solid fa-layer-group mr-1"></i> Potong & Jahit
+                                                </span>
+                                            </td>
+                                            <td class="py-3.5 px-4 text-right font-bold text-slate-800">
+                                                {{ formatRupiah(p.total_disimpan) }}
+                                            </td>
+                                            <td class="py-3.5 px-4 text-right font-bold text-slate-500">
+                                                {{ formatRupiah(p.total_diambil) }}
+                                            </td>
+                                            <td class="py-3.5 px-4 text-right">
+                                                <span :class="['font-black text-sm px-2.5 py-1 rounded-xl', p.saldo_hutang > 0 ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-slate-100 text-slate-400']">
+                                                    {{ formatRupiah(p.saldo_hutang) }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3.5 px-4 text-center">
+                                                <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-100 text-slate-700">
+                                                    {{ p.spk_aktif_count }} Order
+                                                </span>
+                                            </td>
+                                            <td class="py-3.5 px-4 text-center">
+                                                <span v-if="p.saldo_hutang > 0" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                                                    AKTIF
+                                                </span>
+                                                <span v-else class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                    LUNAS
+                                                </span>
+                                            </td>
+                                            <td class="py-3.5 px-4 text-center">
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    <button @click="bukaModalDetailHutang(p)" class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] flex items-center gap-1 transition-all cursor-pointer" title="Lihat rincian SPK penitip upah">
+                                                        <i class="fa-solid fa-circle-info text-blue-600"></i> Detail
+                                                    </button>
+                                                    <button @click="bukaModalBayarHutangKonveksi(p)" :disabled="0 >= p.saldo_hutang" :class="['px-3 py-1.5 rounded-xl text-white font-black text-[11px] flex items-center gap-1.5 transition-all shadow-sm', p.saldo_hutang > 0 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-purple-600/20 cursor-pointer' : 'bg-slate-300 text-slate-500 cursor-not-allowed']" title="Cairkan upah simpanan (Ambil Dana)">
+                                                        <i class="fa-solid fa-vault text-amber-300"></i> Ambil Dana
+                                                    </button>
+                                                    <button @click="bukaModalRiwayatHutangKonveksi(p)" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-xs transition-all cursor-pointer" title="Audit riwayat pencairan">
+                                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                                    </button>
+                                                    <button @click="bagikanWaSaldoHutangKonveksi(p)" :disabled="isSharingWhatsApp" class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs transition-all cursor-pointer shadow-2xs disabled:opacity-50" title="Bagikan PDF via WhatsApp">
+                                                        <i v-if="sharingDocKey === 'Hutang_Konveksi-' + p.id_pegawai" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                                                        <i v-else class="fa-brands fa-whatsapp text-sm font-black"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 6. Mobile Responsive Card List -->
+                        <div class="block md:hidden space-y-3">
+                            <div v-for="p in filteredHutangKonveksiByPegawai" :key="p.id_pegawai" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex items-center gap-2.5">
+                                        <div class="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 font-black text-base flex items-center justify-center border border-purple-200">
+                                            {{ (p.nama_pegawai || 'P').charAt(0).toUpperCase() }}
+                                        </div>
+                                        <div>
+                                            <h4 class="font-black text-sm text-slate-900">{{ p.nama_pegawai }}</h4>
+                                            <p class="text-[10px] text-slate-400 font-mono">ID: {{ p.id_pegawai }} • {{ p.spk_aktif_count }} SPK Aktif</p>
+                                        </div>
+                                    </div>
+                                    <span v-if="p.saldo_hutang > 0" class="px-2 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200">
+                                        AKTIF
+                                    </span>
+                                    <span v-else class="px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        LUNAS
+                                    </span>
+                                </div>
+                                <div class="p-3 bg-purple-50/60 rounded-xl border border-purple-100 flex items-center justify-between">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-purple-700">Saldo Tersimpan</p>
+                                        <p class="text-base font-black text-purple-900 mt-0.5">{{ formatRupiah(p.saldo_hutang) }}</p>
+                                    </div>
+                                    <div class="text-right text-[10px] text-slate-500 font-bold">
+                                        <p>Disimpan: {{ formatRupiahSingkat(p.total_disimpan) }}</p>
+                                        <p>Diambil: {{ formatRupiahSingkat(p.total_diambil) }}</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-4 gap-1.5 pt-1">
+                                    <button @click="bukaModalDetailHutang(p)" class="py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1">
+                                        <i class="fa-solid fa-circle-info text-blue-600"></i> Detail
+                                    </button>
+                                    <button @click="bukaModalBayarHutangKonveksi(p)" :disabled="0 >= p.saldo_hutang" :class="['py-2 rounded-xl text-white font-black text-xs flex items-center justify-center gap-1', p.saldo_hutang > 0 ? 'bg-gradient-to-r from-purple-600 to-indigo-600' : 'bg-slate-300 text-slate-500']">
+                                        <i class="fa-solid fa-vault"></i> Ambil
+                                    </button>
+                                    <button @click="bukaModalRiwayatHutangKonveksi(p)" class="py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center gap-1">
+                                        <i class="fa-solid fa-clock-rotate-left"></i> Log
+                                    </button>
+                                    <button @click="bagikanWaSaldoHutangKonveksi(p)" :disabled="isSharingWhatsApp" class="py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 font-bold text-xs flex items-center justify-center gap-1 disabled:opacity-50" title="Bagikan PDF via WhatsApp">
+                                        <i v-if="sharingDocKey === 'Hutang_Konveksi-' + p.id_pegawai" class="fa-solid fa-spinner fa-spin"></i>
+                                        <i v-else class="fa-brands fa-whatsapp"></i> WA
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 7. MODAL DETAIL HUTANG PEGAWAI (RINCIAN SPK) -->
+                        <div v-if="modalDetailHutangState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 max-w-3xl w-full shadow-2xl border border-slate-200/80 space-y-4 animate-in fade-in zoom-in-95 max-h-[90vh] flex flex-col">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-purple-100 text-purple-700 flex items-center justify-center text-lg border border-purple-200">
+                                            <i class="fa-solid fa-vault"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-purple-700">RINCIAN TITIPAN UPAH</span>
+                                            <h3 class="text-lg font-black text-slate-900 leading-tight">{{ modalDetailHutangState.pegawai?.nama_pegawai }}</h3>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="modalDetailHutangState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer text-base">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Ringkasan Saldo Bar -->
+                                <div class="grid grid-cols-3 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-200/70 text-xs shrink-0">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase text-slate-400">Total Upah Disimpan</p>
+                                        <p class="text-sm font-black text-slate-900 mt-0.5">{{ formatRupiah(modalDetailHutangState.pegawai?.total_disimpan) }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase text-slate-400">Total Telah Diambil</p>
+                                        <p class="text-sm font-black text-slate-600 mt-0.5">{{ formatRupiah(modalDetailHutangState.pegawai?.total_diambil) }}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-[10px] font-black uppercase text-purple-700">Saldo Saat Ini</p>
+                                        <p class="text-base font-black text-purple-700 mt-0.5">{{ formatRupiah(modalDetailHutangState.pegawai?.saldo_hutang) }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Daftar Item SPK -->
+                                <div class="overflow-y-auto flex-1 border border-slate-200/80 rounded-2xl">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="sticky top-0 bg-slate-100 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                            <tr>
+                                                <th class="py-2.5 px-3">Tanggal / SPK</th>
+                                                <th class="py-2.5 px-3">Divisi</th>
+                                                <th class="py-2.5 px-3 text-right">Upah Bersih</th>
+                                                <th class="py-2.5 px-3 text-right">Disimpan</th>
+                                                <th class="py-2.5 px-3 text-right">Diambil</th>
+                                                <th class="py-2.5 px-3 text-right">Sisa Saldo</th>
+                                                <th class="py-2.5 px-3 text-center">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                                            <tr v-for="it in modalDetailHutangState.items" :key="it.id_hutang" class="hover:bg-purple-50/20">
+                                                <td class="py-2.5 px-3">
+                                                    <p class="font-black text-slate-900">{{ it.nomor_spk || it.id_spk }}</p>
+                                                    <p class="text-[10px] text-slate-400">{{ formatDateID(it.tanggal) }}</p>
+                                                </td>
+                                                <td class="py-2.5 px-3 uppercase text-[10px] font-black">
+                                                    <span :class="it.divisi === 'potong' ? 'text-blue-600' : 'text-purple-600'">{{ it.divisi }}</span>
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right text-slate-600">{{ formatRupiah(it.hak_upah_bersih) }}</td>
+                                                <td class="py-2.5 px-3 text-right font-bold text-slate-900">{{ formatRupiah(it.nominal_disimpan) }}</td>
+                                                <td class="py-2.5 px-3 text-right text-emerald-600">{{ formatRupiah(it.total_dibayar) }}</td>
+                                                <td class="py-2.5 px-3 text-right font-black text-purple-700">{{ formatRupiah(it.saldo_hutang) }}</td>
+                                                <td class="py-2.5 px-3 text-center">
+                                                    <span :class="['px-2 py-0.5 rounded-full text-[9px] font-black', it.status === 'Aktif' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800']">
+                                                        {{ it.status }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="flex items-center justify-between pt-3 border-t border-slate-100 shrink-0">
+                                    <button type="button" @click="generateAndSavePDF('Bukti_Saldo_Hutang_Konveksi', modalDetailHutangState.pegawai)" class="px-4 py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs rounded-xl flex items-center gap-2 cursor-pointer">
+                                        <i class="fa-solid fa-print"></i> Cetak Bukti Saldo
+                                    </button>
+                                    <button type="button" @click="modalDetailHutangState.isOpen = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">
+                                        Tutup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 8. MODAL PEMBAYARAN HUTANG KONVEKSI (AMBIL DANA DENGAN FIFO) -->
+                        <div v-if="modalBayarHutangKonveksiState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-200/80 space-y-4 animate-in fade-in zoom-in-95 max-h-[95vh] overflow-y-auto">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center text-base shadow-md shadow-purple-600/20">
+                                            <i class="fa-solid fa-vault"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-purple-700">TRANSAKSI KAS KELUAR</span>
+                                            <h3 class="text-lg font-black text-slate-900">Pencairan Dana Titipan Upah</h3>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="modalBayarHutangKonveksiState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+
+                                <!-- Ringkasan Pekerja & Saldo -->
+                                <div class="p-4 bg-gradient-to-br from-purple-50 to-indigo-50/50 rounded-2xl border border-purple-200/80 space-y-2">
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-slate-500 font-semibold">Pekerja:</span>
+                                        <span class="font-black text-slate-900 text-sm">{{ modalBayarHutangKonveksiState.pegawai?.nama_pegawai }}</span>
+                                    </div>
+                                    <div class="flex justify-between items-center text-xs">
+                                        <span class="text-purple-700 font-bold uppercase tracking-wider text-[10px]">Saldo Hak Upah Tersedia:</span>
+                                        <span class="font-black text-purple-700 text-lg">{{ formatRupiah(modalBayarHutangKonveksiState.pegawai?.saldo_hutang) }}</span>
+                                    </div>
+                                </div>
+
+                                <form @submit.prevent="eksekusiBayarHutangKonveksi" class="space-y-4">
+                                    <!-- Quick Amount Selector -->
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-wider">Pilih Cepat Nominal:</label>
+                                        <div class="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
+                                            <button type="button" @click="setQuickNominalHutang(50000)" class="py-1.5 px-2 bg-slate-50 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 transition-colors">50 Ribu</button>
+                                            <button type="button" @click="setQuickNominalHutang(100000)" class="py-1.5 px-2 bg-slate-50 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 transition-colors">100 Ribu</button>
+                                            <button type="button" @click="setQuickNominalHutang(200000)" class="py-1.5 px-2 bg-slate-50 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 rounded-xl text-[11px] font-bold text-slate-700 transition-colors">200 Ribu</button>
+                                            <button type="button" @click="setQuickNominalHutang('half')" class="py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-[11px] font-black transition-colors">50% Saldo</button>
+                                            <button type="button" @click="setQuickNominalHutang('all')" class="py-1.5 px-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-[11px] font-black transition-colors shadow-2xs">Semua</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Input Nominal -->
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-800 uppercase tracking-widest mb-2 text-center">Nominal Pencairan</label>
+                                        <div class="relative">
+                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-purple-600 text-xl pointer-events-none select-none">Rp</span>
+                                            <input :value="formatRupiahInput(modalBayarHutangKonveksiState.form.nominal_bayar)" @input="onRupiahInputChange($event, modalBayarHutangKonveksiState.form, 'nominal_bayar', null, modalBayarHutangKonveksiState.pegawai?.saldo_hutang)" type="text" inputmode="numeric" required class="input-premium pl-14 text-center font-black text-2xl text-purple-700 border-2 border-purple-300 bg-purple-50/50 h-16 focus:border-purple-500 rounded-2xl w-full" placeholder="0">
+                                        </div>
+                                        <p v-if="modalBayarHutangKonveksiState.form.nominal_bayar > 0" class="text-[11px] font-black text-purple-700 mt-2 italic flex items-center justify-center gap-1.5 bg-purple-100/70 px-2.5 py-1 rounded-lg border border-purple-200 text-center">
+                                            <i class="fa-solid fa-spell-check text-purple-600"></i> Terbilang: {{ angkaKeTerbilang(modalBayarHutangKonveksiState.form.nominal_bayar) }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Rekening Kas Sumber -->
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Sumber Rekening Kas</label>
+                                        <select v-model="modalBayarHutangKonveksiState.form.id_rekening" required class="input-premium w-full bg-white border-slate-200 text-xs font-bold text-slate-800">
+                                            <option v-for="rek in rekening" :value="rek.id" :key="rek.id">
+                                                {{ rek.nama }} (Saldo: {{ formatRupiahSingkat(getSaldoRekening(rek.id)) }})
+                                            </option>
+                                        </select>
+                                        <p v-if="modalBayarHutangKonveksiState.form.nominal_bayar > getSaldoRekening(modalBayarHutangKonveksiState.form.id_rekening)" class="text-[11px] text-red-600 font-bold mt-1">
+                                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Saldo kas tidak mencukupi untuk pembayaran ini!
+                                        </p>
+                                    </div>
+
+                                    <!-- Metode Pembayaran & Tanggal -->
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Metode</label>
+                                            <select v-model="modalBayarHutangKonveksiState.form.metode_pembayaran" class="input-premium w-full bg-white border-slate-200 text-xs font-bold text-slate-800">
+                                                <option value="Kas Tunai">Kas Tunai</option>
+                                                <option value="Transfer Bank">Transfer Bank</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Tgl Pencairan</label>
+                                            <input v-model="modalBayarHutangKonveksiState.form.tanggal_bayar" required type="text" class="input-premium w-full datepicker-input bg-white border-slate-200 text-xs font-bold">
+                                        </div>
+                                    </div>
+
+                                    <!-- Catatan -->
+                                    <div>
+                                        <label class="block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Catatan Tambahan</label>
+                                        <input v-model="modalBayarHutangKonveksiState.form.catatan" type="text" placeholder="Misal: Ambil upah untuk keperluan pribadi" class="input-premium w-full bg-white border-slate-200 text-xs font-medium">
+                                    </div>
+
+                                    <!-- Simulasi Saldo Box -->
+                                    <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 text-xs space-y-1.5">
+                                        <div class="flex justify-between text-slate-500">
+                                            <span>Saldo Sebelum:</span>
+                                            <span class="font-bold text-slate-700">{{ formatRupiah(modalBayarHutangKonveksiState.pegawai?.saldo_hutang) }}</span>
+                                        </div>
+                                        <div class="flex justify-between text-purple-700 font-bold">
+                                            <span>Nominal Ditarik:</span>
+                                            <span>- {{ formatRupiah(modalBayarHutangKonveksiState.form.nominal_bayar || 0) }}</span>
+                                        </div>
+                                        <div class="flex justify-between pt-1.5 border-t border-slate-200 text-slate-900 font-black">
+                                            <span>Sisa Saldo Setelahnya:</span>
+                                            <span class="text-amber-700">{{ formatRupiah(Math.max(0, (modalBayarHutangKonveksiState.pegawai?.saldo_hutang || 0) - (modalBayarHutangKonveksiState.form.nominal_bayar || 0))) }}</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+                                        <button type="button" @click="modalBayarHutangKonveksiState.isOpen = false" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Batal</button>
+                                        <button type="submit" :disabled="isSubmittingHutangKonveksi || !modalBayarHutangKonveksiState.form.nominal_bayar || modalBayarHutangKonveksiState.form.nominal_bayar > (modalBayarHutangKonveksiState.pegawai?.saldo_hutang || 0) || modalBayarHutangKonveksiState.form.nominal_bayar > getSaldoRekening(modalBayarHutangKonveksiState.form.id_rekening)" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-2">
+                                            <i v-if="isSubmittingHutangKonveksi" class="fa-solid fa-circle-notch fa-spin"></i>
+                                            <i v-else class="fa-solid fa-circle-check text-amber-300"></i>
+                                            <span>{{ isSubmittingHutangKonveksi ? 'Memproses FIFO...' : 'Konfirmasi Pencairan Dana' }}</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- 9. MODAL RIWAYAT PEMBAYARAN HUTANG KONVEKSI (AUDIT TRAIL) -->
+                        <div v-if="modalRiwayatHutangKonveksiState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 max-w-xl w-full shadow-2xl border border-slate-200/80 space-y-4 animate-in fade-in zoom-in-95 max-h-[90vh] flex flex-col">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3 shrink-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg border border-emerald-200">
+                                            <i class="fa-solid fa-clock-rotate-left"></i>
+                                        </div>
+                                        <div>
+                                            <span class="text-[10px] font-black uppercase tracking-widest text-emerald-700">AUDIT TRAIL PENCAIRAN</span>
+                                            <h3 class="text-lg font-black text-slate-900 leading-tight">{{ modalRiwayatHutangKonveksiState.pegawai?.nama_pegawai }}</h3>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="modalRiwayatHutangKonveksiState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer text-base"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+
+                                <div class="overflow-y-auto flex-1 space-y-2.5">
+                                    <div v-for="r in modalRiwayatHutangKonveksiState.items" :key="r.id_bayar" class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl flex items-center justify-between text-xs hover:bg-white transition-all">
+                                        <div class="space-y-0.5">
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-black text-slate-900">{{ formatDateID(r.tanggal_bayar) }}</span>
+                                                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-200 text-slate-700">{{ r.id_bayar }}</span>
+                                            </div>
+                                            <p class="text-[11px] font-semibold text-slate-500">
+                                                Via {{ r.rekening_kas || getRekeningName(r.id_rekening) }} ({{ r.metode_pembayaran || 'Kas' }})
+                                            </p>
+                                            <p class="text-[10px] text-slate-400">
+                                                SPK: {{ r.nomor_spk || r.id_spk }} • Saldo Setelah: {{ formatRupiah(r.saldo_setelah) }}
+                                            </p>
+                                        </div>
+                                        <div class="text-right space-y-1">
+                                            <p class="font-black text-emerald-600 text-sm">{{ formatRupiah(r.nominal_bayar) }}</p>
+                                            <div class="flex items-center justify-end gap-1.5 ml-auto">
+                                                <button @click="generateAndSavePDF('Bukti_Bayar_Hutang_Konveksi', r)" class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[10px] flex items-center gap-1 cursor-pointer" title="Cetak bukti">
+                                                    <i class="fa-solid fa-print"></i> Cetak
+                                                </button>
+                                                <button @click="bagikanWaHutangKonveksi(r, modalRiwayatHutangKonveksiState.pegawai)" :disabled="isSharingWhatsApp" class="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] flex items-center gap-1 cursor-pointer shadow-2xs disabled:opacity-50" title="Bagikan PDF via WhatsApp">
+                                                    <i v-if="sharingDocKey === 'Hutang_Konveksi-' + r.id_bayar" class="fa-solid fa-spinner fa-spin text-[10px]"></i>
+                                                    <i v-else class="fa-brands fa-whatsapp text-[10px]"></i> WA
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-if="!modalRiwayatHutangKonveksiState.items.length" class="text-center py-8 text-slate-400 text-xs font-bold">
+                                        <i class="fa-solid fa-receipt text-3xl text-slate-300 block mb-2"></i>
+                                        Belum ada riwayat pengambilan dana upah untuk pekerja ini.
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-end pt-3 border-t border-slate-100 shrink-0">
+                                    <button type="button" @click="modalRiwayatHutangKonveksiState.isOpen = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 10. MODAL INPUT MANUAL HUTANG KONVEKSI (NON-SPK) -->
+                        <div v-if="modalHutangKonveksiManualState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full shadow-2xl border border-slate-200/80 space-y-5 animate-in fade-in zoom-in-95 max-h-[92vh] flex flex-col">
+                                <!-- Modal Header -->
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-4 shrink-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl border border-amber-200 shrink-0">
+                                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="text-[10px] font-black uppercase tracking-widest text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">NON-SPK ENTRY</span>
+                                                <span class="text-[10px] font-bold text-slate-400">Pencatatan Mandiri</span>
+                                            </div>
+                                            <h3 class="text-lg font-black text-slate-900 leading-tight mt-0.5">Input Manual Hutang Konveksi</h3>
+                                        </div>
+                                    </div>
+                                    <button type="button" @click="modalHutangKonveksiManualState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer text-base p-1">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Modal Form Body -->
+                                <form @submit.prevent="simpanHutangKonveksiManual" class="space-y-4 overflow-y-auto pr-1 flex-1">
+                                    <!-- Tanggal & Divisi -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Tanggal Pencatatan</label>
+                                            <input v-model="modalHutangKonveksiManualState.form.tanggal" required type="date" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Divisi Pekerjaan</label>
+                                            <select v-model="modalHutangKonveksiManualState.form.divisi" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all cursor-pointer">
+                                                <option value="potong">Potong (Cutting)</option>
+                                                <option value="jahit">Jahit (Sewing)</option>
+                                                <option value="finishing">Finishing / Packing</option>
+                                                <option value="umum">Umum / Lainnya</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <!-- Pilih Pegawai -->
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Pekerja / Pegawai Penerima Hak Upah</label>
+                                        <select v-model="modalHutangKonveksiManualState.form.id_pegawai" @change="onPegawaiManualHutangChange" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-900 outline-none focus:bg-white focus:border-amber-500 transition-all cursor-pointer">
+                                            <option value="" disabled>-- Pilih Pegawai --</option>
+                                            <option v-for="p in pegawai" :key="p.id" :value="String(p.id)">
+                                                {{ p.nama }} ({{ p.kode || 'PEG' }} - {{ p.peran || 'Staff' }})
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Kategori & No. Referensi -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Jenis / Kategori Hak</label>
+                                            <select v-model="modalHutangKonveksiManualState.form.kategori" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all cursor-pointer">
+                                                <option value="Upah Lembur / Tambahan">Upah Lembur / Tambahan</option>
+                                                <option value="Borongan Non-SPK">Borongan Non-SPK</option>
+                                                <option value="Saldo Awal Upah Tersimpan">Saldo Awal Upah Tersimpan</option>
+                                                <option value="Insentif / Bonus Tertunda">Insentif / Bonus Tertunda</option>
+                                                <option value="Penyesuaian Upah Manual">Penyesuaian Upah Manual</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">No. Referensi / Nota (Opsional)</label>
+                                            <input v-model="modalHutangKonveksiManualState.form.nomor_referensi" type="text" placeholder="Contoh: NOTA-042 / LEMBUR-01" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all">
+                                        </div>
+                                    </div>
+
+                                    <!-- Nominal Hutang -->
+                                    <div class="p-4 bg-amber-50/70 border border-amber-200/80 rounded-2xl space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <label class="text-[10px] font-black uppercase tracking-widest text-amber-900">Nominal Kewajiban Upah</label>
+                                            <span class="text-xs font-black text-amber-800">{{ formatRupiah(modalHutangKonveksiManualState.form.nominal) }}</span>
+                                        </div>
+                                        <div class="relative">
+                                            <span class="absolute left-4 top-1/2 -translate-y-1/2 font-black text-amber-600 text-base pointer-events-none select-none">Rp</span>
+                                            <input :value="formatRupiahInput(modalHutangKonveksiManualState.form.nominal)" @input="onRupiahInputChange($event, modalHutangKonveksiManualState.form, 'nominal')" required type="text" inputmode="numeric" placeholder="0" class="w-full pl-12 pr-4 py-3 bg-white border border-amber-300 rounded-xl text-base font-black text-amber-950 outline-none focus:ring-2 focus:ring-amber-400 transition-all">
+                                        </div>
+                                        <p v-if="modalHutangKonveksiManualState.form.nominal > 0" class="text-[10px] font-bold text-amber-800 italic flex items-center gap-1 bg-amber-100/70 px-2.5 py-1 rounded-lg border border-amber-300">
+                                            <i class="fa-solid fa-spell-check text-amber-600"></i> Terbilang: {{ angkaKeTerbilang(modalHutangKonveksiManualState.form.nominal) }}
+                                        </p>
+                                        <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                                            <button type="button" @click="tambahNominalCepat(modalHutangKonveksiManualState.form, 'nominal', 50000)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">+50rb</button>
+                                            <button type="button" @click="tambahNominalCepat(modalHutangKonveksiManualState.form, 'nominal', 100000)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">+100rb</button>
+                                            <button type="button" @click="tambahNominalCepat(modalHutangKonveksiManualState.form, 'nominal', 500000)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">+500rb</button>
+                                            <button type="button" @click="tambahNominalCepat(modalHutangKonveksiManualState.form, 'nominal', 1000000)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white hover:bg-amber-100 text-amber-800 border border-amber-200 transition-colors">+1jt</button>
+                                            <button type="button" @click="modalHutangKonveksiManualState.form.nominal = 0" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white hover:bg-red-50 text-red-600 border border-slate-200 transition-colors">Reset</button>
+                                        </div>
+                                        <p class="text-[10px] text-amber-800/80 font-medium leading-relaxed pt-1">
+                                            <i class="fa-solid fa-circle-info mr-1"></i>
+                                            Dana ini akan ditambahkan ke saldo simpanan upah pekerja dan dapat dicairkan bertahap/sekaligus melalui tombol <strong>Cairkan Dana</strong> (FIFO).
+                                        </p>
+                                    </div>
+
+                                    <!-- Catatan / Deskripsi Pekerjaan -->
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1.5">Catatan / Deskripsi Pekerjaan</label>
+                                        <textarea v-model="modalHutangKonveksiManualState.form.catatan" rows="2" placeholder="Tulis rincian pengerjaan, kuantiti, atau alasan pencatatan manual..." class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:bg-white focus:border-amber-500 transition-all"></textarea>
+                                    </div>
+
+                                    <!-- Footer Buttons -->
+                                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 shrink-0">
+                                        <button type="button" @click="modalHutangKonveksiManualState.isOpen = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Batal</button>
+                                        <button type="submit" :disabled="modalHutangKonveksiManualState.isSubmitting || !modalHutangKonveksiManualState.form.id_pegawai || !modalHutangKonveksiManualState.form.nominal" class="px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-2 transition-all">
+                                            <i v-if="modalHutangKonveksiManualState.isSubmitting" class="fa-solid fa-circle-notch fa-spin"></i>
+                                            <i v-else class="fa-solid fa-floppy-disk"></i>
+                                            <span>{{ modalHutangKonveksiManualState.isSubmitting ? 'Menyimpan...' : 'Simpan Hutang Konveksi' }}</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>

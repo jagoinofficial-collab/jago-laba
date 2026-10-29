@@ -1,0 +1,302 @@
+<!-- =========================================================
+     MODUL: MASTER STOK GUDANG (BARANG JADI / FINISHED GOODS)
+     ========================================================= -->
+                    <div v-if="currentTab === 'master_stok'" class="space-y-6 w-full">
+                        <!-- Module Header -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-blue-700 text-white flex items-center justify-center text-xl shadow-md shadow-indigo-600/20">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Master Stok Gudang (Barang Jadi)</h2>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-indigo-50 text-indigo-800 border border-indigo-200/80">
+                                            {{ filteredMasterStok.length }} SKU Terdaftar
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Konsolidasi stok siap jual dari produksi SPK Jahit dan pembelian vendor makloon.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full sm:w-auto">
+                                <button @click="openModalStockOpname()" class="w-full sm:w-auto px-5 py-3.5 bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 rounded-2xl text-xs font-black btn-active shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-clipboard-check text-blue-600"></i>
+                                    <span>Stock Opname / Penyesuaian</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 KPI Stat Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- TOTAL STOK FISIK -->
+                            <div @click="filterStatusStok = 'semua'" :class="['jl-kpi-card cursor-pointer p-5 rounded-3xl border transition-all flex items-center justify-between shadow-sm relative overflow-hidden group', filterStatusStok === 'semua' ? 'bg-gradient-to-br from-blue-50 to-indigo-50/40 border-blue-400 ring-2 ring-blue-500/25' : 'bg-white border-slate-200/80 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL STOK FISIK</p>
+                                    <h4 class="text-2xl font-black text-slate-900 tracking-tight">{{ kpiMasterStok.totalPcs }} <span class="text-xs font-bold text-slate-500">Pcs</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400">{{ filteredMasterStok.length }} varian terdaftar</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-blue-600 text-lg">
+                                        <i class="fa-solid fa-cubes-stacked"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TOTAL VALUASI ASET STOK -->
+                            <div class="jl-kpi-card p-5 rounded-3xl border border-slate-200/80 bg-white flex items-center justify-between shadow-sm relative overflow-hidden group">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL VALUASI ASET</p>
+                                    <h4 class="text-2xl font-black text-indigo-600 tracking-tight">{{ formatRupiahSingkat(kpiMasterStok.totalValuasi) }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Berdasarkan HPP rata-rata</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-indigo-600 text-lg">
+                                        <i class="fa-solid fa-coins"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RASIO ASAL STOK -->
+                            <div class="jl-kpi-card p-5 rounded-3xl border border-slate-200/80 bg-white flex items-center justify-between shadow-sm relative overflow-hidden group">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">ASAL STOK GUDANG</p>
+                                    <h4 class="text-base font-black text-slate-800 tracking-tight mt-1">{{ kpiMasterStok.persenJahit }}% <span class="text-xs font-normal text-slate-500">Jahit</span> • {{ kpiMasterStok.persenVendor }}% <span class="text-xs font-normal text-slate-500">Vendor</span></h4>
+                                    <div class="w-36 h-2 bg-slate-100 rounded-full overflow-hidden flex mt-1.5">
+                                        <div class="bg-blue-600 h-full" :style="{ width: kpiMasterStok.persenJahit + '%' }"></div>
+                                        <div class="bg-amber-500 h-full" :style="{ width: kpiMasterStok.persenVendor + '%' }"></div>
+                                    </div>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-emerald-600 text-lg">
+                                        <i class="fa-solid fa-chart-pie"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STOK MENIPIS / HABIS -->
+                            <div @click="filterStatusStok = 'menipis'" :class="['jl-kpi-card cursor-pointer p-5 rounded-3xl border transition-all flex items-center justify-between shadow-sm relative overflow-hidden group', filterStatusStok === 'menipis' ? 'bg-gradient-to-br from-amber-50 to-orange-50 border-amber-400 ring-2 ring-amber-500/25' : 'bg-white border-slate-200/80 hover:bg-amber-50/40']">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-amber-600">STOK KRITIS / MENIPIS</p>
+                                    <h4 class="text-2xl font-black text-amber-600 tracking-tight">{{ kpiMasterStok.countKritis }} <span class="text-xs font-bold text-slate-500">SKU</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400">≤ Batas alert minimum</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-amber-600 text-lg">
+                                        <i class="fa-solid fa-bell"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Toolbar -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="relative w-full sm:w-80">
+                                <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input v-model="searchMasterStok" type="text" placeholder="Cari Nama Produk / SKU..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input v-model="searchMasterStok" type="text" placeholder="Cari Nama Produk / SKU / ID Barcode (JGN-...)..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <input v-model="searchMasterStok" type="text" placeholder="Cari Nama Produk / SKU / ID Barcode / ID..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <select v-model="filterStatusStok" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="semua">Semua Status Stok</option>
+                                    <option value="aman">Stok Aman</option>
+                                    <option value="menipis">Stok Menipis / Kritis</option>
+                                    <option value="habis">Stok Habis (0 Pcs)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Master Stok -->
+                        <div class="card-pro !p-0 overflow-x-auto border border-slate-200/80 shadow-sm rounded-3xl bg-white">
+                            <table class="w-full text-left whitespace-nowrap min-w-[950px]">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80">
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Produk & SKU</th>
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Kategori</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Awal</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-blue-600">Dari Jahit</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-amber-600">Dari Vendor</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-400">Terjual</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-900">Total Stok</th>
+                                        <th class="py-4 px-6 text-right text-[10px] font-black uppercase tracking-wider text-slate-500">HPP Rata-Rata</th>
+                                        <th class="py-4 px-6 text-right text-[10px] font-black uppercase tracking-wider text-slate-500">Total Valuasi</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Status</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="st in filteredMasterStok" :key="st.kode_sku" class="hover:bg-slate-50/50 transition-colors">
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center text-sm shrink-0">
+                                                    <i class="fa-solid fa-bag-shopping"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-black text-slate-900 text-xs">{{ st.nama_produk }}</p>
+                                                    <p class="text-[10px] font-mono text-slate-400">{{ st.kode_sku }} • <span class="font-bold text-slate-600">{{ st.varian_warna || 'Standar' }}</span></p>
+                                                    <p class="text-[10px] font-mono text-slate-500">{{ st.kode_sku }} • <span class="font-bold text-slate-700">{{ st.varian_warna || 'Standar' }}</span></p>
+                                                    <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                                        <p class="text-[10px] font-mono text-slate-400">{{ st.kode_sku }} • <span class="font-bold text-slate-600">{{ st.varian_warna || 'Standar' }}</span></p>
+                                                        <span v-if="st.id_stok_item" class="inline-flex items-center gap-1 text-[9px] font-mono font-black bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-300" title="Primary Internal Inventory ID">
+                                                            <i class="fa-solid fa-warehouse text-[8px] text-emerald-600"></i>{{ st.id_stok_item }}
+                                                        </span>
+                                                        <span v-if="st.id_variasi" class="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" title="Nomor Unik ID Variasi">
+                                                            <i class="fa-solid fa-tag text-[8px] text-slate-400"></i>{{ st.id_variasi }}
+                                                        </span>
+                                                        <span v-if="st.barcode" class="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200" title="ID Barcode / ID Nomor SKU">
+                                                            <i class="fa-solid fa-barcode text-[8px]"></i>{{ st.barcode }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <span class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-slate-100 text-slate-600 uppercase">{{ st.kategori || 'Tas' }}</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-center font-bold text-slate-500 text-xs">{{ st.stok_awal || 0 }}</td>
+                                        <td class="py-4 px-6 text-center font-bold text-blue-600 text-xs">+{{ st.masuk_jahit || 0 }}</td>
+                                        <td class="py-4 px-6 text-center font-bold text-amber-600 text-xs">+{{ st.masuk_vendor || 0 }}</td>
+                                        <td class="py-4 px-6 text-center font-bold text-rose-500 text-xs">-{{ st.keluar_penjualan || 0 }}</td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span class="font-black text-sm text-slate-900">{{ st.stok_akhir || 0 }}</span>
+                                            <span class="text-[10px] font-bold text-slate-400 ml-1">{{ st.satuan || 'Pcs' }}</span>
+                                        </td>
+                                        <td class="py-4 px-6 text-right font-mono font-bold text-slate-700 text-xs">
+                                            {{ formatRupiah(st.hpp_rata_rata) }}
+                                        </td>
+                                        <td class="py-4 px-6 text-right font-mono font-black text-indigo-600 text-xs">
+                                            {{ formatRupiah(st.total_valuasi_stok) }}
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black', 0 >= (st.stok_akhir || 0) ? 'bg-red-50 text-red-700 border border-red-200' : ((st.min_alert || 20) >= (st.stok_akhir || 0) ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')]">
+                                                <i :class="['fa-solid', 0 >= (st.stok_akhir || 0) ? 'fa-circle-xmark' : ((st.min_alert || 20) >= (st.stok_akhir || 0) ? 'fa-triangle-exclamation' : 'fa-circle-check')]"></i>
+                                                {{ 0 >= (st.stok_akhir || 0) ? 'Habis' : ((st.min_alert || 20) >= (st.stok_akhir || 0) ? 'Menipis' : 'Aman') }}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <button @click="openModalKartuStok(st)" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-black transition-all flex items-center gap-1 mx-auto cursor-pointer" title="Lihat Riwayat Mutasi / Kartu Stok">
+                                                <i class="fa-solid fa-list-check"></i> Kartu Stok
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!filteredMasterStok.length">
+                                        <td colspan="11" class="px-6 py-16 text-center text-slate-400 text-xs font-bold">Tidak ada data stok barang jadi yang sesuai filter.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- MODAL KARTU STOK (MUTASI STOK) -->
+                        <div v-if="modalKartuStokState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 max-w-2xl w-full shadow-2xl border border-slate-200/80 space-y-4 animate-in fade-in zoom-in-95">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                    <div>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600">AUDIT TRAIL GUDANG</span>
+                                        <h3 class="text-lg font-black text-slate-900">Kartu Mutasi Stok Barang Jadi</h3>
+                                    </div>
+                                    <button type="button" @click="modalKartuStokState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="p-3 bg-indigo-50/60 border border-indigo-100 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-bold">
+                                    <div>
+                                        <span class="text-slate-500 font-normal">Produk:</span> <span class="font-black text-slate-900">{{ modalKartuStokState.sku?.nama_produk }} ({{ modalKartuStokState.sku?.varian_warna }})</span>
+                                        <span class="text-slate-400 font-mono ml-2">[{{ modalKartuStokState.sku?.kode_sku }}]</span>
+                                        <span v-if="modalKartuStokState.sku?.id_stok_item" class="ml-2 inline-flex items-center gap-1 text-[9px] font-mono font-black bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-300">
+                                            <i class="fa-solid fa-warehouse text-[8px] text-emerald-600"></i>{{ modalKartuStokState.sku?.id_stok_item }}
+                                        </span>
+                                    </div>
+                                    <div class="text-indigo-700 font-black">
+                                        Saldo Akhir: {{ modalKartuStokState.sku?.stok_akhir || 0 }} Pcs
+                                    </div>
+                                </div>
+                                <div class="max-h-72 overflow-y-auto border border-slate-200/80 rounded-2xl">
+                                    <table class="w-full text-left text-xs">
+                                        <thead class="bg-slate-50 border-b border-slate-200 text-[10px] font-black uppercase text-slate-500">
+                                            <tr>
+                                                <th class="p-3">Tanggal & Ref</th>
+                                                <th class="p-3">Tipe Mutasi</th>
+                                                <th class="p-3 text-center">Pihak / Ket</th>
+                                                <th class="p-3 text-right text-emerald-600">Masuk</th>
+                                                <th class="p-3 text-right text-rose-600">Keluar</th>
+                                                <th class="p-3 text-right">Saldo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100">
+                                            <tr v-for="m in modalKartuStokState.mutasi" :key="m.id_mutasi" class="hover:bg-slate-50/50">
+                                                <td class="p-3">
+                                                    <p class="font-black text-slate-800">{{ formatDateID(m.tanggal) }}</p>
+                                                    <p class="text-[10px] font-mono text-slate-400">{{ m.no_referensi }}</p>
+                                                </td>
+                                                <td class="p-3">
+                                                    <span :class="['px-2 py-0.5 rounded-md text-[9px] font-black uppercase', m.jenis_mutasi === 'IN_JAHIT' ? 'bg-blue-50 text-blue-700' : (m.jenis_mutasi === 'IN_VENDOR' ? 'bg-amber-50 text-amber-800' : 'bg-rose-50 text-rose-700')]">
+                                                        {{ m.jenis_mutasi }}
+                                                    </span>
+                                                </td>
+                                                <td class="p-3 text-center text-slate-600 font-semibold text-[11px]">{{ m.pihak_terkait || '-' }}</td>
+                                                <td class="p-3 text-right font-black text-emerald-600">{{ m.qty_masuk ? '+' + m.qty_masuk : '-' }}</td>
+                                                <td class="p-3 text-right font-black text-rose-600">{{ m.qty_keluar ? '-' + m.qty_keluar : '-' }}</td>
+                                                <td class="p-3 text-right font-black text-slate-900">{{ m.saldo_berjalan }}</td>
+                                            </tr>
+                                            <tr v-if="!modalKartuStokState.mutasi.length">
+                                                <td colspan="6" class="p-8 text-center text-slate-400 font-bold">Belum ada riwayat mutasi stok untuk SKU ini.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="flex justify-end pt-2 border-t border-slate-100">
+                                    <button type="button" @click="modalKartuStokState.isOpen = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Tutup</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MODAL STOCK OPNAME / PENYESUAIAN -->
+                        <div v-if="modalStockOpnameState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200/80 space-y-4 animate-in fade-in zoom-in-95">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                    <div>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-600">KOREKSI STOK</span>
+                                        <h3 class="text-lg font-black text-slate-900">Stock Opname Barang Jadi</h3>
+                                    </div>
+                                    <button type="button" @click="modalStockOpnameState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div v-if="modalStockOpnameState.error" class="p-2.5 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-bold">{{ modalStockOpnameState.error }}</div>
+                                <form @submit.prevent="submitStockOpname" class="space-y-3">
+                                    <div>
+                                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Pilih Produk & SKU</label>
+                                        <select v-model="modalStockOpnameState.form.kode_sku" @change="onOpnameSkuChange" required class="input-premium bg-white">
+                                            <option value="" disabled>Pilih SKU...</option>
+                                            <option v-for="st in masterStok" :key="st.kode_sku" :value="st.kode_sku">{{ st.nama_produk }} ({{ st.varian_warna }}) - Saldo: {{ st.stok_akhir || 0 }} Pcs</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Stok Tercatat</label>
+                                            <input :value="modalStockOpnameState.form.stok_sistem" disabled type="number" class="input-premium bg-slate-100 font-mono font-bold">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Stok Fisik Aktual</label>
+                                            <input v-model.number="modalStockOpnameState.form.stok_aktual" min="0" required type="number" class="input-premium bg-white font-mono font-black">
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-slate-50 rounded-xl flex items-center justify-between text-xs font-bold">
+                                        <span>Selisih Penyesuaian:</span>
+                                        <span :class="['font-black text-sm', (modalStockOpnameState.form.stok_aktual - modalStockOpnameState.form.stok_sistem) >= 0 ? 'text-emerald-600' : 'text-rose-600']">
+                                            {{ (modalStockOpnameState.form.stok_aktual - modalStockOpnameState.form.stok_sistem) >= 0 ? '+' : '' }}{{ modalStockOpnameState.form.stok_aktual - modalStockOpnameState.form.stok_sistem }} Pcs
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Alasan Penyesuaian</label>
+                                        <select v-model="modalStockOpnameState.form.alasan" required class="input-premium bg-white">
+                                            <option value="Opname Fisik Rutin">Opname Fisik Rutin</option>
+                                            <option value="Barang Rusak / Reject">Barang Rusak / Reject</option>
+                                            <option value="Barang Hilang / Selisih Hitung">Barang Hilang / Selisih Hitung</option>
+                                            <option value="Koreksi Input Data">Koreksi Input Data</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                                        <button type="button" @click="modalStockOpnameState.isOpen = false" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Batal</button>
+                                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-xs rounded-xl shadow-md cursor-pointer">Simpan Koreksi</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>

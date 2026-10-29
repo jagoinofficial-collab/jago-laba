@@ -1,0 +1,17 @@
+# Analitik Global
+
+Halaman `marketplace.php?scope=global&tab=analitik` membaca pesanan dan pengeluaran seluruh toko perusahaan aktif dengan snapshot transaksi database yang konsisten. Pengambilan tidak dibatasi pagination UI. Endpoint GET `api/marketplace-analytics.php` memerlukan login dan workspace Marketplace aktif, mendukung partial HTML untuk refresh dan `format=csv` untuk unduhan laporan. CSV mengikuti filter yang sama dan mengamankan teks yang dapat dianggap formula spreadsheet.
+
+Filter: `date_start`, `date_end` (1–45 hari), `date_basis=created|released`, `analytics_mode=all|settled`, `analytics_stores[]`, `platform`, `store_filter` (kompatibilitas), dan `include_disconnected=1`. Tanpa pilihan toko berarti semua toko yang lolos filter. Rentang default adalah awal bulan sampai hari ini di Asia/Jakarta. Periode pembanding mempunyai panjang yang sama dan berakhir sehari sebelum awal periode terpilih.
+
+Status cair memakai `escrow_status=Sudah Dicairkan` atau snapshot resmi `settlement_received=true`. Pesanan selesai tidak otomatis cair. Filter tanggal dilepas memakai snapshot `released_at` yang dikembalikan sumber pencairan; tidak menggunakan completion_date sebagai perkiraan. Pesanan tanpa tanggal pelepasan dikeluarkan dari filter tersebut dan jumlahnya dijelaskan di UI.
+
+Sumber keuangan memakai `MarketplaceOrderPresentation` sehingga rincian JSON dan HPP hasil edit Produk Global ikut dibaca. Pembatalan/belum dibayar tidak menambah omzet; retur memakai nominal keuangan dari sumber dan ditampilkan sebagai masalah tersendiri. Nilai belum tersedia memunculkan peringatan kelengkapan dan laba sementara. Angka nol bukan bukti adanya sinkronisasi.
+
+Laba kotor = pendapatan setelah potongan − HPP − penyesuaian yang sudah tercakup pada pendapatan sumber. Laba bersih = laba kotor − pengeluaran + penyesuaian. Pengeluaran hanya baris `affects_profit=1` dan `is_cashflow_only=0`, menggunakan tanggal pengeluaran yang sama dalam kedua kelompok KPI. ROAS memakai omzet ÷ pengeluaran berkategori iklan/advertising. Laporan produk iklan tidak ditambahkan lagi sehingga biaya tidak terhitung dua kali. ROI iklan yang ditampilkan adalah estimasi kontribusi, bukan atribusi kampanye. Pembagi nol menghasilkan nilai tidak tersedia.
+
+Rincian biaya mendukung potongan dan kredit, termasuk subsidi/diskon ongkir. Field normalisasi tambahan pada snapshot: `shipping_discount`, `buyer_shipping`, `dynamic_commission`, `platform_commission`, `ams_admin_fee`, `cashback_fee`, `mall_fee`, `logistics_fee`, `infrastructure_fee`, `ads_affiliate_commission`, `shipping_savings_fee`, `seller_transaction_fee`, `shipping_protection`, `buyer_refund`, dan `paylater_fee`. Nama ini adalah kontrak internal, bukan klaim nama field endpoint marketplace.
+
+Browser mengambil ulang laporan setiap 30 detik, ketika kembali ke tab, atau lewat Refresh. Refresh mempertahankan data terakhir saat gagal, status dropdown, posisi scroll tabel, dan fokus tombol. Status sumber menampilkan waktu sukses OAuth resmi secara terpisah dari waktu pembaruan database. Konektor pengambilan data API dan worker masih belum aktif dalam aplikasi; perubahan ini tidak mengklaim sinkronisasi langsung Shopee/TikTok sudah berjalan.
+
+Verifikasi: `tests/marketplace_analytics_smoke.php` menguji pemisahan cair/tertahan, penyesuaian, pengeluaran, periode pembanding, rekonsiliasi harian/toko, filter tanggal, isolasi perusahaan, data melebihi 50 baris, keadaan kosong, serta render aman.

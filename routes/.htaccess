@@ -1,0 +1,2 @@
+# Private project files; public entry points use filesystem includes.
+Require all denied

@@ -1,0 +1,544 @@
+<!-- =========================================================
+     MODUL: MASTER BAHAN BAKU HPP & MATERIAL GUDANG
+     ========================================================= -->
+                    <div v-if="currentTab === 'bahan_hpp'" class="space-y-6 w-full">
+                        <!-- Top Header & Action Buttons -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div>
+                                <div class="flex items-center gap-3.5">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-xl shadow-md shadow-blue-600/20">
+                                        <i class="fa-solid fa-tags"></i>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <h2 class="text-xl font-black text-slate-900 tracking-tight">BAHAN BAKU HPP</h2>
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-50 text-blue-800 border border-blue-200/80">
+                                                Standar Biaya Produksi
+                                            </span>
+                                        </div>
+                                        <p class="text-xs font-semibold text-slate-500 mt-0.5">Pusat penentuan harga bahan untuk perhitungan HPP produksi.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+                                <button @click="switchTab('hpp_produksi')" class="flex-1 sm:flex-initial px-4 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200/80 rounded-2xl text-xs font-black btn-active flex items-center justify-center gap-2 shadow-sm transition-all" title="Buka kalkulator BOM dan simulasi HPP per model tas">
+                                    <i class="fa-solid fa-calculator text-indigo-600 text-sm"></i>
+                                    <span>Kelola BOM Model</span>
+                                </button>
+                                <button @click="sinkronkanHargaDariPembelian" :disabled="isSyncingHargaPembelian" class="flex-1 sm:flex-initial px-4 py-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 rounded-2xl text-xs font-black btn-active flex items-center justify-center gap-2 shadow-sm transition-all" title="Perbarui harga beli terakhir & rata-rata dari transaksi pembelian bahan">
+                                    <i :class="['fa-solid text-amber-600 text-sm', isSyncingHargaPembelian ? 'fa-spinner animate-spin' : 'fa-rotate']"></i>
+                                    <span>{{ isSyncingHargaPembelian ? 'Menyinkronkan...' : 'Sinkronkan Harga Pembelian' }}</span>
+                                </button>
+                                <button @click="openModal('bahan_hpp')" class="flex-1 sm:flex-initial px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-2xl text-xs font-black btn-active shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition-all">
+                                    <i class="fa-solid fa-plus text-amber-300 text-sm"></i>
+                                    <span>Tambah Bahan HPP</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 4 Kartu Ringkasan KPI -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- KPI 1: TOTAL BAHAN -->
+                            <div @click="filterPerluReviewOnly = false; sumberHargaFilterBahanHPP = 'Semua'; statusFilterBahanHPP = 'Semua'" 
+                                 class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between cursor-pointer hover:border-blue-300 hover:shadow-md transition-all group">
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">TOTAL BAHAN</span>
+                                    <div class="text-2xl font-black text-slate-900 tracking-tight">{{ totalBahanHPP }}</div>
+                                    <p class="text-[10px] font-bold text-blue-600 mt-0.5">Total material terdaftar</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl border border-blue-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                            </div>
+
+                            <!-- KPI 2: HARGA AKTIF -->
+                            <div @click="statusFilterBahanHPP = 'Aktif'; filterPerluReviewOnly = false" 
+                                 class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between cursor-pointer hover:border-emerald-300 hover:shadow-md transition-all group">
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">HARGA AKTIF</span>
+                                    <div class="text-2xl font-black text-emerald-600 tracking-tight">{{ totalHargaAktifBahanHPP }}</div>
+                                    <p class="text-[10px] font-bold text-emerald-600 mt-0.5">Siap dikalkulasi ke BOM</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl border border-emerald-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                </div>
+                            </div>
+
+                            <!-- KPI 3: PERLU REVIEW (di atas 5%) -->
+                            <div @click="filterPerluReviewOnly = !filterPerluReviewOnly" 
+                                 :class="['p-5 rounded-3xl border shadow-sm flex items-center justify-between cursor-pointer transition-all group', 
+                                          filterPerluReviewOnly ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/30' : 'bg-white border-slate-200/80 hover:border-amber-300']">
+                                <div>
+                                    <div class="flex items-center gap-1.5 mb-1">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">PERLU REVIEW</span>
+                                        <span v-if="totalPerluReviewBahanHPP > 0" class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                                    </div>
+                                    <div class="text-2xl font-black text-amber-600 tracking-tight">{{ totalPerluReviewBahanHPP }}</div>
+                                    <p class="text-[10px] font-bold text-amber-600 mt-0.5">Selisih harga beli &gt; 5%</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl border border-amber-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                            </div>
+
+                            <!-- KPI 4: OVERRIDE MANUAL -->
+                            <div @click="sumberHargaFilterBahanHPP = 'Manual'; filterPerluReviewOnly = false" 
+                                 class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between cursor-pointer hover:border-purple-300 hover:shadow-md transition-all group">
+                                <div>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">OVERRIDE MANUAL</span>
+                                    <div class="text-2xl font-black text-purple-600 tracking-tight">{{ totalOverrideManualBahanHPP }}</div>
+                                    <p class="text-[10px] font-bold text-purple-600 mt-0.5">Harga penetapan admin</p>
+                                </div>
+                                <div class="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-xl border border-purple-100 group-hover:scale-105 transition-transform">
+                                    <i class="fa-solid fa-hand-holding-dollar"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Toolbar -->
+                        <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm space-y-3">
+                            <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+                                <!-- Search -->
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input v-model="searchBahanHPP" type="text" placeholder="Cari nama bahan, kode, spesifikasi teknis, atau supplier..." class="input-premium pl-9 py-2 text-xs bg-slate-50 border-slate-200 focus:bg-white w-full">
+                                    <button v-if="searchBahanHPP" @click="searchBahanHPP=''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 text-xs">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Filter Controls Group -->
+                                <div class="flex items-center gap-2.5 flex-wrap">
+                                    <!-- Sumber Harga -->
+                                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-2xl border border-slate-200/80">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase">Sumber:</span>
+                                        <select v-model="sumberHargaFilterBahanHPP" class="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                                            <option value="Semua">Semua Sumber</option>
+                                            <option value="Pembelian Terakhir">Pembelian Terakhir</option>
+                                            <option value="Rata-Rata">Rata-Rata</option>
+                                            <option value="Manual">Manual</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Status -->
+                                    <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-2xl border border-slate-200/80">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase">Status:</span>
+                                        <select v-model="statusFilterBahanHPP" class="bg-transparent text-xs font-bold text-slate-700 outline-none cursor-pointer">
+                                            <option value="Semua">Semua Status</option>
+                                            <option value="Aktif">Aktif</option>
+                                            <option value="Nonaktif">Nonaktif</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Filter Cepat Perlu Update Toggle -->
+                                    <button @click="filterPerluReviewOnly = !filterPerluReviewOnly" 
+                                            :class="['px-3.5 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 border', 
+                                                     filterPerluReviewOnly ? 'bg-amber-500 text-white border-amber-600 shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-600 border-slate-200/80']">
+                                        <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+                                        <span>Perlu Update</span>
+                                        <span v-if="totalPerluReviewBahanHPP > 0" class="px-1.5 py-0.2 rounded-full bg-white text-amber-600 text-[10px] font-black ml-0.5">
+                                            {{ totalPerluReviewBahanHPP }}
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Kategori Pills -->
+                            <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide pt-1 border-t border-slate-100">
+                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider whitespace-nowrap pl-1">Kategori:</span>
+                                <button v-for="kat in ['Semua', 'Bahan Utama', 'Furing', 'Aksesoris', 'Trims', 'Packaging', 'Lainnya']" :key="kat" 
+                                        @click="kategoriFilterBahanHPP = kat" 
+                                        :class="['px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all', 
+                                                 kategoriFilterBahanHPP === kat ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100']">
+                                    {{ kat }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Utama (11 Kolom Lengkap Sesuai Spesifikasi Enterprise) -->
+                        <div class="card-pro table-container">
+                            <table class="w-full text-left whitespace-nowrap min-w-[1200px]">
+                                <thead>
+                                    <tr class="text-[10px] font-black text-slate-500 uppercase tracking-wider border-b border-slate-200/80 bg-slate-50/80">
+                                        <th class="py-4 px-5 rounded-tl-3xl">1. Bahan</th>
+                                        <th class="py-4 px-3 text-center">2. Kategori</th>
+                                        <th class="py-4 px-3 text-center">3. Satuan Beli</th>
+                                        <th class="py-4 px-3 text-center">4. Isi</th>
+                                        <th class="py-4 px-3 text-center">5. Satuan Pakai</th>
+                                        <th class="py-4 px-4 text-right">6. Beli Terakhir</th>
+                                        <th class="py-4 px-4 text-right">7. Rata-Rata</th>
+                                        <th class="py-4 px-5 text-right bg-blue-50/40">8. Harga Aktif</th>
+                                        <th class="py-4 px-3 text-center">9. Sumber</th>
+                                        <th class="py-4 px-3 text-center">10. Status</th>
+                                        <th class="py-4 px-5 text-center rounded-tr-3xl">11. Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-xs">
+                                    <tr v-for="b in filteredBahanHPP" :key="b.id" class="hover:bg-blue-50/20 transition-colors">
+                                        <!-- 1. Bahan -->
+                                        <td class="py-4 px-5">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-black text-xs border border-blue-100 shrink-0">
+                                                    {{ (b.nama || 'B').charAt(0).toUpperCase() }}
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="font-black text-slate-900 text-sm flex items-center gap-2 truncate">
+                                                        <span>{{ b.nama }}</span>
+                                                        <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-slate-100 text-blue-900 tracking-wider uppercase border border-slate-200 shrink-0">{{ b.kode }}</span>
+                                                    </p>
+                                                    <p class="text-[10px] font-semibold text-slate-400 mt-0.5 truncate">
+                                                        <span v-if="b.spesifikasi">{{ b.spesifikasi }}</span>
+                                                        <span v-if="b.supplier_acuan" class="ml-1">• Toko: {{ b.supplier_acuan }}</span>
+                                                        <span v-if="b.id_bahan || b.id_bahan_gudang" class="ml-1 text-emerald-600 font-bold">• Gudang Terhubung</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- 2. Kategori -->
+                                        <td class="py-4 px-3 text-center">
+                                            <span :class="['px-2.5 py-1 rounded-xl text-[10px] font-black tracking-wider uppercase border',
+                                                (b.kategori||'').toLowerCase().includes('utama') ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                (b.kategori||'').toLowerCase().includes('furing') ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                                                (b.kategori||'').toLowerCase().includes('aksesoris') ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                                (b.kategori||'').toLowerCase().includes('trims') ? 'bg-pink-50 text-pink-700 border-pink-200' :
+                                                (b.kategori||'').toLowerCase().includes('packaging') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                'bg-slate-100 text-slate-600 border-slate-200']">
+                                                {{ b.kategori || 'Lainnya' }}
+                                            </span>
+                                        </td>
+
+                                        <!-- 3. Satuan Beli -->
+                                        <td class="py-4 px-3 text-center font-bold text-slate-700">
+                                            {{ b.satuan_beli || 'Roll' }}
+                                        </td>
+
+                                        <!-- 4. Isi -->
+                                        <td class="py-4 px-3 text-center font-bold text-slate-700">
+                                            <span class="font-black text-slate-900">{{ b.isi_satuan_beli || 1 }}</span>
+                                            <span class="text-[10px] text-slate-400 ml-1">{{ b.satuan_pakai || 'Meter' }}</span>
+                                        </td>
+
+                                        <!-- 5. Satuan Pakai -->
+                                        <td class="py-4 px-3 text-center font-black text-indigo-700">
+                                            {{ b.satuan_pakai || b.satuan || 'Meter' }}
+                                        </td>
+
+                                        <!-- 6. Harga Beli Terakhir -->
+                                        <td class="py-4 px-4 text-right">
+                                            <div class="font-bold text-slate-800">
+                                                {{ formatRupiah(getHargaBeliTerakhirPerSatuanPakai(b)) }}
+                                            </div>
+                                            <p class="text-[9px] text-slate-400">/ {{ b.satuan_pakai || 'Pakai' }}</p>
+                                        </td>
+
+                                        <!-- 7. Harga Rata-Rata -->
+                                        <td class="py-4 px-4 text-right">
+                                            <div class="font-bold text-slate-600">
+                                                {{ formatRupiah(getHargaRataRataPerSatuanPakai(b)) }}
+                                            </div>
+                                            <p class="text-[9px] text-slate-400">/ {{ b.satuan_pakai || 'Pakai' }}</p>
+                                        </td>
+
+                                        <!-- 8. Harga Aktif (dengan indikator status perubahan) -->
+                                        <td class="py-4 px-5 text-right bg-blue-50/20">
+                                            <div class="inline-block text-right">
+                                                <span class="text-sm font-black text-blue-900">{{ formatRupiah(getHargaAktifBahan(b)) }}</span>
+                                                <div class="flex items-center justify-end gap-1 mt-0.5">
+                                                    <!-- Indikator Kenaikan/Penurunan vs Harga Beli -->
+                                                    <span v-if="getPerubahanHargaBadge(b).type === 'up'" class="text-[9px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                                                        ↑ +{{ getPerubahanHargaBadge(b).pct }}%
+                                                    </span>
+                                                    <span v-else-if="getPerubahanHargaBadge(b).type === 'down'" class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                                                        ↓ -{{ getPerubahanHargaBadge(b).pct }}%
+                                                    </span>
+                                                    <span v-else class="text-[9px] font-semibold text-slate-400">
+                                                        Stabil
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- 9. Sumber Harga -->
+                                        <td class="py-4 px-3 text-center">
+                                            <span :class="['px-2 py-0.5 rounded-lg text-[9px] font-black uppercase tracking-wider border',
+                                                b.manual_override || (b.sumber_harga||'').toLowerCase() === 'manual' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                                                (b.sumber_harga||'').toLowerCase().includes('rata') ? 'bg-indigo-50 text-indigo-700 border-indigo-200' :
+                                                'bg-emerald-50 text-emerald-700 border-emerald-200']">
+                                                {{ b.manual_override || (b.sumber_harga||'').toLowerCase() === 'manual' ? 'Manual' : ((b.sumber_harga||'').toLowerCase().includes('rata') ? 'Rata-Rata' : 'Beli Terakhir') }}
+                                            </span>
+                                        </td>
+
+                                        <!-- 10. Status -->
+                                        <td class="py-4 px-3 text-center">
+                                            <div class="flex flex-col items-center gap-1">
+                                                <span :class="['px-2.5 py-0.5 rounded-full text-[10px] font-black border',
+                                                    b.status === 'Nonaktif' ? 'bg-slate-100 text-slate-500 border-slate-300' : 'bg-emerald-50 text-emerald-700 border-emerald-200']">
+                                                    {{ b.status || 'Aktif' }}
+                                                </span>
+                                                <span v-if="cekPerluReviewHarga(b)" class="px-2 py-0.2 rounded-full text-[8px] font-black bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
+                                                    Perlu Review
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <!-- 11. Aksi -->
+                                        <td class="py-4 px-5 text-center">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <!-- Detail / Edit -->
+                                                <button @click="editData('bahan_hpp', b)" class="w-8 h-8 rounded-xl bg-slate-50 text-slate-600 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-all shadow-2xs" title="Edit & Atur Konversi Harga">
+                                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                </button>
+                                                <!-- Riwayat Harga -->
+                                                <button @click="bukaRiwayatHargaBahan(b)" class="w-8 h-8 rounded-xl bg-slate-50 text-slate-500 hover:text-purple-600 hover:bg-purple-50 flex items-center justify-center transition-all shadow-2xs" title="Lihat Riwayat Perubahan Harga Bahan">
+                                                    <i class="fa-solid fa-clock-rotate-left text-xs"></i>
+                                                </button>
+                                                <!-- Simulasi Dampak BOM -->
+                                                <button @click="bukaSimulasiDampakHarga(b)" class="w-8 h-8 rounded-xl bg-slate-50 text-slate-500 hover:text-amber-600 hover:bg-amber-50 flex items-center justify-center transition-all shadow-2xs" title="Simulasi Dampak Harga terhadap BOM Model Tas">
+                                                    <i class="fa-solid fa-calculator text-xs"></i>
+                                                </button>
+                                                <!-- Gunakan Harga Beli Baru Langsung (jika ada selisih) -->
+                                                <button v-if="cekPerluReviewHarga(b)" @click="gunakanHargaBeliTerakhir(b)" class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white flex items-center justify-center transition-all shadow-2xs" title="Setujui dan Gunakan Harga Pembelian Terakhir">
+                                                    <i class="fa-solid fa-check text-xs"></i>
+                                                </button>
+                                                <!-- Toggle Nonaktifkan / Hapus -->
+                                                <button @click="hapusData('bahan_hpp', b.id)" class="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all shadow-2xs" title="Hapus Bahan Baku HPP">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!filteredBahanHPP.length">
+                                        <td colspan="11" class="py-12 text-center text-slate-400">
+                                            <div class="w-16 h-16 mx-auto mb-3 rounded-3xl bg-slate-50 border border-slate-100 text-slate-300 flex items-center justify-center text-2xl">
+                                                <i class="fa-solid fa-tags"></i>
+                                            </div>
+                                            <p class="font-bold text-slate-600 text-sm">Tidak ada bahan baku HPP yang cocok dengan filter</p>
+                                            <p class="text-xs font-semibold text-slate-400 mt-1">Silakan tambah bahan baku baru atau reset kata kunci pencarian Anda.</p>
+                                            <button @click="openModal('bahan_hpp')" class="mt-4 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl text-xs font-black btn-active shadow-md inline-flex items-center gap-2">
+                                                <i class="fa-solid fa-plus text-amber-300"></i> Tambah Bahan HPP
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div v-if="currentTab === 'bahan'" class="space-y-6 w-full">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-xl shadow-md shadow-blue-600/20">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Material Gudang</h2>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-200/80">
+                                            {{ filteredBahan.length }} Item
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Stok fisik bahan kain, aksesoris, dan trims di gudang konveksi.</p>
+                                </div>
+                            </div>
+                            <button @click="openModal('bahan')" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-3.5 rounded-2xl text-xs font-black btn-active shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-plus text-amber-300"></i>
+                                <span>Tambah Material Baru</span>
+                            </button>
+                        </div>
+
+                        <!-- 3 KPI STAT CARDS FILTER (TOTAL MATERIAL, STOK TERSEDIA, STOK MENIPIS) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- TOTAL MATERIAL CARD -->
+                            <div @click="filterStatusBahan = 'semua'" 
+                                 :class="['cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusBahan === 'semua' ? 'bg-gradient-to-br from-blue-50 to-indigo-50/40 border-blue-400 ring-2 ring-blue-500/25 shadow-blue-500/10' : 'bg-white border-slate-200/80 hover:border-blue-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL MATERIAL</p>
+                                        <span v-if="filterStatusBahan === 'semua'" class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-slate-900 tracking-tight">{{ totalBahanCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Seluruh bahan & trims</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-blue-600 text-xl">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STOK TERSEDIA CARD -->
+                            <div @click="filterStatusBahan = 'aman'" 
+                                 :class="['cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusBahan === 'aman' ? 'bg-gradient-to-br from-emerald-50 to-teal-50/40 border-emerald-400 ring-2 ring-emerald-500/25 shadow-emerald-500/10' : 'bg-white border-slate-200/80 hover:border-emerald-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">STOK TERSEDIA</p>
+                                        <span v-if="filterStatusBahan === 'aman'" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-emerald-600 tracking-tight">{{ bahanStokTersediaCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Stok cukup (>= 10 unit)</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-emerald-600 text-xl">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STOK MENIPIS CARD -->
+                            <div @click="filterStatusBahan = 'menipis'" 
+                                 :class="['cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusBahan === 'menipis' ? 'bg-gradient-to-br from-amber-50 to-yellow-50/40 border-amber-400 ring-2 ring-amber-500/25 shadow-amber-500/10' : 'bg-white border-slate-200/80 hover:border-amber-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">STOK MENIPIS</p>
+                                        <span v-if="filterStatusBahan === 'menipis'" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-amber-600 tracking-tight">{{ bahanStokMenipisCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Perlu order (&lt; 10 unit)</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-amber-600 text-xl">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Search & Quick Filter Toolbar -->
+                        <div class="bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input v-model="searchQuery" type="text" placeholder="Cari nama material, kode SKU (MAT-XXXX), kategori, atau ID bahan..." class="input-premium pl-9 py-2.5 text-xs bg-slate-50 border-slate-200 focus:bg-white w-full">
+                                <button v-if="searchQuery" @click="searchQuery=''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 text-xs">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0 text-xs font-bold text-slate-500">
+                                <span class="px-3 py-2 rounded-2xl bg-slate-50 border border-slate-200/80">
+                                    Menampilkan <span class="text-blue-600 font-black">{{ filteredBahan.length }}</span> dari <span class="font-black text-slate-700">{{ totalBahanCount }}</span> Material
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Enterprise Material Gudang Table -->
+                        <div class="card-pro table-container">
+                            <table class="w-full text-left whitespace-nowrap min-w-[1000px]">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                        <th class="py-4 px-6 rounded-tl-3xl">1. Material & Identitas</th>
+                                        <th class="py-4 px-4 text-center">2. Satuan & Konversi</th>
+                                        <th class="py-4 px-4 text-center">3. Stok Gudang & Alert</th>
+                                        <th class="py-4 px-5 text-right">4. Harga Beli & HPP</th>
+                                        <th class="py-4 px-4 text-center">5. Gudang / Rak</th>
+                                        <th class="py-4 px-6 text-center rounded-tr-3xl">6. Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-xs">
+                                    <tr v-for="b in filteredBahan" :key="b.id_bahan || b.id" class="hover:bg-blue-50/20 transition-colors">
+                                        <!-- 1. Material & Identitas -->
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 border border-blue-200/60 text-blue-700 flex items-center justify-center font-black text-sm shrink-0 shadow-2xs">
+                                                    {{ (b.nama_bahan || b.nama || 'M').charAt(0).toUpperCase() }}
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <div class="flex items-center gap-2">
+                                                        <p class="font-black text-slate-900 text-sm truncate">{{ b.nama_bahan || b.nama }}</p>
+                                                        <span class="text-[9px] font-black px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 tracking-wider uppercase border border-blue-200/80 shrink-0">
+                                                            {{ b.kode_bahan || b.kode }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2 text-[10px] text-slate-500 font-semibold mt-0.5">
+                                                        <span>{{ b.kategori || b.jenis || 'Kain Utama' }}</span>
+                                                        <span v-if="b.subkategori" class="text-slate-400">• {{ b.subkategori }}</span>
+                                                        <span v-if="b.id_bahan || b.id" class="font-mono text-slate-400 text-[9px]">• {{ b.id_bahan || b.id }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- 2. Satuan & Konversi -->
+                                        <td class="py-4 px-4 text-center">
+                                            <div class="inline-flex flex-col items-center">
+                                                <span class="px-2.5 py-0.5 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/70 font-black text-[11px]">
+                                                    1 {{ b.satuan_beli || b.satuan || 'Roll' }} = {{ b.isi_satuan_beli || 1 }} {{ b.satuan_pakai || b.satuan || 'Meter' }}
+                                                </span>
+                                                <span class="text-[9px] font-semibold text-slate-400 mt-0.5">
+                                                    Beli: {{ b.satuan_beli || b.satuan || 'Roll' }} | Pakai: {{ b.satuan_pakai || b.satuan || 'Meter' }}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <!-- 3. Stok Gudang & Alert -->
+                                        <td class="py-4 px-4 text-center">
+                                            <div class="inline-flex flex-col items-center">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span :class="['px-2.5 py-1 rounded-xl text-xs font-black border flex items-center gap-1.5',
+                                                                   0 >= Number(b.stok !== undefined ? b.stok : (b.stok_awal || 0)) ? 'bg-red-50 text-red-700 border-red-200' :
+                                                                   (Number(b.stok_minimum !== undefined ? b.stok_minimum : 10) >= Number(b.stok !== undefined ? b.stok : (b.stok_awal || 0)) ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200')]">
+                                                        <span :class="['w-1.5 h-1.5 rounded-full shrink-0',
+                                                                       0 >= Number(b.stok !== undefined ? b.stok : (b.stok_awal || 0)) ? 'bg-red-500' :
+                                                                       (Number(b.stok_minimum !== undefined ? b.stok_minimum : 10) >= Number(b.stok !== undefined ? b.stok : (b.stok_awal || 0)) ? 'bg-amber-500' : 'bg-emerald-500')]"></span>
+                                                        <span>{{ (b.stok !== undefined ? b.stok : (b.stok_awal || 0)) }} {{ b.satuan_beli || b.satuan || 'Roll' }}</span>
+                                                    </span>
+                                                </div>
+                                                <p class="text-[10px] text-slate-400 font-semibold mt-1">
+                                                    Setara: {{ ((Number(b.stok !== undefined ? b.stok : (b.stok_awal || 0))) * Number(b.isi_satuan_beli || 1)).toLocaleString('id-ID') }} {{ b.satuan_pakai || b.satuan || 'Meter' }}
+                                                    <span class="text-slate-300 ml-1">(Min: {{ b.stok_minimum !== undefined ? b.stok_minimum : 10 }})</span>
+                                                </p>
+                                            </div>
+                                        </td>
+
+                                        <!-- 4. Harga Beli & HPP -->
+                                        <td class="py-4 px-5 text-right">
+                                            <p class="font-black text-slate-900 text-xs">{{ formatRupiah(b.harga_beli || 0) }}</p>
+                                            <p class="text-[10px] font-bold text-slate-400 mt-0.5">per {{ b.satuan_beli || b.satuan || 'Roll' }}</p>
+                                            <div class="mt-1 flex items-center justify-end gap-1.5">
+                                                <span class="text-[10px] font-extrabold text-emerald-600">
+                                                    {{ formatRupiah(b.harga_satuan_pakai || (b.harga_beli && b.isi_satuan_beli ? Math.round(b.harga_beli / b.isi_satuan_beli) : 0)) }} / {{ b.satuan_pakai || 'Meter' }}
+                                                </span>
+                                                <span :class="['px-1.5 py-0.2 rounded text-[8px] font-black uppercase tracking-wider border',
+                                                               (b.harga_beli > 0 || b.harga_satuan_pakai > 0) ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200']">
+                                                    {{ (b.harga_beli > 0 || b.harga_satuan_pakai > 0) ? 'HPP SIAP' : 'BELUM ADA HARGA' }}
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <!-- 5. Gudang / Rak -->
+                                        <td class="py-4 px-4 text-center">
+                                            <span class="text-xs font-bold text-slate-700 block">{{ b.gudang_id || 'GDG-UTAMA' }}</span>
+                                            <span class="text-[10px] font-semibold text-slate-400 block mt-0.5">
+                                                <i class="fa-solid fa-boxes-stacked text-slate-300 mr-1"></i>{{ b.lokasi_rak || 'Rak -' }}
+                                            </span>
+                                        </td>
+
+                                        <!-- 6. Tindakan -->
+                                        <td class="py-4 px-6 text-center">
+                                            <div class="flex items-center justify-center gap-1.5">
+                                                <button @click="editData('bahan', b)" class="w-8 h-8 rounded-xl bg-slate-50 text-slate-600 hover:text-blue-600 hover:bg-blue-50 border border-slate-200/80 flex items-center justify-center transition-all shadow-2xs" title="Edit Master Material">
+                                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                </button>
+                                                <button v-if="userRole==='owner'" @click="hapusData('bahan', b.id_bahan || b.id)" class="w-8 h-8 rounded-xl bg-slate-50 text-slate-400 hover:text-red-600 hover:bg-red-50 border border-slate-200/80 flex items-center justify-center transition-all shadow-2xs" title="Hapus Master Material">
+                                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!filteredBahan.length">
+                                        <td colspan="6" class="px-6 py-20 text-center text-slate-400">
+                                            <div class="w-16 h-16 mx-auto mb-3 rounded-3xl bg-slate-50 border border-slate-100 text-slate-300 flex items-center justify-center text-2xl">
+                                                <i class="fa-solid fa-layer-group"></i>
+                                            </div>
+                                            <p class="font-bold text-slate-600 text-sm">Tidak ada data material yang cocok</p>
+                                            <p class="text-xs font-semibold text-slate-400 mt-1">Coba ubah filter status atau kata kunci pencarian Anda.</p>
+                                            <button @click="openModal('bahan')" class="mt-4 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl text-xs font-black btn-active shadow-md inline-flex items-center gap-2">
+                                                <i class="fa-solid fa-plus text-amber-300"></i> Tambah Material Baru
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>

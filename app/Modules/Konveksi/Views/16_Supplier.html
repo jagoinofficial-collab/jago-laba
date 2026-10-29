@@ -1,0 +1,173 @@
+<!-- =========================================================
+     MODUL: MITRA & SUPPLIER / VENDOR MAKLOON
+     ========================================================= -->
+                    <div v-if="currentTab === 'supplier'" class="space-y-6 w-full">
+                        <!-- HEADER BANNER -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-xl shadow-md shadow-blue-600/20">
+                                    <i class="fa-solid fa-handshake"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Mitra & Supplier / Vendor</h2>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-200/80">
+                                            {{ filteredSupplier.length }} Mitra
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Pemasok bahan baku produksi dan vendor konveksi makloon tas.</p>
+                                </div>
+                            </div>
+                            <button @click="openModal('supplier')" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-3.5 rounded-2xl text-xs font-black btn-active shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition-all">
+                                <i class="fa-solid fa-plus text-amber-300"></i>
+                                <span>Tambah Mitra Baru</span>
+                            </button>
+                        </div>
+
+                        <!-- 3 KPI STAT CARDS FILTER (TOTAL MITRA, SUPPLIER BAHAN, VENDOR MAKLOON) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- TOTAL MITRA CARD -->
+                            <div @click="filterStatusSupplier = 'semua'" 
+                                 :class="['cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusSupplier === 'semua' ? 'bg-gradient-to-br from-blue-50 to-indigo-50/40 border-blue-400 ring-2 ring-blue-500/25 shadow-blue-500/10' : 'bg-white border-slate-200/80 hover:border-blue-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL MITRA</p>
+                                        <span v-if="filterStatusSupplier === 'semua'" class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-slate-900 tracking-tight">{{ totalSupplierCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Semua mitra terdaftar</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-blue-600 text-xl">
+                                        <i class="fa-solid fa-handshake-simple"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SUPPLIER BAHAN CARD -->
+                            <div @click="filterStatusSupplier = 'Supplier Bahan'" 
+                                 :class="['cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusSupplier === 'Supplier Bahan' ? 'bg-gradient-to-br from-emerald-50 to-teal-50/40 border-emerald-400 ring-2 ring-emerald-500/25 shadow-emerald-500/10' : 'bg-white border-slate-200/80 hover:border-emerald-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">SUPPLIER BAHAN</p>
+                                        <span v-if="filterStatusSupplier === 'Supplier Bahan'" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-emerald-600 tracking-tight">{{ supplierBahanCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Pemasok bahan baku</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-emerald-600 text-xl">
+                                        <i class="fa-solid fa-truck-ramp-box"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- VENDOR MAKLOON CARD -->
+                            <div @click="filterStatusSupplier = 'Vendor Makloon'" 
+                                 :class="['cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusSupplier === 'Vendor Makloon' ? 'bg-gradient-to-br from-amber-50 to-yellow-50/40 border-amber-400 ring-2 ring-amber-500/25 shadow-amber-500/10' : 'bg-white border-slate-200/80 hover:border-amber-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">VENDOR MAKLOON</p>
+                                        <span v-if="filterStatusSupplier === 'Vendor Makloon'" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-amber-600 tracking-tight">{{ vendorMakloonCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Pemasok tas makloan / CMT</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame">
+                                    <div class="jl-kpi-spin-inner text-amber-600 text-xl">
+                                        <i class="fa-solid fa-building-circle-check"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TABEL DIREKTORI MITRA -->
+                        <div class="card-pro !p-0 overflow-x-auto border border-slate-200/80 shadow-sm rounded-3xl bg-white">
+                            <table class="w-full text-left whitespace-nowrap min-w-[750px]">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                                        <th class="py-4 px-6 rounded-tl-3xl">KODE ID</th>
+                                        <th class="py-4 px-6">Mitra & Kontak</th>
+                                        <th class="py-4 px-4 text-center">Kategori / Peran</th>
+                                        <th class="py-4 px-4">Spesialisasi / Lokasi</th>
+                                        <th class="py-4 px-6 text-center rounded-tr-3xl">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="s in filteredSupplier" :key="s.id" class="hover:bg-blue-50/20 transition-colors">
+                                        <!-- KODE ID -->
+                                        <td class="py-4 px-6">
+                                            <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-mono font-black border shadow-2xs', (s.tipe === 'Vendor Makloon') ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200']">
+                                                <i :class="['fa-solid text-[10px]', (s.tipe === 'Vendor Makloon') ? 'fa-fingerprint text-amber-600' : 'fa-tag text-emerald-600']"></i>
+                                                {{ getSupplierCode(s.id) }}
+                                            </span>
+                                        </td>
+
+                                        <!-- MITRA & KONTAK -->
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center gap-3.5">
+                                                <div :class="['w-11 h-11 rounded-2xl flex items-center justify-center font-black text-sm shadow-2xs shrink-0', (s.tipe === 'Vendor Makloon') ? 'bg-amber-50 border border-amber-200 text-amber-700' : 'bg-blue-50 border border-blue-200 text-blue-700']">
+                                                    {{ (s.nama || 'M').charAt(0).toUpperCase() }}
+                                                </div>
+                                                <div>
+                                                    <p class="font-black text-slate-900 text-sm">
+                                                        <span>{{ s.nama }}</span>
+                                                    </p>
+                                                    <p class="text-xs font-bold text-slate-500 mt-0.5 flex items-center gap-1.5">
+                                                        <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i>
+                                                        <a v-if="s.no_wa" :href="'https://wa.me/' + String(s.no_wa).replace(/\D/g,'').replace(/^0/, '62')" target="_blank" class="hover:underline hover:text-emerald-600">
+                                                            {{ formatNomorTampil(s.no_wa) }}
+                                                        </a>
+                                                        <span v-else class="text-slate-400">-</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- KATEGORI / PERAN -->
+                                        <td class="text-center py-4 px-4">
+                                            <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border shadow-2xs', (s.tipe === 'Vendor Makloon') ? 'badge-warning !bg-amber-50 !text-amber-800 !border-amber-200' : 'badge-success !bg-emerald-50 !text-emerald-700 !border-emerald-200']">
+                                                <i :class="['fa-solid text-[10px]', (s.tipe === 'Vendor Makloon') ? 'fa-industry text-amber-500' : 'fa-boxes-stacked text-emerald-500']"></i>
+                                                {{ (s.tipe === 'Vendor Makloon') ? 'Vendor Makloon' : 'Supplier Bahan' }}
+                                            </span>
+                                        </td>
+
+                                        <!-- SPESIALISASI & ALAMAT -->
+                                        <td class="py-4 px-4">
+                                            <p v-if="s.catatan" class="text-xs font-bold text-slate-800 flex items-center gap-1.5 mb-1">
+                                                <i class="fa-solid fa-tag text-blue-500 text-[10px]"></i>
+                                                <span>{{ s.catatan }}</span>
+                                            </p>
+                                            <p class="text-[11px] font-semibold text-slate-500 flex items-start gap-1.5 max-w-[280px] whitespace-normal">
+                                                <i class="fa-solid fa-location-dot text-slate-400 text-xs shrink-0 mt-0.5"></i>
+                                                <span>{{ s.alamat || 'Alamat belum diatur' }}</span>
+                                            </p>
+                                        </td>
+
+                                        <!-- TINDAKAN -->
+                                        <td class="py-4 px-6">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button @click="hubungiWaSupplier(s)" class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors shadow-2xs" title="Chat WhatsApp">
+                                                    <i class="fa-brands fa-whatsapp text-sm"></i>
+                                                </button>
+                                                <button @click="editData('supplier', s)" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 flex items-center justify-center transition-colors shadow-2xs" title="Edit Mitra">
+                                                    <i class="fa-solid fa-pen text-xs"></i>
+                                                </button>
+                                                <button v-if="userRole==='owner'" @click="hapusData('supplier', s.id)" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition-colors shadow-2xs" title="Hapus Mitra">
+                                                    <i class="fa-solid fa-trash text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!filteredSupplier.length">
+                                        <td colspan="5" class="px-6 py-20 text-center text-slate-400 text-sm font-bold">
+                                            Tidak ada data mitra yang sesuai dengan filter.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>

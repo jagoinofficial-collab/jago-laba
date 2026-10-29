@@ -1,0 +1,284 @@
+<!-- =========================================================
+     MODUL: LAPORAN KEUANGAN EKSEKUTIF (CASHFLOW JOURNAL)
+     ========================================================= -->
+                    <div v-if="currentTab === 'keuangan' && userRole === 'owner'" class="space-y-6 w-full">
+                        <!-- Module Header -->
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-700 bg-blue-50 px-3 py-1 rounded-lg border border-blue-200 shadow-2xs">Executive Financial Statement</span>
+                                    <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200"><i class="fa-solid fa-circle-check mr-1 text-emerald-500"></i>{{ filteredKeuangan.length }} Jurnal Terkonsolidasi</span>
+                                    <span class="text-[10px] font-black text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg border border-purple-200"><i class="fa-solid fa-bolt mr-1 text-purple-500"></i>Real-Time Multi-Modul</span>
+                                </div>
+                                <h3 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Laporan Keuangan Eksekutif</h3>
+                                <p class="text-xs text-slate-500 font-semibold mt-1">Konsolidasi arus kas likuid, belanja bahan, vendor makloon, upah borongan SPK, kasbon, piutang, dan pelunasan hutang terstruktur.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2.5 items-center justify-start lg:justify-end">
+                                <button @click="triggerBackupDrive()" class="bg-gradient-to-r from-blue-900 to-indigo-900 hover:from-blue-950 hover:to-indigo-950 text-amber-300 border border-amber-400/40 px-4 py-3 rounded-2xl text-xs font-black btn-active shadow-md shadow-blue-950/20 flex items-center gap-2 transition-all">
+                                    <i class="fa-solid fa-cloud-arrow-up text-amber-400"></i> Backup Drive
+                                </button>
+                                <button @click="exportKeuanganExcel()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-3 rounded-2xl text-xs font-black btn-active shadow-sm flex items-center gap-2 transition-all">
+                                    <i class="fa-solid fa-file-excel text-emerald-600"></i> Unduh Excel
+                                </button>
+                                <button @click="generateLaporanKeuanganPDF()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-3 rounded-2xl text-xs font-black btn-active shadow-sm flex items-center gap-2 transition-all">
+                                    <i class="fa-solid fa-file-pdf text-red-500"></i> Cetak PDF
+                                </button>
+                                <button @click="openModal('pendapatan')" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white px-5 py-3 rounded-2xl text-xs font-black btn-active shadow-lg shadow-emerald-600/25 flex items-center gap-2 transition-all">
+                                    <i class="fa-solid fa-plus text-amber-300"></i> Mutasi Kas
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 7 Modern Executive KPI Cards Layer -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3.5">
+                            <!-- Card 1: Kas Tersedia Likuid -->
+                            <div class="card-pro p-4 rounded-3xl border border-amber-300/80 bg-gradient-to-br from-amber-50/50 to-white shadow-sm relative overflow-hidden flex flex-col justify-between group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-amber-800 bg-amber-100/80 px-2 py-0.5 rounded-md">Kas Likuid</span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-vault text-amber-600 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Kas & Bank</p>
+                                    <h4 class="text-lg font-black text-slate-900 tracking-tight mt-0.5">{{ formatRupiahSingkat(totalSemuaSaldo) }}</h4>
+                                    <p class="text-[9px] font-bold text-amber-700 truncate mt-1">{{ formatRupiah(totalSemuaSaldo) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Card 2: Total Pemasukan -->
+                            <div @click="filterStatusKeuangan = 'Masuk'" :class="['cursor-pointer p-4 rounded-3xl border transition-all shadow-sm relative overflow-hidden flex flex-col justify-between group', filterStatusKeuangan === 'Masuk' ? 'bg-emerald-50/70 border-emerald-400 ring-2 ring-emerald-500/25' : 'bg-white border-slate-200/80 hover:border-emerald-200']">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded-md">Inflow</span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-arrow-down text-emerald-600 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Masuk</p>
+                                    <h4 class="text-lg font-black text-emerald-600 tracking-tight mt-0.5">{{ formatRupiahSingkat(totalPemasukan) }}</h4>
+                                    <p class="text-[9px] font-bold text-slate-400 truncate mt-1">+{{ formatRupiah(totalPemasukan) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Card 3: Total Pengeluaran -->
+                            <div @click="filterStatusKeuangan = 'Keluar'" :class="['cursor-pointer p-4 rounded-3xl border transition-all shadow-sm relative overflow-hidden flex flex-col justify-between group', filterStatusKeuangan === 'Keluar' ? 'bg-rose-50/70 border-rose-400 ring-2 ring-rose-500/25' : 'bg-white border-slate-200/80 hover:border-rose-200']">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-rose-800 bg-rose-100/80 px-2 py-0.5 rounded-md">Outflow</span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-arrow-up text-rose-600 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Keluar</p>
+                                    <h4 class="text-lg font-black text-rose-600 tracking-tight mt-0.5">{{ formatRupiahSingkat(totalPengeluaran) }}</h4>
+                                    <p class="text-[9px] font-bold text-slate-400 truncate mt-1">-{{ formatRupiah(totalPengeluaran) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Card 4: Net Cashflow -->
+                            <div class="card-pro p-4 rounded-3xl border border-blue-200/80 bg-gradient-to-br from-blue-50/40 to-white shadow-sm relative overflow-hidden flex flex-col justify-between group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span :class="['text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md', keuanganSaldoBersih >= 0 ? 'bg-blue-100 text-blue-800' : 'bg-rose-100 text-rose-800']">
+                                        {{ keuanganSaldoBersih >= 0 ? 'Surplus' : 'Defisit' }}
+                                    </span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-scale-balanced text-blue-600 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Arus Kas Bersih</p>
+                                    <h4 :class="['text-lg font-black tracking-tight mt-0.5', keuanganSaldoBersih >= 0 ? 'text-blue-600' : 'text-rose-600']">{{ formatRupiahSingkat(keuanganSaldoBersih) }}</h4>
+                                    <p class="text-[9px] font-bold text-slate-400 truncate mt-1">{{ formatRupiah(keuanganSaldoBersih) }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Card 5: Hutang Usaha -->
+                            <div @click="switchTab('hutang')" class="cursor-pointer p-4 rounded-3xl border border-rose-200/80 bg-white hover:border-rose-400 shadow-sm relative overflow-hidden flex flex-col justify-between transition-all group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-rose-800 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">Payable</span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-file-invoice-dollar text-rose-500 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Hutang Usaha</p>
+                                    <h4 class="text-lg font-black text-rose-700 tracking-tight mt-0.5">{{ formatRupiahSingkat(kpiHutang.totalSisaHutang) }}</h4>
+                                    <p class="text-[9px] font-bold text-rose-600 truncate mt-1">{{ kpiHutang.countAktif }} Faktur Aktif</p>
+                                </div>
+                            </div>
+
+                            <!-- Card 6: Piutang Berjalan -->
+                            <div @click="switchTab('piutang')" class="cursor-pointer p-4 rounded-3xl border border-cyan-200/80 bg-white hover:border-cyan-400 shadow-sm relative overflow-hidden flex flex-col justify-between transition-all group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[9px] font-black uppercase tracking-wider text-cyan-800 bg-cyan-50 px-2 py-0.5 rounded-md border border-cyan-200">Receivable</span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-hand-holding-dollar text-cyan-500 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Piutang Aktif</p>
+                                    <h4 class="text-lg font-black text-cyan-700 tracking-tight mt-0.5">{{ formatRupiahSingkat(totalPiutangAktif) }}</h4>
+                                    <p class="text-[9px] font-bold text-cyan-600 truncate mt-1">Potensi Kas Masuk</p>
+                                </div>
+                            </div>
+
+                            <!-- Card 7: Rasio Likuiditas -->
+                            <div class="card-pro p-4 rounded-3xl border border-indigo-200/80 bg-gradient-to-br from-indigo-50/40 to-white shadow-sm relative overflow-hidden flex flex-col justify-between group">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span :class="['text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md', rasioLikuiditasKas >= 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800']">
+                                        {{ rasioLikuiditasKas >= 100 ? 'Aman' : 'Perhatian' }}
+                                    </span>
+                                    <div class="jl-kpi-spin-frame-xs shrink-0">
+                                        <div class="jl-kpi-spin-inner">
+                                            <i class="fa-solid fa-shield-halved text-indigo-500 text-[11px]"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Rasio Kas / Hutang</p>
+                                    <h4 class="text-lg font-black text-indigo-700 tracking-tight mt-0.5">{{ rasioLikuiditasKas }}%</h4>
+                                    <p class="text-[9px] font-bold text-slate-500 truncate mt-1">Ketahanan Likuiditas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Charts Layer (Chart.js) -->
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                            <!-- Chart 1: Tren Arus Kas Bulanan (7 Cols) -->
+                            <div class="lg:col-span-7 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+                                    <div>
+                                        <h4 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                            <i class="fa-solid fa-chart-column text-blue-600"></i>
+                                            <span>Tren Arus Kas (Inflow vs Outflow)</span>
+                                        </h4>
+                                        <p class="text-xs text-slate-500 font-semibold mt-0.5">Pergerakan kas masuk dan kas keluar multi-bulan</p>
+                                    </div>
+                                    <span class="text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">Grafik Interaktif</span>
+                                </div>
+                                <div class="relative w-full h-64">
+                                    <canvas id="chartTrenArusKas"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Chart 2: Komposisi Beban Pengeluaran (5 Cols) -->
+                            <div class="lg:col-span-5 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+                                    <div>
+                                        <h4 class="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                                            <i class="fa-solid fa-chart-pie text-purple-600"></i>
+                                            <span>Komposisi Pengeluaran</span>
+                                        </h4>
+                                        <p class="text-xs text-slate-500 font-semibold mt-0.5">Distribusi belanja modal, produksi & operasional</p>
+                                    </div>
+                                    <span class="text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">Persentase</span>
+                                </div>
+                                <div class="relative w-full h-64 flex items-center justify-center">
+                                    <canvas id="chartKomposisiBeban"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter & Search Bar -->
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <!-- Type Filters -->
+                            <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                                <button @click="filterStatusKeuangan = 'semua'" :class="['px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap', filterStatusKeuangan === 'semua' ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']">
+                                    <span>Semua</span>
+                                    <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">{{ totalKeuanganCount }}</span>
+                                </button>
+                                <button @click="filterStatusKeuangan = 'Masuk'" :class="['px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap', filterStatusKeuangan === 'Masuk' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']">
+                                    <i class="fa-solid fa-arrow-down text-[10px]"></i>
+                                    <span>Masuk</span>
+                                    <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">{{ keuanganMasukCount }}</span>
+                                </button>
+                                <button @click="filterStatusKeuangan = 'Keluar'" :class="['px-4 py-2 rounded-2xl text-xs font-black transition-all flex items-center gap-1.5 whitespace-nowrap', filterStatusKeuangan === 'Keluar' ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']">
+                                    <i class="fa-solid fa-arrow-up text-[10px]"></i>
+                                    <span>Keluar</span>
+                                    <span class="px-1.5 py-0.5 rounded-full text-[10px] bg-white/20">{{ keuanganKeluarCount }}</span>
+                                </button>
+                            </div>
+
+                            <!-- Search & Account Filter -->
+                            <div class="flex items-center gap-2">
+                                <div class="relative">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input v-model="searchQuery" type="text" placeholder="Cari transaksi / keterangan..." class="input-pro !py-2 !pl-8 !pr-3 text-xs font-bold rounded-2xl bg-slate-50 border-slate-200 text-slate-700 w-44 sm:w-56">
+                                </div>
+                                <select v-model="filterRekeningKeuangan" class="input-pro !py-2 !px-3 text-xs font-bold rounded-2xl bg-slate-50 border-slate-200 text-slate-700">
+                                    <option value="">Semua Rekening</option>
+                                    <option v-for="r in rekening" :key="r.id" :value="r.id">{{ r.nama }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Unified Financial Ledger Table -->
+                        <div class="card-pro !p-0 overflow-x-auto border border-slate-200/80 shadow-sm rounded-3xl bg-white">
+                            <table class="w-full text-left whitespace-nowrap min-w-[760px]">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80">
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Tanggal & Ref Jurnal</th>
+                                        <th class="py-4 px-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Kategori Mutasi</th>
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Keterangan & Rincian Transaksi</th>
+                                        <th class="py-4 px-4 text-[10px] font-black uppercase tracking-wider text-slate-500">Rekening Kas</th>
+                                        <th class="py-4 px-4 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Arus Kas</th>
+                                        <th class="py-4 px-6 text-right text-[10px] font-black uppercase tracking-wider text-slate-500">Nilai Mutasi (Rp)</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="k in filteredKeuangan" :key="k.id" class="hover:bg-blue-50/20 transition-colors">
+                                        <td class="py-4 px-6">
+                                            <p class="font-black text-slate-900 text-xs flex items-center gap-1.5">
+                                                <i class="fa-regular fa-calendar text-blue-500"></i>{{ formatDateID(k.tanggal) }}
+                                            </p>
+                                            <p class="text-[10px] font-bold text-slate-400 mt-0.5">ID: {{ String(k.id).slice(-8) }}</p>
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            <span :class="['px-2.5 py-1 rounded-lg text-[10px] font-black border uppercase tracking-wider', getBadgeKategoriKeuangan(getKategoriKeuangan(k))]">
+                                                {{ getKategoriKeuangan(k) }}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="font-black text-slate-900 text-sm max-w-md truncate">{{ k.keterangan }}</p>
+                                        </td>
+                                        <td class="py-4 px-4">
+                                            <span class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-200">
+                                                <i class="fa-solid fa-building-columns text-[10px] text-blue-600"></i>
+                                                {{ getRekeningName(k.id_rekening) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center py-4 px-4">
+                                            <span :class="['badge font-black text-[10px] px-2.5 py-1', k.tipe === 'Masuk' ? 'badge-success !bg-emerald-50 !text-emerald-700 !border-emerald-200' : (k.tipe === 'Setoff' ? 'badge-info !bg-blue-50 !text-blue-700 !border-blue-200' : 'badge-danger !bg-red-50 !text-red-700 !border-red-200')]">
+                                                <i :class="['fa-solid mr-1', k.tipe === 'Masuk' ? 'fa-arrow-down text-emerald-600' : (k.tipe === 'Setoff' ? 'fa-arrows-left-right text-blue-600' : 'fa-arrow-up text-red-600')]"></i>
+                                                {{ k.tipe === 'Setoff' ? 'Potong Piutang' : k.tipe }}
+                                            </span>
+                                        </td>
+                                        <td class="text-right py-4 px-6">
+                                            <span :class="['font-black text-base', k.tipe === 'Masuk' ? 'text-emerald-600' : (k.tipe === 'Setoff' ? 'text-blue-700' : 'text-slate-900')]">
+                                                {{ k.tipe === 'Masuk' ? '+' : (k.tipe === 'Setoff' ? '↔ ' : '-') }}{{ formatRupiah(k.nominal) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!filteredKeuangan.length">
+                                        <td colspan="6" class="px-6 py-20 text-center text-slate-400 text-sm font-bold">
+                                            <i class="fa-solid fa-inbox text-3xl mb-2 text-slate-300 block"></i>
+                                            Tidak ada transaksi keuangan pada filter yang dipilih.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>

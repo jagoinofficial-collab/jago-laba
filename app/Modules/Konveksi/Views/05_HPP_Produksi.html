@@ -1,0 +1,1146 @@
+<!-- =========================================================
+     MODUL: HPP PRODUKSI (HARGA POKOK PRODUKSI KONVEKSI & TAS)
+     ========================================================= -->
+                    <div v-if="currentTab === 'hpp_produksi'" class="space-y-8 w-full">
+                        <!-- Top Control Bar -->
+                        <div class="card-pro p-6 bg-white border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
+                                <div class="w-full sm:w-80">
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-layer-group text-blue-600"></i> Model Tas (SKU Induk)
+                                    </label>
+                                    <div class="relative">
+                                        <select v-model="selectedHppModelKey" class="input-premium font-black text-sm bg-slate-50 border-slate-200/90 hover:border-blue-400 focus:bg-white cursor-pointer pr-10">
+                                            <option value="" disabled>-- Pilih Model Tas (SKU Induk) --</option>
+                                            <option v-for="m in uniqueHppModelList" :key="m.model_key" :value="m.model_key">
+                                                {{ m.nama }} ({{ m.jumlah_varian }} Warna) - [HPP: {{ formatRupiah(m.hpp_produk||0) }}]
+                                            </option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                                    </div>
+                                </div>
+
+                                <div class="w-full sm:w-44">
+                                    <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 ml-1 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-boxes-stacked text-amber-500"></i> Target Batch Qty
+                                    </label>
+                                    <div class="relative">
+                                        <input v-model.number="hppBatchQty" type="number" min="1" step="1" class="input-premium font-black text-sm text-center pr-12 bg-slate-50 border-slate-200/90 hover:border-blue-400 focus:bg-white">
+                                        <span class="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400 pointer-events-none">{{ activeHppModel?.satuan || 'Pcs' }}</span>
+                                    </div>
+                                </div>
+
+                                <div v-if="activeHppModel" class="hidden xl:flex items-center gap-3.5 pl-4 border-l border-slate-200/80">
+                                    <div class="w-13 h-13 rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center shrink-0 shadow-sm p-1">
+                                        <img v-if="activeHppModel.foto" :src="activeHppModel.foto" class="w-full h-full object-cover rounded-xl" alt="Model">
+                                        <i v-else class="fa-solid fa-box-open text-slate-300 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-black text-slate-900 text-sm leading-tight">{{ activeHppModel.nama }}</p>
+                                        <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                                            <span class="text-[9px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 uppercase tracking-wider">{{ activeHppModel.kategori || 'Tas' }}</span>
+                                            <span class="text-[9px] font-bold text-slate-400">• {{ activeHppModel.jumlah_varian }} Warna:</span>
+                                            <span v-for="(wn, wi) in activeHppModel.varian_names.slice(0, 3)" :key="wi" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                                {{ wn }}
+                                            </span>
+                                            <span v-if="activeHppModel.varian_names.length > 3" class="text-[9px] font-bold text-slate-400">+{{ activeHppModel.varian_names.length - 3 }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
+                                <button @click="isCopyBomModalOpen = true" class="px-3.5 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 border border-slate-300/80 text-slate-700 hover:text-slate-900 text-xs font-black btn-active transition-all flex items-center gap-1.5 shadow-sm" title="Salin formula bahan dari model tas lain yang sudah ada">
+                                    <i class="fa-solid fa-copy text-amber-600"></i>
+                                    <span>Salin BOM</span>
+                                </button>
+                                <button @click="cetakHppPDF" class="px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-black btn-active transition-all flex items-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-print text-slate-400"></i>
+                                    <span>Cetak</span>
+                                </button>
+                                <button @click="simpanDraftHppLokal" class="px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 text-xs font-black btn-active transition-all flex items-center gap-1.5 shadow-sm" title="Simpan sebagai draft sementara tanpa mengubah harga produk">
+                                    <i class="fa-solid fa-floppy-disk text-blue-600"></i>
+                                    <span>Simpan Draft</span>
+                                </button>
+                                <button @click="bukaModalAktivasiHpp" class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-800 text-white text-xs font-black btn-active transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/25">
+                                    <i class="fa-solid fa-circle-check text-emerald-200 text-sm"></i>
+                                    <span>AKTIFKAN HPP</span>
+                                    <span class="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black ml-0.5">{{ nextHppVersionPreview }}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Empty State if no model selected -->
+                        <div v-if="!selectedHppModelKey" class="card-pro p-16 text-center bg-white border border-slate-200">
+                            <div class="w-20 h-20 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-3xl mx-auto mb-4 border border-emerald-100 shadow-sm">
+                                <i class="fa-solid fa-calculator"></i>
+                            </div>
+                            <h3 class="text-xl font-black text-slate-800">Pilih Model Tas (SKU Induk)</h3>
+                            <p class="text-slate-500 text-sm mt-2 max-w-md mx-auto">Silakan pilih model tas konveksi di dropdown bagian atas untuk mengalkulasi rincian HPP BOM bahan, upah kerja per pcs, dan biaya tambahan.</p>
+                        </div>
+
+                        <!-- Main 2-Column Content when product is selected -->
+                        <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                            
+                            <!-- LEFT COLUMN (Workspace Tab Berbasis 5 Komponen Biaya + Ringkasan) -->
+                            <div class="lg:col-span-8 space-y-6">
+
+                                <!-- Navigation Bar 6 Sub-Tab Enterprise -->
+                                <div class="bg-white p-2 rounded-3xl border border-slate-200/80 shadow-sm flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
+                                    <button v-for="t in [
+                                        { id: 'material', label: 'MATERIAL', icon: 'fa-cubes-stacked', count: (hppBOMItems||[]).length, cost: totalBiayaBahanPerUnit },
+                                        { id: 'upah', label: 'UPAH', icon: 'fa-scissors', cost: totalBiayaUpahPerUnit },
+                                        { id: 'packaging', label: 'PACKAGING', icon: 'fa-box-archive', cost: totalBiayaJasaPackagingPerUnit },
+                                        { id: 'operasional', label: 'OPERASIONAL', icon: 'fa-bolt', cost: totalBiayaOperasionalPerUnit },
+                                        { id: 'manual', label: 'BIAYA MANUAL', icon: 'fa-receipt', count: (hppManualCosts||[]).length, cost: totalBiayaManualPerUnit },
+                                        { id: 'ringkasan', label: 'RINGKASAN', icon: 'fa-chart-pie', cost: hppStandarPerUnit }
+                                    ]" :key="t.id" @click="activeHppTab = t.id"
+                                    :class="['px-3.5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer',
+                                             activeHppTab === t.id ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-600/20' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900']">
+                                        <i :class="['fa-solid text-xs', t.icon]"></i>
+                                        <span>{{ t.label }}</span>
+                                        <span v-if="t.count !== undefined" :class="['px-1.5 py-0.2 rounded-full text-[9px] font-black', activeHppTab === t.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700']">
+                                            {{ t.count }}
+                                        </span>
+                                        <span :class="['text-[10px] ml-0.5', activeHppTab === t.id ? 'text-blue-100 font-bold' : 'text-slate-400 font-semibold']">({{ formatRupiah(t.cost || 0) }})</span>
+                                    </button>
+                                </div>
+
+                                <!-- TAB 1: MATERIAL (BOM & REQUISITION) -->
+                                <div v-if="activeHppTab === 'material'" class="space-y-6">
+                                    <div class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-5">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                                            <div>
+                                                <h3 class="text-base font-black text-slate-900 flex items-center gap-2.5">
+                                                    <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 text-xs font-black flex items-center justify-center border border-blue-100">1</span>
+                                                    Bill of Materials (BOM Bahan & Trims)
+                                                </h3>
+                                                <p class="text-xs text-slate-400 font-semibold mt-0.5">Komposisi material per 1 pcs tas, harga aktif satuan pakai, waste % & total HPP material</p>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                <button @click="tambahItemBOM('bahan_utama')" class="px-2.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200/60 text-blue-700 text-xs font-black btn-active flex items-center gap-1 transition-all" title="Tambah Bahan Utama (Kain)">
+                                                    <i class="fa-solid fa-plus text-[10px]"></i> Bahan Utama
+                                                </button>
+                                                <button @click="tambahItemBOM('furing')" class="px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200/60 text-amber-800 text-xs font-black btn-active flex items-center gap-1 transition-all" title="Tambah Furing / Busa">
+                                                    <i class="fa-solid fa-plus text-[10px]"></i> Furing
+                                                </button>
+                                                <button @click="tambahItemBOM('aksesoris')" class="px-2.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 border border-purple-200/60 text-purple-700 text-xs font-black btn-active flex items-center gap-1 transition-all" title="Tambah Aksesoris (Webbing/Buckle/Zipper)">
+                                                    <i class="fa-solid fa-plus text-[10px]"></i> Aksesoris
+                                                </button>
+                                                <button @click="tambahItemBOM('trims')" class="px-2.5 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200/60 text-pink-700 text-xs font-black btn-active flex items-center gap-1 transition-all" title="Tambah Trims (Benang/Tali/Pita)">
+                                                    <i class="fa-solid fa-plus text-[10px]"></i> Trims
+                                                </button>
+                                                <button @click="tambahItemBOM('packaging')" class="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/60 text-emerald-700 text-xs font-black btn-active flex items-center gap-1 transition-all" title="Tambah Kemasan BOM">
+                                                    <i class="fa-solid fa-plus text-[10px]"></i> Kemasan
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Table BOM -->
+                                        <div class="overflow-x-auto -mx-6 px-6">
+                                            <table class="w-full text-left whitespace-nowrap min-w-[950px]">
+                                                <thead>
+                                                    <tr class="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
+                                                        <th class="py-2.5">Material & Spesifikasi</th>
+                                                        <th class="py-2.5 text-center w-20">Satuan</th>
+                                                        <th class="py-2.5 text-right w-28">Harga / Satuan</th>
+                                                        <th class="py-2.5 text-center w-28">Pakai / 1 Pcs</th>
+                                                        <th class="py-2.5 text-center w-20">Waste</th>
+                                                        <th class="py-2.5 text-center w-24">Qty Efektif</th>
+                                                        <th class="py-2.5 text-right w-32">HPP / 1 Pcs</th>
+                                                        <th class="py-2.5 text-center w-28">Butuh Batch</th>
+                                                        <th class="py-2.5 text-center w-28">Stok Gudang</th>
+                                                        <th class="py-2.5 text-center w-10"></th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-100 text-xs font-bold">
+                                                    <tr v-for="(it, idx) in hppBOMItems" :key="it.id" class="hover:bg-slate-50/50 transition-colors">
+                                                        <td class="py-3">
+                                                            <div class="flex items-center gap-2">
+                                                                <span :class="['px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider shrink-0', 
+                                                                    (it.kategori||'').toLowerCase().includes('utama') ? 'bg-blue-50 text-blue-600 border border-blue-100' :
+                                                                    (it.kategori||'').toLowerCase().includes('furing') ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                                                                    (it.kategori||'').toLowerCase().includes('aksesoris') ? 'bg-purple-50 text-purple-600 border border-purple-100' :
+                                                                    (it.kategori||'').toLowerCase().includes('trims') ? 'bg-pink-50 text-pink-700 border border-pink-100' :
+                                                                    'bg-slate-100 text-slate-600 border border-slate-200']">
+                                                                    {{ (it.kategori||'').replace('bahan_', '').toUpperCase() }}
+                                                                </span>
+                                                                <div class="flex-1 min-w-[200px]">
+                                                                    <select v-if="bahanHPP.length || bahan.length" v-model="it.id_bahan_hpp" @change="onPilihBahanHppBOM(it)" class="input-premium py-1.5 px-2.5 text-xs font-bold bg-white w-full">
+                                                                        <option value="">-- Input Bebas / Tanpa Link --</option>
+                                                                        <optgroup v-if="bahanHPPListBahanUtama.length" label="⭐ Master Bahan Baku HPP (Utama & Furing)">
+                                                                            <option v-for="b in bahanHPPListBahanUtama" :key="'hpp_'+b.id" :value="String(b.id)">
+                                                                                {{ b.nama }} [{{ b.satuan_pakai || b.satuan }}] - {{ formatRupiah(getHargaPerSatuanPakai(b)) }} (Waste: {{ b.waste_default||0 }}%)
+                                                                            </option>
+                                                                        </optgroup>
+                                                                        <optgroup v-if="bahanHPPListAksesoris.length" label="⭐ Master Bahan Baku HPP (Aksesoris, Trims & Packaging)">
+                                                                            <option v-for="b in bahanHPPListAksesoris" :key="'hpp_'+b.id" :value="String(b.id)">
+                                                                                {{ b.nama }} [{{ b.satuan_pakai || b.satuan }}] - {{ formatRupiah(getHargaPerSatuanPakai(b)) }} (Waste: {{ b.waste_default||0 }}%)
+                                                                            </option>
+                                                                        </optgroup>
+                                                                        <optgroup v-if="bahan.length" label="📦 Material Gudang Fisik">
+                                                                            <option v-for="b in bahan" :key="'gudang_'+b.id" :value="'gudang_'+String(b.id)">
+                                                                                {{ b.nama }} ({{ b.satuan }}) - {{ formatRupiah(b.harga_beli||0) }}
+                                                                            </option>
+                                                                        </optgroup>
+                                                                    </select>
+                                                                    <input v-else v-model="it.nama_bahan" type="text" placeholder="Nama Material" class="input-premium py-1.5 px-2.5 text-xs font-bold bg-white w-full">
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td class="py-3 text-center">
+                                                            <input v-model="it.satuan_pakai" type="text" class="input-premium py-1.5 px-1 text-xs font-bold text-center bg-white w-20" placeholder="Meter" />
+                                                        </td>
+                                                        <td class="py-3 text-right">
+                                                            <div class="relative">
+                                                                <input :value="formatRupiahInput(it.harga_satuan_pakai)" @input="onRupiahInputChange($event, it, 'harga_satuan_pakai')" type="text" inputmode="numeric" class="input-premium py-1.5 px-2 text-xs font-black text-right bg-white w-28" placeholder="0" />
+                                                            </div>
+                                                        </td>
+                                                        <td class="py-3 text-center">
+                                                            <input v-model.number="it.qty_pakai_per_pcs" type="number" min="0" step="0.001" class="input-premium py-1.5 px-2 text-xs font-black text-center bg-white w-24" placeholder="0" />
+                                                        </td>
+                                                        <td class="py-3 text-center">
+                                                            <div class="flex items-center justify-center gap-1">
+                                                                <input v-model.number="it.waste_pct" type="number" min="0" max="100" step="0.5" class="input-premium py-1.5 px-1 text-xs font-bold text-center bg-white w-14" placeholder="0" />
+                                                                <span class="text-[10px] text-slate-400">%</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="py-3 text-center text-slate-600 font-bold">
+                                                            {{ Math.round((Number(it.qty_pakai_per_pcs||0) * (1 + (Number(it.waste_pct||0)/100))) * 1000) / 1000 }}
+                                                        </td>
+                                                        <td class="py-3 text-right font-black text-blue-700">
+                                                            {{ formatRupiah(Math.round(Number(it.qty_pakai_per_pcs||0) * (1 + (Number(it.waste_pct||0)/100)) * Number(it.harga_satuan_pakai||0))) }}
+                                                        </td>
+                                                        <td class="py-3 text-center text-slate-700 font-bold">
+                                                            {{ Math.round((Number(it.qty_pakai_per_pcs||0) * (1 + (Number(it.waste_pct||0)/100)) * Number(hppBatchQty||1)) * 10) / 10 }} {{ it.satuan_pakai || 'Pcs' }}
+                                                        </td>
+                                                        <td class="py-3 text-center">
+                                                            <span v-if="getStokGudangForBOM(it) !== null" :class="['px-2 py-0.5 rounded text-[10px] font-black', getStokGudangForBOM(it) >= (Number(it.qty_pakai_per_pcs||0) * (1 + (Number(it.waste_pct||0)/100)) * Number(hppBatchQty||1)) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200']">
+                                                                {{ getStokGudangForBOM(it) }} {{ it.satuan_pakai || 'Pcs' }}
+                                                            </span>
+                                                            <span v-else class="text-slate-400 text-[10px] italic">Non-Gudang</span>
+                                                        </td>
+                                                        <td class="py-3 text-center">
+                                                            <button @click="hapusItemBOM(idx)" class="w-7 h-7 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all" title="Hapus baris">
+                                                                <i class="fa-solid fa-trash-can text-xs"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr v-if="!hppBOMItems.length">
+                                                        <td colspan="10" class="py-12 text-center text-slate-400">
+                                                            <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center text-2xl shadow-sm">
+                                                                <i class="fa-solid fa-clipboard-list"></i>
+                                                            </div>
+                                                            <p class="font-black text-slate-800 text-sm">Model Ini Belum Memiliki Formula Material</p>
+                                                            <p class="text-xs font-semibold text-slate-400 mt-1 max-w-md mx-auto">Mulai susun komposisi bahan baku (kain, furing) dan aksesoris (webbing, resleting, buckle) untuk 1 pcs tas, atau salin formula dari model lain.</p>
+                                                            <div class="flex items-center justify-center gap-3 mt-4">
+                                                                <button @click="tambahItemBOM('bahan_utama')" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-xl text-xs font-black btn-active shadow-md inline-flex items-center gap-1.5">
+                                                                    <i class="fa-solid fa-plus text-amber-300"></i> Susun BOM Model
+                                                                </button>
+                                                                <button @click="isCopyBomModalOpen = true" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-black btn-active border border-slate-300 inline-flex items-center gap-1.5">
+                                                                    <i class="fa-solid fa-copy text-amber-600"></i> Salin dari Model Lain
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                                <tfoot>
+                                                    <tr class="border-t-2 border-slate-100 bg-slate-50/50">
+                                                        <td colspan="6" class="py-3 px-2 text-xs font-black text-slate-600 uppercase tracking-wider">Subtotal Biaya Bahan & Trims per 1 Pcs:</td>
+                                                        <td class="py-3 text-right font-black text-base text-blue-700">{{ formatRupiah(totalBiayaBahanPerUnit) }}</td>
+                                                        <td colspan="3" class="py-3 text-center text-xs font-bold text-slate-400">Total 1 Batch: {{ formatRupiah(totalBiayaBahanPerUnit * hppBatchQty) }}</td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sub-Card: Batch Requirement Simulator (Kebutuhan vs Stok Fisik) -->
+                                    <div class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-4">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                                            <div>
+                                                <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                                                    <i class="fa-solid fa-boxes-stacked text-emerald-600"></i> Simulasi Kebutuhan Batch Produksi
+                                                </h4>
+                                                <p class="text-xs text-slate-400 font-semibold mt-0.5">Kalkulasi total material untuk target {{ hppBatchQty }} Pcs tas vs stok fisik gudang.</p>
+                                            </div>
+                                            <span class="px-3 py-1 rounded-xl bg-slate-100 text-slate-700 text-xs font-black">Target: {{ hppBatchQty }} Pcs</span>
+                                        </div>
+                                        <div v-if="batchRequirementList.length" class="overflow-x-auto -mx-6 px-6">
+                                            <table class="w-full text-left whitespace-nowrap min-w-[700px]">
+                                                <thead>
+                                                    <tr class="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-2">
+                                                        <th class="py-2.5">Material</th>
+                                                        <th class="py-2.5 text-center">Satuan</th>
+                                                        <th class="py-2.5 text-right">Butuh 1 Pcs (+Waste)</th>
+                                                        <th class="py-2.5 text-right">Total Batch</th>
+                                                        <th class="py-2.5 text-right">Stok Gudang</th>
+                                                        <th class="py-2.5 text-center">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-100 text-xs font-bold">
+                                                    <tr v-for="b in batchRequirementList" :key="'req_'+b.id" class="hover:bg-slate-50/50">
+                                                        <td class="py-3 text-slate-800 font-black">{{ b.nama }}</td>
+                                                        <td class="py-3 text-center text-slate-500">{{ b.satuan }}</td>
+                                                        <td class="py-3 text-right text-slate-600">{{ b.qty_efektif }}</td>
+                                                        <td class="py-3 text-right font-black text-blue-700">{{ b.total_kebutuhan }} {{ b.satuan }}</td>
+                                                        <td class="py-3 text-right font-bold">
+                                                            <span v-if="b.stok_gudang !== null" :class="b.total_kebutuhan > b.stok_gudang ? 'text-rose-600 font-black' : 'text-slate-700'">{{ b.stok_gudang }} {{ b.satuan }}</span>
+                                                            <span v-else class="text-slate-400 italic">Non-Gudang</span>
+                                                        </td>
+                                                        <td class="py-3 text-center">
+                                                            <span :class="['px-2.5 py-0.5 rounded-full text-[10px] font-black', b.status_stok === 'AMAN' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200']">
+                                                                {{ b.status_stok }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div v-else class="text-xs text-slate-400 italic text-center py-4">Belum ada item material di BOM untuk disimulasikan.</div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 2: UPAH TENAGA KERJA (DIRECT LABOR) -->
+                                <div v-if="activeHppTab === 'upah'" class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-5">
+                                    <div class="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div>
+                                            <h3 class="text-base font-black text-slate-900 flex items-center gap-2.5">
+                                                <span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 text-xs font-black flex items-center justify-center border border-amber-100">2</span>
+                                                Upah Tenaga Kerja Langsung (Ongkos Jahit, Potong, QC & Packing)
+                                            </h3>
+                                            <p class="text-xs text-slate-400 font-semibold mt-0.5">Biaya CMT per unit produk yang dialokasikan langsung ke pekerja konveksi</p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <button type="button" @click="ambilUpahDariMasterProduk" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black transition-all flex items-center gap-1.5" title="Salin nilai ongkos jahit standar dari data master produk">
+                                                <i class="fa-solid fa-arrows-rotate text-blue-600"></i>
+                                                <span>Ambil dari Master Produk</span>
+                                            </button>
+                                            <span class="text-xs font-black text-amber-700 bg-amber-50 px-3 py-1.5 rounded-xl border border-amber-200/60">
+                                                Subtotal: {{ formatRupiah(totalBiayaUpahPerUnit) }} / pcs
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-scissors text-blue-500"></i> Upah Potong / Pcs
+                                            </label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppUpah.potong)" @input="onRupiahInputChange($event, hppUpah, 'potong')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppUpah.potong > 0" class="text-[9px] font-bold text-blue-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppUpah.potong) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Sesuai SPK Cutting</p>
+                                        </div>
+
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-shirt text-purple-500"></i> Upah Jahit / Pcs
+                                            </label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppUpah.jahit)" @input="onRupiahInputChange($event, hppUpah, 'jahit')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppUpah.jahit > 0" class="text-[9px] font-bold text-purple-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppUpah.jahit) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Perakitan / Sewing</p>
+                                        </div>
+
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-check-double text-emerald-500"></i> Finishing & QC
+                                            </label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppUpah.finishing)" @input="onRupiahInputChange($event, hppUpah, 'finishing')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppUpah.finishing > 0" class="text-[9px] font-bold text-emerald-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppUpah.finishing) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Buang benang & periksa</p>
+                                        </div>
+
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-box-archive text-amber-500"></i> Upah Packing
+                                            </label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppUpah.packing)" @input="onRupiahInputChange($event, hppUpah, 'packing')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppUpah.packing > 0" class="text-[9px] font-bold text-amber-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppUpah.packing) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Lipat & bungkus plastik</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 rounded-2xl bg-amber-50/40 border border-amber-100 flex items-center justify-between text-xs">
+                                        <span class="font-bold text-amber-900">Total Biaya Upah 1 Batch ({{ hppBatchQty }} pcs):</span>
+                                        <span class="font-black text-amber-800 text-sm">{{ formatRupiah(totalBiayaUpahPerUnit * hppBatchQty) }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 3: PACKAGING & JASA MAKLOON -->
+                                <div v-if="activeHppTab === 'packaging'" class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-5">
+                                    <div class="pb-4 border-b border-slate-100 flex items-center justify-between">
+                                        <div>
+                                            <h3 class="text-base font-black text-slate-900 flex items-center gap-2.5">
+                                                <span class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 text-xs font-black flex items-center justify-center border border-purple-100">3</span>
+                                                Kemasan & Jasa Makloon Luar (Packaging & Printing)
+                                            </h3>
+                                            <p class="text-xs text-slate-400 font-semibold mt-0.5">Biaya sablon luar, bordir logo, plastik OPP, hangtag & kemasan dus</p>
+                                        </div>
+                                        <span class="text-xs font-black text-purple-700 bg-purple-50 px-3 py-1 rounded-full border border-purple-200/60">
+                                            Subtotal: {{ formatRupiah(totalBiayaJasaPackagingPerUnit) }}/tas
+                                        </span>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Sablon / Bordir</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppJasaPackaging.sablon_bordir)" @input="onRupiahInputChange($event, hppJasaPackaging, 'sablon_bordir')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppJasaPackaging.sablon_bordir > 0" class="text-[9px] font-bold text-purple-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppJasaPackaging.sablon_bordir) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Cetak logo luar</p>
+                                        </div>
+
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Hangtag & Label Woven</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppJasaPackaging.hangtag_label)" @input="onRupiahInputChange($event, hppJasaPackaging, 'hangtag_label')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppJasaPackaging.hangtag_label > 0" class="text-[9px] font-bold text-purple-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppJasaPackaging.hangtag_label) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Label merek & hangtag</p>
+                                        </div>
+
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Plastik OPP / Polybag</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppJasaPackaging.plastik_polybag)" @input="onRupiahInputChange($event, hppJasaPackaging, 'plastik_polybag')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppJasaPackaging.plastik_polybag > 0" class="text-[9px] font-bold text-purple-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppJasaPackaging.plastik_polybag) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Plastik pelindung satuan</p>
+                                        </div>
+
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Dus / Silica / Bubble</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppJasaPackaging.aksesoris_kemasan)" @input="onRupiahInputChange($event, hppJasaPackaging, 'aksesoris_kemasan')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p v-if="hppJasaPackaging.aksesoris_kemasan > 0" class="text-[9px] font-bold text-purple-600 mt-1 italic truncate">{{ angkaKeTerbilang(hppJasaPackaging.aksesoris_kemasan) }}</p>
+                                            <p v-else class="text-[9px] text-slate-400 font-semibold mt-1">Pengawet & box packaging</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 4: BIAYA OPERASIONAL / OVERHEAD PABRIK -->
+                                <div v-if="activeHppTab === 'operasional'" class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-5">
+                                    <div class="pb-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div>
+                                            <h3 class="text-base font-black text-slate-900 flex items-center gap-2.5">
+                                                <span class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 text-xs font-black flex items-center justify-center border border-teal-100">4</span>
+                                                Biaya Operasional & Overhead Pabrik
+                                            </h3>
+                                            <p class="text-xs text-slate-400 font-semibold mt-0.5">Beban listrik workshop, depresiasi mesin, bensin distribusi & utilitas pabrik</p>
+                                        </div>
+                                        <!-- Mode Toggle: Nominal vs Persen -->
+                                        <div class="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80">
+                                            <button type="button" @click="hppOperasional.mode = 'nominal'" :class="['px-3 py-1 rounded-lg text-xs font-black transition-all', (hppOperasional.mode||'nominal') === 'nominal' ? 'bg-white text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-800']">
+                                                Nominal (Rp)
+                                            </button>
+                                            <button type="button" @click="hppOperasional.mode = 'persen'" :class="['px-3 py-1 rounded-lg text-xs font-black transition-all', hppOperasional.mode === 'persen' ? 'bg-white text-teal-700 shadow-2xs' : 'text-slate-500 hover:text-slate-800']">
+                                                Persentase (%)
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="(hppOperasional.mode||'nominal') === 'nominal'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Beban Flat per Pcs</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">Rp</span>
+                                                <input :value="formatRupiahInput(hppOperasional.nominal)" @input="onRupiahInputChange($event, hppOperasional, 'nominal')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-sm font-black bg-white" placeholder="0" />
+                                            </div>
+                                            <p class="text-[9px] text-slate-400 mt-1">Listrik, mesin, utilitas per tas</p>
+                                        </div>
+                                        <div class="p-4 rounded-2xl bg-teal-50/60 border border-teal-100 flex flex-col justify-between">
+                                            <span class="text-[10px] font-black text-teal-900 uppercase">Total Operasional / Tas</span>
+                                            <div class="text-xl font-black text-teal-700 mt-1">{{ formatRupiah(hppOperasional.nominal || 0) }}</div>
+                                            <p class="text-[9px] text-teal-600 mt-0.5">1 Batch: {{ formatRupiah((hppOperasional.nominal||0) * hppBatchQty) }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div class="p-4 rounded-2xl bg-slate-50/60 border border-slate-200/60">
+                                            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Persen dari (Material + Upah)</label>
+                                            <div class="flex items-center gap-2">
+                                                <input v-model.number="hppOperasional.persen" type="number" min="0" max="100" step="0.5" class="input-premium py-2 px-3 text-sm font-black bg-white w-24 text-center" placeholder="0" />
+                                                <span class="text-sm font-black text-slate-600">%</span>
+                                            </div>
+                                            <p class="text-[9px] text-slate-400 mt-1">Basis biaya: {{ formatRupiah(totalBiayaBahanPerUnit + totalBiayaUpahPerUnit) }}</p>
+                                        </div>
+                                        <div class="p-4 rounded-2xl bg-teal-50/60 border border-teal-100 flex flex-col justify-between">
+                                            <span class="text-[10px] font-black text-teal-900 uppercase">Hasil Operasional / Tas</span>
+                                            <div class="text-xl font-black text-teal-700 mt-1">{{ formatRupiah(totalBiayaOperasionalPerUnit) }}</div>
+                                            <p class="text-[9px] text-teal-600 mt-0.5">1 Batch: {{ formatRupiah(totalBiayaOperasionalPerUnit * hppBatchQty) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 5: BIAYA TAMBAHAN MANUAL (UNFORESEEN COSTS) -->
+                                <div v-if="activeHppTab === 'manual'" class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-5">
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                                        <div>
+                                            <h3 class="text-base font-black text-slate-900 flex items-center gap-2.5">
+                                                <span class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 text-xs font-black flex items-center justify-center border border-rose-100">5</span>
+                                                Biaya Tambahan Manual (Overhead Tak Terduga)
+                                            </h3>
+                                            <p class="text-xs text-slate-400 font-semibold mt-0.5">Biaya tester sampel, ongkir bahan darurat, lem/lakban, atau beban khusus</p>
+                                        </div>
+                                        <button @click="tambahBiayaManualHpp" class="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 border border-rose-200/60 text-rose-700 text-xs font-black btn-active flex items-center gap-1.5 transition-all">
+                                            <i class="fa-solid fa-plus text-[10px]"></i> Tambah Biaya Manual
+                                        </button>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div v-for="(m, idx) in hppManualCosts" :key="m.id" class="p-4 rounded-2xl bg-slate-50/70 border border-slate-200/70 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                                            <div class="flex-1">
+                                                <input v-model="m.deskripsi" type="text" placeholder="Deskripsi Biaya (Contoh: Ongkir Ekspedisi, Lem & Isolasi, Sampel Pola)" class="input-premium py-2 px-3 text-xs font-bold bg-white w-full" />
+                                            </div>
+                                            <div class="w-full sm:w-44">
+                                                <select v-model="m.tipe_alokasi" class="input-premium py-2 px-3 text-xs font-bold bg-white w-full">
+                                                    <option value="per_batch">Per 1 Batch (Bagi {{ hppBatchQty }} pcs)</option>
+                                                    <option value="per_unit">Per Pcs (Flat)</option>
+                                                </select>
+                                            </div>
+                                            <div class="w-full sm:w-36 relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none select-none">Rp</span>
+                                                <input :value="formatRupiahInput(m.nominal)" @input="onRupiahInputChange($event, m, 'nominal')" type="text" inputmode="numeric" class="input-premium pl-9 py-2 text-xs font-black text-right bg-white w-full" placeholder="0" />
+                                            </div>
+                                            <div class="w-28 text-right shrink-0">
+                                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Beban / Tas</p>
+                                                <p class="text-xs font-black text-slate-800">{{ formatRupiah(getNominalManualPerUnit(m)) }}</p>
+                                            </div>
+                                            <button @click="hapusBiayaManualHpp(idx)" class="w-9 h-9 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 flex items-center justify-center shrink-0 transition-all" title="Hapus biaya manual">
+                                                <i class="fa-solid fa-trash-can text-sm"></i>
+                                            </button>
+                                        </div>
+
+                                        <div v-if="!hppManualCosts.length" class="p-6 text-center rounded-2xl bg-slate-50/40 border border-dashed border-slate-200 text-slate-400 text-xs font-semibold">
+                                            Belum ada biaya manual tambahan. Klik "+ Tambah Biaya Manual" jika ada pengeluaran tak terduga yang ingin dimasukkan dalam perhitungan HPP.
+                                        </div>
+                                    </div>
+
+                                    <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                                        <span class="font-bold text-slate-500">Total Biaya Tambahan:</span>
+                                        <span class="font-black text-rose-600 text-sm">
+                                            {{ formatRupiah(totalBiayaManualPerUnit) }} / tas • ({{ formatRupiah(totalBiayaManualBatch) }} / batch)
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- TAB 6: RINGKASAN REKAPITULASI HPP PRODUKSI -->
+                                <div v-if="activeHppTab === 'ringkasan'" class="space-y-6">
+                                    <div class="card-pro p-6 bg-white border border-slate-200 shadow-sm space-y-6">
+                                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                                            <div>
+                                                <h3 class="text-base font-black text-slate-900 flex items-center gap-2">
+                                                    <i class="fa-solid fa-calculator text-blue-600"></i> Rekapitulasi 5 Komponen Biaya HPP
+                                                </h3>
+                                                <p class="text-xs text-slate-400 font-semibold mt-0.5">Sintesis menyeluruh struktur biaya produksi untuk 1 unit produk dan 1 batch target</p>
+                                            </div>
+                                            <span class="px-3 py-1 rounded-full text-xs font-black bg-blue-50 text-blue-700 border border-blue-200">
+                                                Status: {{ activeHppVersion || 'DRAFT' }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Breakdown Table -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3.5">
+                                            <div class="p-4 rounded-2xl bg-blue-50/50 border border-blue-100">
+                                                <span class="text-[10px] font-black text-blue-900 uppercase">1. Material (BOM)</span>
+                                                <div class="text-lg font-black text-blue-800 mt-1">{{ formatRupiah(totalBiayaBahanPerUnit) }}</div>
+                                                <p class="text-[10px] font-bold text-blue-600 mt-0.5">{{ hppBreakdownPct.bahan }}% Total</p>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-amber-50/50 border border-amber-100">
+                                                <span class="text-[10px] font-black text-amber-900 uppercase">2. Upah (CMT)</span>
+                                                <div class="text-lg font-black text-amber-800 mt-1">{{ formatRupiah(totalBiayaUpahPerUnit) }}</div>
+                                                <p class="text-[10px] font-bold text-amber-600 mt-0.5">{{ hppBreakdownPct.upah }}% Total</p>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-purple-50/50 border border-purple-100">
+                                                <span class="text-[10px] font-black text-purple-900 uppercase">3. Packaging</span>
+                                                <div class="text-lg font-black text-purple-800 mt-1">{{ formatRupiah(totalBiayaJasaPackagingPerUnit) }}</div>
+                                                <p class="text-[10px] font-bold text-purple-600 mt-0.5">{{ hppBreakdownPct.packaging }}% Total</p>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-teal-50/50 border border-teal-100">
+                                                <span class="text-[10px] font-black text-teal-900 uppercase">4. Operasional</span>
+                                                <div class="text-lg font-black text-teal-800 mt-1">{{ formatRupiah(totalBiayaOperasionalPerUnit) }}</div>
+                                                <p class="text-[10px] font-bold text-teal-600 mt-0.5">{{ hppBreakdownPct.operasional || 0 }}% Total</p>
+                                            </div>
+                                            <div class="p-4 rounded-2xl bg-rose-50/50 border border-rose-100">
+                                                <span class="text-[10px] font-black text-rose-900 uppercase">5. Biaya Manual</span>
+                                                <div class="text-lg font-black text-rose-800 mt-1">{{ formatRupiah(totalBiayaManualPerUnit) }}</div>
+                                                <p class="text-[10px] font-bold text-rose-600 mt-0.5">{{ hppBreakdownPct.manual }}% Total</p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Grand Total Banner -->
+                                        <div class="p-6 rounded-3xl bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            <div>
+                                                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">TOTAL HARGA POKOK PRODUKSI (HPP)</p>
+                                                <h2 class="text-3xl font-black text-amber-400 mt-1">{{ formatRupiah(hppStandarPerUnit) }} <span class="text-xs font-bold text-slate-300">/ pcs</span></h2>
+                                                <p class="text-xs text-slate-400 mt-0.5">Total Batch ({{ hppBatchQty }} pcs): <strong class="text-white">{{ formatRupiah(totalHppBatch) }}</strong></p>
+                                            </div>
+                                            <button @click="bukaModalAktivasiHpp" class="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-black btn-active shadow-lg shadow-emerald-500/25 flex items-center gap-2">
+                                                <i class="fa-solid fa-circle-check text-sm"></i>
+                                                <span>Setujui & Terbitkan {{ nextHppVersionPreview }}</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- RIGHT COLUMN (Executive Card, Simulator, HPP Aktual Audit) -->
+                            <div class="lg:col-span-4 space-y-6 lg:sticky lg:top-6">
+
+                                <!-- BIG EXECUTIVE COSTING CARD -->
+                                <div class="card-pro p-6 bg-gradient-to-br from-[#0b132b] via-[#1c2541] to-[#0b132b] border border-amber-400/20 text-white rounded-3xl shadow-2xl relative overflow-hidden">
+                                    <div class="absolute -right-8 -bottom-8 text-amber-400/10 text-9xl pointer-events-none">
+                                        <i class="fa-solid fa-coins"></i>
+                                    </div>
+
+                                    <div class="relative z-10 space-y-5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-400/20 text-amber-300 border border-amber-400/30 shadow-xs">
+                                                <i class="fa-solid fa-calculator mr-1"></i> HPP Standar BOM
+                                            </span>
+                                            <span class="text-[11px] font-bold text-slate-300 bg-white/10 px-2.5 py-0.5 rounded-full">Batch {{ hppBatchQty }} Pcs</span>
+                                        </div>
+
+                                        <div>
+                                            <p class="text-[11px] font-black uppercase tracking-wider text-slate-400">HPP / Unit (Per Tas)</p>
+                                            <h2 class="text-3xl lg:text-4xl font-black text-amber-400 tracking-tight mt-1">
+                                                {{ formatRupiah(hppStandarPerUnit) }}
+                                            </h2>
+                                            <p class="text-xs text-slate-300 font-bold mt-1">
+                                                Total 1 Batch: <span class="text-white font-black">{{ formatRupiah(totalHppBatch) }}</span>
+                                            </p>
+                                        </div>
+
+                                        <!-- Progress Bar Breakdown -->
+                                        <div class="space-y-2 pt-2 border-t border-white/10">
+                                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Komposisi Biaya Produksi</p>
+                                            <div class="w-full h-3 rounded-full bg-slate-800/90 overflow-hidden flex shadow-inner border border-white/10">
+                                                <div :style="{ width: hppBreakdownPct.bahan + '%' }" class="h-full bg-blue-500" title="Bahan"></div>
+                                                <div :style="{ width: hppBreakdownPct.upah + '%' }" class="h-full bg-amber-500" title="Upah"></div>
+                                                <div :style="{ width: hppBreakdownPct.packaging + '%' }" class="h-full bg-purple-500" title="Packaging"></div>
+                                                <div :style="{ width: hppBreakdownPct.manual + '%' }" class="h-full bg-rose-500" title="Manual"></div>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-2 text-[10px] font-bold text-slate-300 pt-1">
+                                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-500"></span> Bahan: {{ hppBreakdownPct.bahan }}%</div>
+                                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-500"></span> Upah: {{ hppBreakdownPct.upah }}%</div>
+                                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-500"></span> Jasa: {{ hppBreakdownPct.packaging }}%</div>
+                                                <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Manual: {{ hppBreakdownPct.manual }}%</div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Apply Button -->
+                                        <button @click="bukaModalAktivasiHpp" class="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black text-xs btn-active flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 transition-all mt-2">
+                                            <i class="fa-solid fa-shield-check text-sm"></i>
+                                            <span>AKTIFKAN HPP ({{ nextHppVersionPreview }})</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- MARGIN & PRICING SIMULATOR -->
+                                <div class="card-pro p-6 bg-white border border-slate-200/80 shadow-sm space-y-5">
+                                    <div class="pb-3 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                        <div>
+                                            <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                                                <i class="fa-solid fa-chart-line text-blue-600"></i> Simulator Margin & Harga Jual
+                                            </h4>
+                                            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">
+                                                Formula: <span class="font-black text-blue-700">{{ hppMarginMode === 'markup' ? 'HPP x (1 + Markup%)' : 'HPP / (1 - Margin%)' }}</span>
+                                            </p>
+                                        </div>
+                                        <!-- Toggle Margin vs Markup -->
+                                        <div class="flex items-center p-1 bg-slate-100 rounded-xl border border-slate-200/80 self-start sm:self-auto">
+                                            <button @click="hppMarginMode = 'margin'" :class="['px-3 py-1 rounded-lg text-xs font-black transition-all', hppMarginMode === 'margin' ? 'bg-white text-blue-700 shadow-2xs font-black' : 'text-slate-500 hover:text-slate-800']" title="Gross Margin = (Harga - HPP) / Harga">
+                                                Gross Margin
+                                            </button>
+                                            <button @click="hppMarginMode = 'markup'" :class="['px-3 py-1 rounded-lg text-xs font-black transition-all', hppMarginMode === 'markup' ? 'bg-white text-blue-700 shadow-2xs font-black' : 'text-slate-500 hover:text-slate-800']" title="Markup = (Harga - HPP) / HPP">
+                                                Markup
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Harga Grosir -->
+                                    <div class="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-black text-blue-950 flex items-center gap-1.5"><i class="fa-solid fa-warehouse text-blue-600"></i> Grosir / Reseller</span>
+                                            <div class="flex items-center gap-1.5">
+                                                <label class="text-[10px] font-bold text-slate-500 uppercase">{{ hppMarginMode === 'markup' ? 'Markup:' : 'Margin:' }}</label>
+                                                <input v-model.number="hppTargetMarginGrosirPct" type="number" min="1" max="90" class="input-premium py-0.5 px-2 text-xs font-black w-14 text-center bg-white border-blue-200" />
+                                                <span class="text-xs font-black text-blue-700">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-baseline justify-between pt-1">
+                                            <span class="text-[11px] font-bold text-slate-500">Rekomendasi Harga:</span>
+                                            <span class="text-base font-black text-blue-700">{{ formatRupiah(hargaGrosirRekomendasi) }}</span>
+                                        </div>
+                                        <p class="text-[10px] font-semibold text-slate-500 flex justify-between">
+                                            <span>Est. Laba / Pcs:</span>
+                                            <strong class="text-emerald-600 font-bold">+{{ formatRupiah(labaGrosirPerUnit) }}</strong>
+                                        </p>
+                                    </div>
+
+                                    <!-- Harga Retail / Eceran -->
+                                    <div class="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-black text-amber-950 flex items-center gap-1.5"><i class="fa-solid fa-store text-amber-600"></i> Retail / Eceran</span>
+                                            <div class="flex items-center gap-1.5">
+                                                <label class="text-[10px] font-bold text-slate-500 uppercase">{{ hppMarginMode === 'markup' ? 'Markup:' : 'Margin:' }}</label>
+                                                <input v-model.number="hppTargetMarginPct" type="number" min="1" max="90" class="input-premium py-0.5 px-2 text-xs font-black w-14 text-center bg-white border-amber-200" />
+                                                <span class="text-xs font-black text-amber-800">%</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-baseline justify-between pt-1">
+                                            <span class="text-[11px] font-bold text-slate-500">Rekomendasi Harga:</span>
+                                            <span class="text-base font-black text-amber-800">{{ formatRupiah(hargaRetailRekomendasi) }}</span>
+                                        </div>
+                                        <p class="text-[10px] font-semibold text-slate-500 flex justify-between">
+                                            <span>Est. Laba / Pcs:</span>
+                                            <strong class="text-emerald-600 font-bold">+{{ formatRupiah(labaRetailPerUnit) }}</strong>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- AUDIT HPP AKTUAL (POST-PRODUCTION) -->
+                                <div class="card-pro p-6 bg-white border border-slate-200/80 shadow-sm space-y-5">
+                                    <div class="pb-3 border-b border-slate-100 flex items-center justify-between">
+                                        <div>
+                                            <h4 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                                                <i class="fa-solid fa-scale-balanced text-indigo-600"></i> HPP Aktual Pasca-Produksi
+                                            </h4>
+                                            <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Audit realisasi biaya produksi SPK</p>
+                                        </div>
+                                        <span :class="['px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider', hppVariansiStatus === 'efisien' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (hppVariansiStatus === 'over' ? 'bg-red-50 text-red-700 border border-red-200' : 'bg-slate-100 text-slate-600')]">
+                                            {{ hppVariansiStatus === 'efisien' ? 'Efisien' : (hppVariansiStatus === 'over' ? 'Over Budget' : 'Belum Audit') }}
+                                        </span>
+                                    </div>
+
+                                    <!-- Selector SPK jika ada -->
+                                    <div v-if="spkListForActiveHpp.length" class="space-y-1.5">
+                                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Ambil Riil dari SPK</label>
+                                        <select v-model="hppAktual.spkId" @change="applySpkToAktual(hppAktual.spkId)" class="input-premium py-2 px-3 text-xs font-bold bg-slate-50 border-slate-200 w-full cursor-pointer">
+                                            <option value="">-- Input Data Aktual Manual --</option>
+                                            <option v-for="spk in spkListForActiveHpp" :key="spk.id" :value="spk.id">
+                                                {{ spk.no_spk }} • {{ spk.status }} • {{ spk.tanggal }}
+                                            </option>
+                                        </select>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Bahan Riil</label>
+                                                <div class="relative">
+                                                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none select-none">Rp</span>
+                                                    <input :value="formatRupiahInput(hppAktual.bahanRiil)" @input="onRupiahInputChange($event, hppAktual, 'bahanRiil')" type="text" inputmode="numeric" class="input-premium pl-7 py-1.5 pr-2 text-xs font-bold text-right bg-slate-50 border-slate-200 w-full" placeholder="0" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Upah Potong</label>
+                                                <div class="relative">
+                                                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none select-none">Rp</span>
+                                                    <input :value="formatRupiahInput(hppAktual.upahPotongRiil)" @input="onRupiahInputChange($event, hppAktual, 'upahPotongRiil')" type="text" inputmode="numeric" class="input-premium pl-7 py-1.5 pr-2 text-xs font-bold text-right bg-slate-50 border-slate-200 w-full" placeholder="0" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Upah Jahit</label>
+                                                <div class="relative">
+                                                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none select-none">Rp</span>
+                                                    <input :value="formatRupiahInput(hppAktual.upahJahitRiil)" @input="onRupiahInputChange($event, hppAktual, 'upahJahitRiil')" type="text" inputmode="numeric" class="input-premium pl-7 py-1.5 pr-2 text-xs font-bold text-right bg-slate-50 border-slate-200 w-full" placeholder="0" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 ml-0.5">Biaya Lain</label>
+                                                <div class="relative">
+                                                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none select-none">Rp</span>
+                                                    <input :value="formatRupiahInput(hppAktual.biayaLainRiil)" @input="onRupiahInputChange($event, hppAktual, 'biayaLainRiil')" type="text" inputmode="numeric" class="input-premium pl-7 py-1.5 pr-2 text-xs font-bold text-right bg-slate-50 border-slate-200 w-full" placeholder="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 ml-0.5">Hasil Jadi Bagus Lolos QC (Pcs)</label>
+                                            <input v-model.number="hppAktual.pcsBagus" type="number" min="1" class="input-premium py-2 px-3 text-sm font-black text-center bg-white w-full border-blue-200" />
+                                        </div>
+                                    </div>
+
+                                    <!-- Audit Comparison Box -->
+                                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-500 font-bold">HPP Standar BOM:</span>
+                                            <span class="font-black text-slate-700">{{ formatRupiah(hppStandarPerUnit) }}</span>
+                                        </div>
+                                        <div class="flex items-center justify-between text-xs">
+                                            <span class="text-slate-500 font-bold">HPP Riil Aktual:</span>
+                                            <span class="font-black text-indigo-700 text-sm">{{ formatRupiah(hppAktualPerUnit) }}</span>
+                                        </div>
+                                        <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-xs">
+                                            <span class="font-black text-slate-800">Deviasi / Selisih:</span>
+                                            <span :class="['font-black text-sm', 0 >= hppVariansiRp ? 'text-emerald-600' : 'text-red-600']">
+                                                {{ hppVariansiRp > 0 ? '+' : '' }}{{ formatRupiah(hppVariansiRp) }} ({{ hppVariansiPct }}%)
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <button v-if="hppAktualPerUnit > 0" @click="terapkanHppAktualKeProduk" class="w-full py-2.5 rounded-xl bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white font-black text-xs btn-active flex items-center justify-center gap-2 border border-blue-200 transition-all">
+                                        <i class="fa-solid fa-arrows-rotate text-xs"></i> Terapkan HPP Aktual ke Master
+                                    </button>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- =========================================================
+                             DAFTAR HPP PRODUK KONVEKSI (REGISTRY TABLE & KPI)
+                             ========================================================= -->
+                        <div class="space-y-6 pt-6 border-t border-slate-200/80">
+                            
+                            <!-- Callout Banner: Belum Ada BOM -->
+                            <div v-if="produkBelumAdaBOM.length" class="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm shadow-amber-500/30">
+                                        <i class="fa-solid fa-triangle-exclamation text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-black text-amber-900 text-xs uppercase tracking-wider">Belum Ada Resep / BOM</h4>
+                                        <p class="text-xs text-amber-800 mt-0.5 leading-relaxed font-semibold">
+                                            Terdapat <span class="font-black">{{ produkBelumAdaBOM.length }} produk</span> belum memiliki rincian Bill of Material (BOM) konveksi. HPP yang digunakan saat ini masih estimasi/manual.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button @click="statusFilterHppRegistry = 'belum_bom'" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-black shrink-0 btn-active shadow-sm shadow-amber-500/20 flex items-center gap-1.5 transition-all">
+                                    <i class="fa-solid fa-filter text-[11px]"></i> Tinjau Resep
+                                </button>
+                            </div>
+
+                            <!-- Executive Stat Cards (2 Rows) -->
+                            <div class="space-y-3">
+                                <!-- Row 1 (5 Cards) -->
+                                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Produk</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-blue-600 text-sm">
+                                                    <i class="fa-solid fa-box-archive"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black text-slate-900">{{ totalProdukRegistry }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Produk terdaftar</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Rata-Rata HPP</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-amber-600 text-sm">
+                                                    <i class="fa-solid fa-calculator"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black text-slate-900">{{ formatRupiah(rataRataHppRegistry) }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">HPP rata-rata konveksi</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Biaya Material</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-teal-600 text-sm">
+                                                    <i class="fa-solid fa-layer-group"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black text-slate-900">{{ formatRupiah(rataRataMaterialRegistry) }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Rata-rata per pcs</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Upah Potong</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-indigo-600 text-sm">
+                                                    <i class="fa-solid fa-scissors"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black text-slate-900">{{ formatRupiah(rataRataPotongRegistry) }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Rata-rata per pcs</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between col-span-2 sm:col-span-1 group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Upah Jahit</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-purple-600 text-sm">
+                                                    <i class="fa-solid fa-shirt"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black text-slate-900">{{ formatRupiah(rataRataJahitRegistry) }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Rata-rata per pcs</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Row 2 (3 Cards) -->
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Biaya Operasional</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-slate-600 text-sm">
+                                                    <i class="fa-solid fa-box"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black text-slate-900">{{ formatRupiah(rataRataOperasionalRegistry) }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Kemasan & overhead</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Margin Rendah</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-rose-600 text-sm">
+                                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black" :class="jumlahMarginRendah > 0 ? 'text-rose-600' : 'text-slate-900'">{{ jumlahMarginRendah }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Margin &lt; 20% (Perlu evaluasi)</div>
+                                        </div>
+                                    </div>
+                                    <div class="card-pro p-4 bg-white border border-slate-200/80 shadow-sm flex flex-col justify-between group">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">Belum Ada BOM</span>
+                                            <div class="jl-kpi-spin-frame-sm">
+                                                <div class="jl-kpi-spin-inner text-amber-500 text-sm">
+                                                    <i class="fa-solid fa-clipboard-question"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <div class="text-xl font-black" :class="produkBelumAdaBOM.length > 0 ? 'text-amber-600' : 'text-slate-900'">{{ produkBelumAdaBOM.length }}</div>
+                                            <div class="text-[10px] font-bold text-slate-400 mt-0.5">Produk tanpa rincian BOM</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Search & Filter Bar -->
+                            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                                    <input v-model="searchHppRegistry" type="text" placeholder="Cari SKU, Nama Produk, Variasi..." class="input-premium pl-9 py-2.5 text-xs font-bold bg-white border-slate-200 w-full" />
+                                    <button v-if="searchHppRegistry" @click="searchHppRegistry = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <div class="relative">
+                                        <select v-model="statusFilterHppRegistry" class="input-premium py-2.5 px-3 pr-8 text-xs font-bold bg-white border-slate-200 cursor-pointer">
+                                            <option value="semua">Semua Status</option>
+                                            <option value="ada_bom">Sudah Ada BOM</option>
+                                            <option value="belum_bom">Belum Ada BOM</option>
+                                            <option value="ada_aktual">Ada HPP Aktual</option>
+                                            <option value="margin_rendah">Margin Rendah (&lt; 20%)</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[10px] pointer-events-none"></i>
+                                    </div>
+                                    <button v-if="searchHppRegistry || statusFilterHppRegistry !== 'semua'" @click="searchHppRegistry = ''; statusFilterHppRegistry = 'semua'" class="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 text-xs font-bold transition-all" title="Reset Filter">
+                                        <i class="fa-solid fa-rotate-left"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Table Card: Daftar HPP Produk Konveksi -->
+                            <div class="card-pro p-0 overflow-hidden bg-white border border-slate-200/80 shadow-sm">
+                                <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-gradient-to-r from-slate-50/80 via-white to-amber-50/30">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center text-sm shadow-2xs">
+                                            <i class="fa-solid fa-table-list"></i>
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <h3 class="text-sm font-black text-slate-900">Daftar HPP Produk Konveksi</h3>
+                                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-200/80">
+                                                    {{ filteredHppRegistry.length }} Produk
+                                                </span>
+                                            </div>
+                                            <p class="text-[11px] font-semibold text-slate-400 mt-0.5">Database HPP terpadu per produk dan variasi warna</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-slate-400 bg-white px-3 py-1.5 rounded-xl border border-slate-200/80 shadow-2xs shrink-0 self-start sm:self-auto">
+                                        <i class="fa-solid fa-arrow-pointer mr-1 text-blue-500"></i> Klik baris untuk memuat ke kalkulator
+                                    </span>
+                                </div>
+
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left whitespace-nowrap min-w-[1100px]">
+                                        <thead>
+                                            <tr class="bg-slate-50/90 text-slate-500 font-black text-[10px] uppercase tracking-wider border-b border-slate-200/80">
+                                                <th class="py-3 px-3 text-center w-14">FOTO</th>
+                                                <th class="py-3 px-3">SKU</th>
+                                                <th class="py-3 px-3">PRODUK</th>
+                                                <th class="py-3 px-3">VARIASI</th>
+                                                <th class="py-3 px-3 text-right">MATERIAL</th>
+                                                <th class="py-3 px-3 text-right">POTONG</th>
+                                                <th class="py-3 px-3 text-right">JAHIT</th>
+                                                <th class="py-3 px-3 text-right">OPERASIONAL</th>
+                                                <th class="py-3 px-3 text-right">HPP ESTIMASI</th>
+                                                <th class="py-3 px-3 text-right">HPP AKTUAL</th>
+                                                <th class="py-3 px-3 text-right">HPP AKTIF</th>
+                                                <th class="py-3 px-3 text-right">HARGA JUAL</th>
+                                                <th class="py-3 px-3 text-right">MARGIN</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                                            <tr v-for="it in filteredHppRegistry" :key="it.id" @click="pilihProdukDariRegistry(it)" class="hover:bg-blue-50/40 cursor-pointer transition-colors group">
+                                                <td class="py-2.5 px-3 text-center">
+                                                    <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden flex items-center justify-center mx-auto group-hover:border-blue-300 transition-colors">
+                                                        <img v-if="it.foto" :src="it.foto" class="w-full h-full object-cover" alt="Foto">
+                                                        <i v-else class="fa-solid fa-box-open text-slate-300 text-xs"></i>
+                                                    </div>
+                                                </td>
+                                                <td class="py-2.5 px-3">
+                                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-blue-900 border border-slate-200 uppercase tracking-wider group-hover:bg-blue-100 group-hover:text-blue-800 transition-colors">
+                                                        {{ it.kode }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2.5 px-3">
+                                                    <div class="font-black text-slate-900 group-hover:text-blue-700 transition-colors">{{ it.nama }}</div>
+                                                    <div class="text-[10px] text-slate-400 font-semibold">{{ it.model_tas }}</div>
+                                                </td>
+                                                <td class="py-2.5 px-3">
+                                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                                        {{ it.warna }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-medium text-slate-600">
+                                                    {{ formatRupiah(it.material) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-medium text-slate-600">
+                                                    {{ formatRupiah(it.potong) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-medium text-slate-600">
+                                                    {{ formatRupiah(it.jahit) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-medium text-slate-600">
+                                                    {{ formatRupiah(it.operasional) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-black text-slate-800">
+                                                    {{ formatRupiah(it.hpp_estimasi) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right">
+                                                    <span v-if="it.hpp_aktual" class="font-black text-indigo-700">{{ formatRupiah(it.hpp_aktual) }}</span>
+                                                    <span v-else class="text-slate-300 font-bold">—</span>
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-black text-emerald-700">
+                                                    {{ formatRupiah(it.hpp_aktif) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right font-bold text-slate-800">
+                                                    {{ formatRupiah(it.harga_jual) }}
+                                                </td>
+                                                <td class="py-2.5 px-3 text-right">
+                                                    <div class="font-black text-xs text-emerald-600">{{ formatRupiah(it.margin_rp) }}</div>
+                                                    <div class="text-[10px] font-bold text-emerald-500">({{ it.margin_pct }}%)</div>
+                                                </td>
+                                            </tr>
+
+                                            <!-- Empty state when no registry items match -->
+                                            <tr v-if="!filteredHppRegistry.length">
+                                                <td colspan="13" class="py-12 text-center text-slate-400">
+                                                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-300 flex items-center justify-center text-xl mx-auto mb-3">
+                                                        <i class="fa-solid fa-box-open"></i>
+                                                    </div>
+                                                    <p class="text-xs font-black text-slate-600">Tidak ada produk konveksi yang sesuai filter.</p>
+                                                    <p class="text-[11px] text-slate-400 mt-1">Coba sesuaikan kata kunci pencarian atau status filter Anda.</p>
+                                                    <button @click="searchHppRegistry = ''; statusFilterHppRegistry = 'semua'" class="mt-3 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-black transition-all">
+                                                        Reset Filter
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- MODAL SALIN BOM DARI MODEL LAIN -->
+                        <div v-if="isCopyBomModalOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+                            <div class="bg-white w-full max-w-md rounded-[2.5rem] border border-slate-200/90 shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                                <!-- HEADER WITH ROTATING GRADIENT ACCENT -->
+                                <div class="px-6 py-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between relative overflow-hidden">
+                                    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-500/20 via-indigo-500/10 to-transparent pointer-events-none"></div>
+                                    <div class="flex items-center gap-3 relative z-10">
+                                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-slate-950 flex items-center justify-center text-lg border border-amber-300/60 shadow-md shadow-amber-500/20 shrink-0">
+                                            <i class="fa-solid fa-copy"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-sm font-black text-white leading-snug">Salin Resep BOM Model</h3>
+                                            <p class="text-[10px] text-slate-300/80 font-medium">Duplikasi komposisi material ke model saat ini</p>
+                                        </div>
+                                    </div>
+                                    <button @click="isCopyBomModalOpen = false" type="button" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center transition-all relative z-10 border border-white/10 active:scale-95">
+                                        <i class="fa-solid fa-xmark text-xs"></i>
+                                    </button>
+                                </div>
+
+                                <div class="p-6 space-y-4 bg-slate-50/50">
+                                    <div class="space-y-1.5">
+                                        <label class="block text-xs font-black text-slate-700">Pilih Model Sumber (Yang Sudah Memiliki BOM):</label>
+                                        <div class="relative">
+                                            <select v-model="copySourceModelKey" class="input-premium py-2.5 px-3 pr-8 text-xs font-bold bg-white border-slate-200 w-full cursor-pointer focus:bg-white shadow-2xs">
+                                                <option value="" disabled>-- Pilih Model Tas Sumber --</option>
+                                                <option v-for="m in uniqueHppModelList.filter(x => x.model_key !== selectedHppModelKey)" :key="'copy_'+m.model_key" :value="m.model_key">
+                                                    {{ m.nama }} ({{ m.kategori }}) - [HPP: {{ formatRupiah(m.hpp_produk || 0) }}]
+                                                </option>
+                                            </select>
+                                            <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="p-3.5 bg-blue-50/70 border border-blue-100 rounded-2xl text-[11px] text-blue-900 leading-relaxed space-y-1 shadow-2xs">
+                                        <p class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info text-blue-600"></i> Ketentuan Penyalinan:</p>
+                                        <p class="text-slate-600">Semua material bahan baku & aksesoris dari model sumber akan disalin dengan ID baris baru khusus untuk model <strong>{{ selectedHppModelKey }}</strong>. Pemakaian dan waste dapat Anda sesuaikan setelah disalin.</p>
+                                    </div>
+
+                                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-200/80">
+                                        <button @click="isCopyBomModalOpen = false" type="button" class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-100 transition-all">
+                                            Batal
+                                        </button>
+                                        <button @click="salinBomModel(copySourceModelKey)" :disabled="!copySourceModelKey" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 text-white text-xs font-black btn-active shadow-md transition-all flex items-center gap-2">
+                                            <i class="fa-solid fa-clone text-xs text-amber-300"></i> Salin Resep BOM
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>

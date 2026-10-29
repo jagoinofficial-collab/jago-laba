@@ -1,0 +1,342 @@
+<!-- =========================================================
+     MODUL: PEMBELIAN VENDOR (PENGADAAN MAKLOON TAS JADI)
+     ========================================================= -->
+                    <div v-if="currentTab === 'pembelian_vendor'" class="space-y-6 w-full">
+                        <!-- Module Header -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-yellow-600 text-white flex items-center justify-center text-xl shadow-md shadow-amber-500/20">
+                                    <i class="fa-solid fa-truck-ramp-box"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <h2 class="text-xl font-black text-slate-900 tracking-tight">Pembelian Vendor (Makloon Tas Jadi)</h2>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-amber-50 text-amber-800 border border-amber-200/80">
+                                            {{ filteredPembelianVendor.length }} PO Terbit
+                                        </span>
+                                    </div>
+                                    <p class="text-xs font-semibold text-slate-500 mt-0.5">Pengadaan tas makloon dari mitra vendor, terhubung langsung ke Master Stok & Hutang Usaha.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 w-full sm:w-auto">
+                                <button @click="openModalPOVendor()" class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 rounded-2xl text-xs font-black btn-active shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-plus text-slate-950 font-black"></i>
+                                    <span>Buat PO Vendor Baru</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 3 KPI Stat Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- TOTAL BELANJA VENDOR -->
+                            <div class="card-pro p-5 rounded-3xl border border-slate-200/80 bg-white flex items-center justify-between shadow-sm relative overflow-hidden group">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL PENGADAAN VENDOR</p>
+                                    <h4 class="text-2xl font-black text-slate-900 tracking-tight">{{ formatRupiahSingkat(kpiPembelianVendor.totalBelanja) }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">{{ pembelianVendor.length }} order terbit</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-cart-shopping text-amber-600 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- HUTANG BELUM LUNAS -->
+                            <div @click="filterStatusBayarVendor = 'Tempo'" :class="['cursor-pointer p-5 rounded-3xl border transition-all flex items-center justify-between shadow-sm relative overflow-hidden group', filterStatusBayarVendor === 'Tempo' ? 'bg-gradient-to-br from-rose-50 to-red-50 border-rose-400 ring-2 ring-rose-500/25' : 'bg-white border-slate-200/80 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-rose-600">HUTANG VENDOR BERJALAN</p>
+                                    <h4 class="text-2xl font-black text-rose-600 tracking-tight">{{ formatRupiahSingkat(kpiPembelianVendor.totalHutang) }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">{{ kpiPembelianVendor.countHutang }} PO tempo / belum lunas</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-file-invoice-dollar text-rose-600 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PESANAN DALAM PROSES -->
+                            <div @click="filterStatusBarangVendor = 'proses'" :class="['cursor-pointer p-5 rounded-3xl border transition-all flex items-center justify-between shadow-sm relative overflow-hidden group', filterStatusBarangVendor === 'proses' ? 'bg-gradient-to-br from-blue-50 to-sky-50 border-blue-400 ring-2 ring-blue-500/25' : 'bg-white border-slate-200/80 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <p class="text-[11px] font-black uppercase tracking-wider text-blue-600">DALAM PROSES / PENGIRIMAN</p>
+                                    <h4 class="text-2xl font-black text-blue-600 tracking-tight">{{ kpiPembelianVendor.totalPcsProses }} <span class="text-xs font-bold text-slate-500">Pcs</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400">{{ kpiPembelianVendor.countProses }} PO belum masuk gudang</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-truck-fast text-blue-600 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Toolbar -->
+                        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="relative w-full sm:w-80">
+                                <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input v-model="searchPembelianVendor" type="text" placeholder="Cari No PO / Vendor / Produk..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-amber-500">
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <select v-model="filterStatusBayarVendor" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="semua">Semua Status Bayar</option>
+                                    <option value="Lunas">Lunas</option>
+                                    <option value="Tempo">Tempo / Hutang</option>
+                                    <option value="DP">Uang Muka (DP)</option>
+                                </select>
+                                <select v-model="filterStatusBarangVendor" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="semua">Semua Status Barang</option>
+                                    <option value="Proses Jahit">Proses Jahit</option>
+                                    <option value="Dikirim Vendor">Dikirim Vendor</option>
+                                    <option value="Diterima Gudang">Diterima Gudang</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Pembelian Vendor -->
+                        <div class="card-pro !p-0 overflow-x-auto border border-slate-200/80 shadow-sm rounded-3xl bg-white">
+                            <table class="w-full text-left whitespace-nowrap min-w-[950px]">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80">
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">No. PO & Tanggal</th>
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Mitra Vendor</th>
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Produk Makloon & Qty</th>
+                                        <th class="py-4 px-6 text-right text-[10px] font-black uppercase tracking-wider text-slate-500">Total Biaya</th>
+                                        <th class="py-4 px-6 text-right text-[10px] font-black uppercase tracking-wider text-slate-500">Status Bayar & Sisa</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Status Barang</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="pv in filteredPembelianVendor" :key="pv.no_po_vendor" class="hover:bg-slate-50/50 transition-colors">
+                                        <td class="py-4 px-6">
+                                            <p class="font-mono font-black text-slate-900 text-xs">{{ pv.no_po_vendor }}</p>
+                                            <p class="text-[10px] font-bold text-slate-400 mt-0.5"><i class="fa-regular fa-calendar mr-1"></i>{{ formatDateID(pv.tanggal_po) }}</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="font-black text-slate-800 text-xs">{{ pv.nama_vendor }}</p>
+                                            <p class="text-[10px] font-semibold text-slate-400">Vendor Makloon</p>
+                                        </td>
+                                        <td class="py-4 px-6">
+                                            <p class="font-black text-slate-900 text-xs">{{ pv.nama_produk }} ({{ pv.varian_warna }})</p>
+                                            <p class="text-[10px] font-bold text-amber-700">{{ pv.qty_order }} Pcs @ {{ formatRupiahSingkat(pv.harga_beli_satuan) }}</p>
+                                        </td>
+                                        <td class="py-4 px-6 text-right font-mono font-black text-slate-900 text-xs">
+                                            {{ formatRupiah(pv.total_pembelian) }}
+                                        </td>
+                                        <td class="py-4 px-6 text-right">
+                                            <span :class="['px-2 py-0.5 rounded-md text-[9px] font-black uppercase', pv.status_bayar === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200']">
+                                                {{ pv.status_bayar }}
+                                            </span>
+                                            <p v-if="pv.sisa_hutang > 0" class="text-[10px] font-bold text-rose-600 mt-0.5">Sisa: {{ formatRupiahSingkat(pv.sisa_hutang) }}</p>
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <span :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black', pv.status_barang === 'Diterima Gudang' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (pv.status_barang === 'Dikirim Vendor' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-amber-50 text-amber-800 border border-amber-200')]">
+                                                <i :class="['fa-solid', pv.status_barang === 'Diterima Gudang' ? 'fa-circle-check' : (pv.status_barang === 'Dikirim Vendor' ? 'fa-truck-fast' : 'fa-shirt')]"></i>
+                                                {{ pv.status_barang }}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-6 text-center">
+                                            <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                                                <button v-if="pv.status_barang !== 'Diterima Gudang'" @click="openModalTerimaBarang(pv)" class="px-2.5 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 text-white rounded-xl text-xs font-black shadow-sm flex items-center gap-1 cursor-pointer" title="Terima Barang Masuk Gudang">
+                                                    <i class="fa-solid fa-boxes-packing"></i> Terima
+                                                </button>
+                                                <button v-if="pv.sisa_hutang > 0" @click="openModalBayarHutangDariPO(pv)" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-black flex items-center gap-1 cursor-pointer" title="Bayar Hutang">
+                                                    <i class="fa-solid fa-wallet"></i> Bayar
+                                                </button>
+                                                <button @click="openModalEditPOVendor(pv)" class="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Edit Data PO Vendor">
+                                                    <i class="fa-solid fa-pencil text-xs"></i>
+                                                </button>
+                                                <button @click="bagikanWAPembelianVendor(pv)" :disabled="isSharingWhatsApp" class="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200 flex items-center justify-center transition-colors cursor-pointer shadow-2xs disabled:opacity-50" title="Bagikan PDF via WhatsApp">
+                                                    <i v-if="sharingDocKey === 'PO_Vendor-' + pv.no_po_vendor" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                                                    <i v-else class="fa-brands fa-whatsapp text-sm font-black"></i>
+                                                </button>
+                                                <button @click="cetakInvoicePOVendorPDF(pv)" class="w-8 h-8 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 flex items-center justify-center transition-colors cursor-pointer shadow-2xs" title="Cetak Surat Pesanan / Invoice PDF">
+                                                    <i class="fa-solid fa-file-pdf text-xs"></i>
+                                                </button>
+                                                <button v-if="userRole==='owner'" @click="hapusPOVendor(pv.no_po_vendor)" class="w-8 h-8 rounded-xl bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-600 border border-slate-200 flex items-center justify-center transition-colors cursor-pointer" title="Hapus Order">
+                                                    <i class="fa-solid fa-trash text-xs"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!filteredPembelianVendor.length">
+                                        <td colspan="7" class="px-6 py-16 text-center text-slate-400 text-xs font-bold">Tidak ada data order pembelian vendor.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- MODAL BUAT PO PEMBELIAN VENDOR BARU -->
+                        <div v-if="modalPOVendorState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+                            <div class="bg-white rounded-3xl p-6 lg:p-8 max-w-xl w-full shadow-2xl border border-slate-200/80 space-y-4 my-8 animate-in fade-in zoom-in-95">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                    <div>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-amber-600">PENGADAAN MAKLOON</span>
+                                        <h3 class="text-xl font-black text-slate-900">Buat PO Pembelian Vendor</h3>
+                                        <h3 class="text-xl font-black text-slate-900">{{ modalPOVendorState.isEdit ? 'Edit Surat Pesanan PO Vendor' : 'Buat PO Pembelian Vendor' }}</h3>
+                                    </div>
+                                    <button type="button" @click="modalPOVendorState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div v-if="modalPOVendorState.error" class="p-2.5 bg-red-50 text-red-700 border border-red-200 rounded-xl text-xs font-bold">{{ modalPOVendorState.error }}</div>
+                                <form @submit.prevent="submitPOVendor" class="space-y-3">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">No. PO Vendor</label>
+                                            <input v-model="modalPOVendorState.form.no_po_vendor" required type="text" class="input-premium bg-slate-100 font-mono font-bold" readonly>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Tanggal PO</label>
+                                            <input v-model="modalPOVendorState.form.tanggal_po" required type="date" class="input-premium bg-white">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Pilih Mitra Vendor Makloon</label>
+                                        <select v-model="modalPOVendorState.form.id_vendor" @change="onVendorSelectChange" required class="input-premium bg-white">
+                                            <option value="" disabled>Pilih Vendor...</option>
+                                            <option v-for="s in supplierVendorList" :key="s.id" :value="s.id">{{ getSupplierDisplay(s.id) }} ({{ s.kategori || s.tipe }})</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Pilih Produk Jadi</label>
+                                            <select v-model="modalPOVendorState.form.kode_sku" @change="onProdukSelectChange" required class="input-premium bg-white">
+                                                <option value="" disabled>Pilih Produk...</option>
+                                                <option v-for="p in produkListForVendor" :key="p.sku" :value="p.sku">{{ p.nama }} ({{ p.warna }})</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Qty Order (Pcs)</label>
+                                            <input v-model.number="modalPOVendorState.form.qty_order" @input="kalkulasiTotalPOVendor" min="1" required type="number" class="input-premium bg-white font-mono font-black">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Harga Beli / Makloon (Rp/Pcs)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs pointer-events-none select-none">Rp</span>
+                                                <input :value="formatRupiahInput(modalPOVendorState.form.harga_beli_satuan)" @input="onRupiahInputChange($event, modalPOVendorState.form, 'harga_beli_satuan', kalkulasiTotalPOVendor)" required type="text" inputmode="numeric" class="input-premium pl-9 bg-white font-mono font-bold" placeholder="0">
+                                            </div>
+                                            <p v-if="modalPOVendorState.form.harga_beli_satuan > 0" class="text-[9px] font-bold text-slate-500 mt-1 italic truncate">
+                                                {{ angkaKeTerbilang(modalPOVendorState.form.harga_beli_satuan) }} / pcs
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Biaya Tambahan / Ongkir</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs pointer-events-none select-none">Rp</span>
+                                                <input :value="formatRupiahInput(modalPOVendorState.form.biaya_tambahan)" @input="onRupiahInputChange($event, modalPOVendorState.form, 'biaya_tambahan', kalkulasiTotalPOVendor)" type="text" inputmode="numeric" class="input-premium pl-9 bg-white font-mono" placeholder="0">
+                                            </div>
+                                            <p v-if="modalPOVendorState.form.biaya_tambahan > 0" class="text-[9px] font-bold text-slate-500 mt-1 italic truncate">
+                                                {{ angkaKeTerbilang(modalPOVendorState.form.biaya_tambahan) }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-2xl flex items-center justify-between font-black text-xs">
+                                        <span class="text-slate-700">Total Nilai Pemesanan:</span>
+                                        <span class="text-base text-amber-700 font-mono">{{ formatRupiah(modalPOVendorState.form.total_pembelian) }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Status Pembayaran</label>
+                                            <select v-model="modalPOVendorState.form.status_bayar" @change="kalkulasiTotalPOVendor" required class="input-premium bg-white">
+                                                <option value="Lunas">Lunas Penuh</option>
+                                                <option value="Tempo">Tempo / Hutang</option>
+                                                <option value="DP">Uang Muka (DP)</option>
+                                            </select>
+                                        </div>
+                                        <div v-if="modalPOVendorState.form.status_bayar !== 'Lunas'">
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Tanggal Jatuh Tempo</label>
+                                            <input v-model="modalPOVendorState.form.jatuh_tempo" required type="date" class="input-premium bg-white">
+                                        </div>
+                                    </div>
+                                    <div v-if="modalPOVendorState.form.status_bayar !== 'Tempo'" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <div class="flex justify-between items-center mb-1">
+                                                <label class="text-[11px] font-black text-slate-500 uppercase tracking-wider">Nominal Dibayar Sekarang</label>
+                                                <button type="button" @click="modalPOVendorState.form.nominal_bayar = (modalPOVendorState.form.total_pembelian || 0); kalkulasiTotalPOVendor()" class="text-[10px] font-black text-blue-600 hover:underline cursor-pointer">Bayar Penuh</button>
+                                            </div>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 font-black text-slate-400 text-xs pointer-events-none select-none">Rp</span>
+                                                <input :value="formatRupiahInput(modalPOVendorState.form.nominal_bayar)" @input="onRupiahInputChange($event, modalPOVendorState.form, 'nominal_bayar', kalkulasiTotalPOVendor, modalPOVendorState.form.total_pembelian)" type="text" inputmode="numeric" class="input-premium pl-9 bg-white font-mono font-bold" placeholder="0">
+                                            </div>
+                                            <p v-if="modalPOVendorState.form.nominal_bayar > 0" class="text-[10px] font-bold text-blue-700 mt-1 italic flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                                                <i class="fa-solid fa-spell-check text-blue-600"></i> Terbilang: {{ angkaKeTerbilang(modalPOVendorState.form.nominal_bayar) }}
+                                            </p>
+                                            <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                                <button type="button" @click="tambahNominalCepat(modalPOVendorState.form, 'nominal_bayar', 100000, modalPOVendorState.form.total_pembelian, kalkulasiTotalPOVendor)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors">+100rb</button>
+                                                <button type="button" @click="tambahNominalCepat(modalPOVendorState.form, 'nominal_bayar', 500000, modalPOVendorState.form.total_pembelian, kalkulasiTotalPOVendor)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors">+500rb</button>
+                                                <button type="button" @click="tambahNominalCepat(modalPOVendorState.form, 'nominal_bayar', 1000000, modalPOVendorState.form.total_pembelian, kalkulasiTotalPOVendor)" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors">+1jt</button>
+                                                <button type="button" @click="modalPOVendorState.form.nominal_bayar = (modalPOVendorState.form.total_pembelian || 0); kalkulasiTotalPOVendor()" class="px-2 py-0.5 rounded-md text-[10px] font-black bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors">Bayar Penuh</button>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Rekening Kas Pembayaran</label>
+                                            <select v-model="modalPOVendorState.form.akun_kas" :required="modalPOVendorState.form.status_bayar !== 'Tempo'" class="input-premium bg-white font-bold">
+                                                <option value="" disabled>Pilih Rekening...</option>
+                                                <option v-for="r in rekening" :key="r.id" :value="r.id">{{ r.nama_bank || r.nama }} (Saldo: {{ formatRupiah(getSaldoRekening(r.id)) }})</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div v-if="modalPOVendorState.form.nominal_bayar > 0 && modalPOVendorState.form.akun_kas" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
+                                        <div class="flex justify-between font-bold text-slate-600">
+                                            <span>Saldo Kas ({{ getRekeningName(modalPOVendorState.form.akun_kas) }}):</span>
+                                            <span class="font-mono text-emerald-600 font-black">{{ formatRupiah(getSaldoRekening(modalPOVendorState.form.akun_kas)) }}</span>
+                                        </div>
+                                        <div class="flex justify-between font-bold text-slate-600">
+                                            <span>Kas Terpotong (DP/Lunas):</span>
+                                            <span class="font-mono text-rose-600 font-black">- {{ formatRupiah(modalPOVendorState.form.nominal_bayar) }}</span>
+                                        </div>
+                                        <div class="flex justify-between font-black border-t border-slate-200 pt-1 text-slate-800">
+                                            <span>Sisa Saldo Kas:</span>
+                                            <span :class="['font-mono', 0 > (getSaldoRekening(modalPOVendorState.form.akun_kas) - modalPOVendorState.form.nominal_bayar) ? 'text-red-600 font-black' : 'text-blue-700 font-bold']">
+                                                {{ formatRupiah(getSaldoRekening(modalPOVendorState.form.akun_kas) - modalPOVendorState.form.nominal_bayar) }}
+                                            </span>
+                                        </div>
+                                        <div v-if="0 > (getSaldoRekening(modalPOVendorState.form.akun_kas) - modalPOVendorState.form.nominal_bayar)" class="p-1.5 bg-red-50 text-red-700 border border-red-200 rounded-lg text-[10px] font-black">
+                                            ⚠️ Saldo kas tidak mencukupi untuk pembayaran DP / Lunas ini!
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Catatan / Spesifikasi PO</label>
+                                        <input v-model="modalPOVendorState.form.catatan" type="text" placeholder="Spesifikasi bahan, sablon, aksesoris..." class="input-premium bg-white">
+                                    </div>
+                                    <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                                        <button type="button" @click="modalPOVendorState.isOpen = false" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Batal</button>
+                                        <button type="submit" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer">Terbitkan PO Vendor</button>
+                                        <button type="submit" class="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-md cursor-pointer">{{ modalPOVendorState.isEdit ? 'Simpan Perubahan PO' : 'Terbitkan PO Vendor' }}</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- MODAL TERIMA BARANG INBOUND DARI VENDOR -->
+                        <div v-if="modalTerimaBarangState.isOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+                            <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200/80 space-y-4 animate-in fade-in zoom-in-95">
+                                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                                    <div>
+                                        <span class="text-[10px] font-black uppercase tracking-widest text-emerald-600">INBOUND WAREHOUSE</span>
+                                        <h3 class="text-lg font-black text-slate-900">Terima Barang Masuk Gudang</h3>
+                                    </div>
+                                    <button type="button" @click="modalTerimaBarangState.isOpen = false" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                                <div class="p-3.5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-1 text-xs">
+                                    <div class="flex justify-between font-bold text-slate-600"><span>No. PO:</span> <span class="font-mono text-slate-900">{{ modalTerimaBarangState.po?.no_po_vendor }}</span></div>
+                                    <div class="flex justify-between font-bold text-slate-600"><span>Vendor:</span> <span class="text-slate-900">{{ modalTerimaBarangState.po?.nama_vendor }}</span></div>
+                                    <div class="flex justify-between font-bold text-slate-600"><span>Produk:</span> <span class="text-slate-900">{{ modalTerimaBarangState.po?.nama_produk }} ({{ modalTerimaBarangState.po?.varian_warna }})</span></div>
+                                    <div class="flex justify-between font-black text-emerald-700 pt-1 border-t border-emerald-200/60"><span>Jumlah Masuk:</span> <span>{{ modalTerimaBarangState.po?.qty_order }} Pcs</span></div>
+                                </div>
+                                <div class="text-xs text-slate-500 font-medium">
+                                    <i class="fa-solid fa-circle-info text-blue-500 mr-1"></i> Konfirmasi ini akan otomatis menambahkan <strong>{{ modalTerimaBarangState.po?.qty_order }} pcs</strong> ke <strong>Master Stok</strong> dan menghitung ulang HPP rata-rata tertimbang.
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Tanggal Diterima Fisik</label>
+                                    <input v-model="modalTerimaBarangState.tanggal_diterima" type="date" class="input-premium bg-white">
+                                </div>
+                                <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+                                    <button type="button" @click="modalTerimaBarangState.isOpen = false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer">Batal</button>
+                                    <button type="button" @click="eksekusiTerimaBarang" class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs rounded-xl shadow-md cursor-pointer">Konfirmasi Masuk Stok</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>

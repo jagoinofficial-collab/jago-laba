@@ -1,0 +1,589 @@
+<!-- =========================================================
+     MODUL: MASTER PRODUK (KATALOG SKU & SPESIFIKASI)
+     ========================================================= -->
+                    <div v-if="currentTab === 'produk'" class="space-y-6 w-full">
+                        <!-- Module Header Master Produk Enterprise -->
+                        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-5 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/80 shadow-sm relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-blue-50/50 via-indigo-50/20 to-transparent pointer-events-none"></div>
+                            
+                            <div class="flex items-start sm:items-center gap-4 relative z-10">
+                                <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-700 text-white flex items-center justify-center text-2xl shadow-lg shadow-blue-600/25 shrink-0">
+                                    <i class="fa-solid fa-boxes-stacked"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2.5 flex-wrap">
+                                        <span class="text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80">
+                                            MANAJEMEN KONVEKSI / MASTER DATA
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Database Tersinkron
+                                        </span>
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-100 text-slate-700 border border-slate-200 shadow-2xs">
+                                            <i class="fa-solid fa-shield-halved text-[9px] text-blue-600"></i> Backup Terlindungi
+                                        </span>
+                                    </div>
+                                    <h2 class="text-2xl font-black text-slate-900 tracking-tight mt-1.5 flex items-center gap-3">
+                                        Master Produk
+                                        <span class="text-xs font-black px-2.5 py-0.5 rounded-xl bg-amber-100/80 text-amber-800 border border-amber-300/80">
+                                            {{ totalSkuMasterCount }} SKU Aktif
+                                        </span>
+                                    </h2>
+                                    <p class="text-xs font-semibold text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                                        Pusat data tunggal seluruh model, SKU, variasi warna, kalkulasi HPP, dan saldo stok gudang JAGO LABA.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Header Actions -->
+                            <div class="flex items-center gap-2.5 w-full xl:w-auto flex-wrap sm:flex-nowrap relative z-10">
+                                <button @click="exportMasterProdukCSV" type="button" class="flex-1 sm:flex-initial px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 rounded-2xl text-xs font-black shadow-xs flex items-center justify-center gap-2 transition-all btn-active" title="Export katalog produk ke CSV">
+                                    <i class="fa-solid fa-file-excel text-emerald-600 text-sm"></i>
+                                    <span>Export CSV</span>
+                                </button>
+                                <button @click="fetchDatabaseFromServer" type="button" class="flex-1 sm:flex-initial px-4 py-3 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/90 rounded-2xl text-xs font-black shadow-xs flex items-center justify-center gap-2 transition-all btn-active" title="Sinkronkan data dengan storage server">
+                                    <i class="fa-solid fa-arrows-rotate text-blue-600 text-sm" :class="{'animate-spin': isSyncing}"></i>
+                                    <span>Sinkronkan</span>
+                                </button>
+                                <button @click="openModal('produk')" type="button" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-5 py-3 rounded-2xl text-xs font-black btn-active shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 transition-all">
+                                    <i class="fa-solid fa-plus text-amber-300 text-sm"></i>
+                                    <span>Tambah Produk</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 6 KPI CARDS (KLIK LANGSUNG JADI FILTER) -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3.5">
+                            <!-- 1. TOTAL MODEL -->
+                            <div @click="filterKpiMaster = 'semua'; filterStatusProdukMaster = 'Semua'; filterKondisiStokProdukMaster = 'Semua'; filterHppProdukMaster = 'Semua'"
+                                 :class="['jl-kpi-card cursor-pointer p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between shadow-xs relative overflow-hidden group',
+                                          filterKpiMaster === 'semua' && filterStatusProdukMaster === 'Semua' && filterKondisiStokProdukMaster === 'Semua' && filterHppProdukMaster === 'Semua' ? 'bg-gradient-to-br from-blue-50 to-indigo-50/50 border-blue-400 ring-2 ring-blue-500/20 shadow-blue-500/10' : 'bg-white border-slate-200/80 hover:border-blue-200 hover:bg-slate-50/50']">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">TOTAL MODEL</p>
+                                    <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-cubes"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <h4 class="text-2xl font-black text-slate-900 tracking-tight">{{ totalModelMasterCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Seri / Model Tas</p>
+                                </div>
+                            </div>
+
+                            <!-- 2. TOTAL SKU -->
+                            <div @click="filterKpiMaster = 'semua'; filterStatusProdukMaster = 'Semua'; filterKondisiStokProdukMaster = 'Semua'; filterHppProdukMaster = 'Semua'"
+                                 :class="['jl-kpi-card cursor-pointer p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between shadow-xs relative overflow-hidden group',
+                                          filterKpiMaster === 'semua' && filterStatusProdukMaster === 'Semua' ? 'bg-gradient-to-br from-indigo-50 to-purple-50/40 border-indigo-300 hover:border-indigo-400' : 'bg-white border-slate-200/80 hover:border-indigo-200 hover:bg-slate-50/50']">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">TOTAL SKU</p>
+                                    <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-barcode"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <h4 class="text-2xl font-black text-indigo-700 tracking-tight">{{ totalSkuMasterCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Seluruh Varian Aktif</p>
+                                </div>
+                            </div>
+
+                            <!-- 3. STOK TERSEDIA -->
+                            <div @click="filterKpiMaster = 'aman'; filterKondisiStokProdukMaster = 'aman'"
+                                 :class="['jl-kpi-card cursor-pointer p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between shadow-xs relative overflow-hidden group',
+                                          filterKondisiStokProdukMaster === 'aman' ? 'bg-gradient-to-br from-emerald-50 to-teal-50/50 border-emerald-400 ring-2 ring-emerald-500/20 shadow-emerald-500/10' : 'bg-white border-slate-200/80 hover:border-emerald-200 hover:bg-slate-50/50']">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">STOK TERSEDIA</p>
+                                    <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-circle-check"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <h4 class="text-2xl font-black text-emerald-600 tracking-tight">{{ stokTersediaMasterPcs }} <span class="text-xs font-bold text-emerald-700">Pcs</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Siap kirim / jual</p>
+                                </div>
+                            </div>
+
+                            <!-- 4. STOK KRITIS -->
+                            <div @click="filterKpiMaster = 'kritis'; filterKondisiStokProdukMaster = 'kritis'"
+                                 :class="['jl-kpi-card cursor-pointer p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between shadow-xs relative overflow-hidden group',
+                                          filterKondisiStokProdukMaster === 'kritis' ? 'bg-gradient-to-br from-rose-50 to-red-50/50 border-rose-400 ring-2 ring-rose-500/20 shadow-rose-500/10' : 'bg-white border-slate-200/80 hover:border-rose-200 hover:bg-slate-50/50']">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">STOK KRITIS</p>
+                                    <div class="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <h4 class="text-2xl font-black text-rose-600 tracking-tight">{{ stokKritisMasterCount }} <span class="text-xs font-bold text-rose-700">SKU</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Perlu produksi (&lt; 5 pcs)</p>
+                                </div>
+                            </div>
+
+                            <!-- 5. TANPA HPP -->
+                            <div @click="filterKpiMaster = 'tanpa_hpp'; filterHppProdukMaster = 'tanpa_hpp'"
+                                 :class="['jl-kpi-card cursor-pointer p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between shadow-xs relative overflow-hidden group',
+                                          filterHppProdukMaster === 'tanpa_hpp' ? 'bg-gradient-to-br from-amber-50 to-yellow-50/50 border-amber-400 ring-2 ring-amber-500/20 shadow-amber-500/10' : 'bg-white border-slate-200/80 hover:border-amber-200 hover:bg-slate-50/50']">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">TANPA HPP</p>
+                                    <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-calculator"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <h4 class="text-2xl font-black text-amber-700 tracking-tight">{{ produkTanpaHppCount }} <span class="text-xs font-bold text-amber-800">SKU</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Belum ada kalkulasi HPP</p>
+                                </div>
+                            </div>
+
+                            <!-- 6. NONAKTIF / ARSIP -->
+                            <div @click="filterKpiMaster = 'arsip'; filterStatusProdukMaster = 'Arsip'"
+                                 :class="['jl-kpi-card cursor-pointer p-4 rounded-3xl border transition-all duration-200 flex flex-col justify-between shadow-xs relative overflow-hidden group',
+                                          filterStatusProdukMaster === 'Arsip' ? 'bg-gradient-to-br from-slate-100 to-slate-200/60 border-slate-400 ring-2 ring-slate-400/20 shadow-slate-500/10' : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50']">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">NONAKTIF / ARSIP</p>
+                                    <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-box-archive"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-2.5">
+                                    <h4 class="text-2xl font-black text-slate-700 tracking-tight">{{ produkNonaktifMasterCount }} <span class="text-xs font-bold text-slate-500">SKU</span></h4>
+                                    <p class="text-[10px] font-bold text-slate-400 mt-0.5">Arsip histori transaksi</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TOOLBAR MASTER PRODUK (SEARCH DEBOUNCED & MULTI-FILTER) -->
+                        <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-3.5">
+                            <div class="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+                                <!-- Search Box -->
+                                <div class="relative flex-1">
+                                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                    <input v-model="searchProdukMaster" type="text" placeholder="Cari produk, model, SKU, atau ID Barcode (JGN-...)..." class="w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 placeholder-slate-400 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all">
+                                    <button v-if="searchProdukMaster" @click="searchProdukMaster = ''" type="button" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 text-xs">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Filters -->
+                                <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                                    <!-- Kategori Filter -->
+                                    <select v-model="filterKategoriProdukMaster" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-700 focus:bg-white focus:border-blue-500 transition-all">
+                                        <option value="Semua">Semua Kategori</option>
+                                        <option v-for="kat in kategoriProdukList" :key="kat" :value="kat">{{ kat }}</option>
+                                    </select>
+
+                                    <!-- Status Filter -->
+                                    <select v-model="filterStatusProdukMaster" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-700 focus:bg-white focus:border-blue-500 transition-all">
+                                        <option value="Semua">Semua Status</option>
+                                        <option value="Aktif">Status: Aktif</option>
+                                        <option value="Nonaktif">Status: Nonaktif</option>
+                                        <option value="Arsip">Status: Arsip</option>
+                                    </select>
+
+                                    <!-- Kondisi Stok Filter -->
+                                    <select v-model="filterKondisiStokProdukMaster" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-700 focus:bg-white focus:border-blue-500 transition-all">
+                                        <option value="Semua">Semua Stok</option>
+                                        <option value="aman">Stok Aman (&gt;= 5)</option>
+                                        <option value="menipis">Stok Menipis (1–4)</option>
+                                        <option value="kritis">Stok Kritis (&lt; 5)</option>
+                                        <option value="habis">Stok Habis (0)</option>
+                                    </select>
+
+                                    <!-- HPP Filter -->
+                                    <select v-model="filterHppProdukMaster" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-700 focus:bg-white focus:border-blue-500 transition-all">
+                                        <option value="Semua">Semua HPP</option>
+                                        <option value="hpp_ready">HPP Ready</option>
+                                        <option value="tanpa_hpp">Belum Ada HPP</option>
+                                    </select>
+
+                                    <!-- Sort -->
+                                    <select v-model="sortProdukMaster" class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-black text-slate-700 focus:bg-white focus:border-blue-500 transition-all">
+                                        <option value="terbaru">Terbaru</option>
+                                        <option value="nama_asc">Nama A-Z</option>
+                                        <option value="nama_desc">Nama Z-A</option>
+                                        <option value="sku_asc">SKU A-Z</option>
+                                        <option value="stok_asc">Stok Terendah</option>
+                                        <option value="stok_desc">Stok Tertinggi</option>
+                                        <option value="hpp_desc">HPP Tertinggi</option>
+                                    </select>
+
+                                    <!-- Reset Button -->
+                                    <button @click="resetFilterProdukMaster" type="button" class="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-black transition-all flex items-center gap-1.5" title="Reset Semua Filter">
+                                        <i class="fa-solid fa-rotate-left text-xs"></i>
+                                        <span class="hidden sm:inline">Reset</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DESKTOP TABLE MASTER PRODUK (DUAL-TIER STICKY HEADER, 9 KOLOM) -->
+                        <div class="hidden md:block card-pro table-container overflow-hidden">
+                            <table class="w-full text-left whitespace-nowrap min-w-[1100px]">
+                                <thead>
+                                    <tr class="bg-slate-900 border-b border-slate-800 text-[10px] font-black text-slate-300 uppercase tracking-widest sticky top-0 z-20">
+                                        <th class="py-4 px-5 rounded-tl-3xl w-[24%]"><i class="fa-solid fa-box-open text-blue-400 mr-1.5"></i>Produk / Model</th>
+                                        <th class="py-4 px-3 w-[15%]"><i class="fa-solid fa-barcode text-indigo-400 mr-1.5"></i>SKU / Varian</th>
+                                        <th class="py-4 px-3 w-[9%]"><i class="fa-solid fa-shapes text-amber-400 mr-1.5"></i>Kategori</th>
+                                        <th class="py-4 px-3 text-right w-[11%]"><i class="fa-solid fa-coins text-emerald-400 mr-1.5"></i>HPP Unit</th>
+                                        <th class="py-4 px-3 text-right w-[11%]"><i class="fa-solid fa-scissors text-rose-400 mr-1.5"></i>Upah Standar</th>
+                                        <th class="py-4 px-3 text-center w-[11%]"><i class="fa-solid fa-warehouse text-cyan-400 mr-1.5"></i>Stok Gudang</th>
+                                        <th class="py-4 px-3 text-center w-[8%]"><i class="fa-solid fa-circle-check text-emerald-400 mr-1.5"></i>Status</th>
+                                        <th class="py-4 px-3 w-[10%]"><i class="fa-solid fa-clock-rotate-left text-slate-400 mr-1.5"></i>Update</th>
+                                        <th class="py-4 px-5 text-center rounded-tr-3xl w-[11%]"><i class="fa-solid fa-sliders text-indigo-400 mr-1.5"></i>Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <template v-for="g in filteredProdukGrup" :key="g.group_key || g.nama">
+                                        <!-- BARIS PARENT (MODEL UTAMA) -->
+                                        <tr class="bg-white hover:bg-blue-50/40 transition-colors cursor-pointer group" @click="toggleGroup(g.group_key || g.nama)">
+                                            <!-- 1. Produk / Model -->
+                                            <td class="py-3.5 px-5">
+                                                <div class="flex items-center gap-3.5">
+                                                    <button type="button" class="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-blue-100 text-slate-500 group-hover:text-blue-700 flex items-center justify-center shrink-0 transition-colors">
+                                                        <i class="fa-solid text-[10px]" :class="expandedGroups[g.group_key || g.nama] ? 'fa-chevron-down text-blue-600' : 'fa-chevron-right'"></i>
+                                                    </button>
+                                                    <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200/80 overflow-hidden shrink-0 shadow-2xs p-0.5 flex items-center justify-center">
+                                                        <img v-if="g.foto" :src="g.foto" class="w-full h-full object-cover rounded-xl" alt="Model">
+                                                        <i v-else class="fa-solid fa-boxes-stacked text-slate-300 text-xl"></i>
+                                                    </div>
+                                                    <div>
+                                                        <div class="flex items-center gap-2 flex-wrap">
+                                                            <p class="font-black text-slate-900 text-sm">{{ g.nama }}</p>
+                                                            <span class="px-2 py-0.5 rounded-md text-[9px] font-black bg-blue-50 text-blue-700 border border-blue-200/70 uppercase tracking-wider">
+                                                                MASTER
+                                                            </span>
+                                                            <span v-if="g.id_produk" class="inline-flex items-center gap-1 text-[9px] font-mono font-black bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200" title="Nomor Unik ID Produk">
+                                                                <i class="fa-solid fa-fingerprint text-[8px] text-blue-500"></i>{{ g.id_produk }}
+                                                            </span>
+                                                        </div>
+                                                        <p class="text-[10px] font-bold text-slate-400 mt-0.5 flex items-center gap-1.5">
+                                                            <span>Model: <strong class="text-slate-700">{{ g.model_tas || g.nama }}</strong></span>
+                                                            <span class="text-slate-300">•</span>
+                                                            <span class="text-blue-600 font-black">{{ g.variants.length }} Varian</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 2. SKU / Varian -->
+                                            <td class="py-3.5 px-3">
+                                                <div class="space-y-0.5">
+                                                    <p class="text-xs font-mono font-black text-slate-800 tracking-wider">{{ g.sku_induk || g.variants[0]?.kode || '-' }}</p>
+                                                    <p class="text-[10px] font-bold text-slate-400">{{ g.variants.length }} Pilihan Warna</p>
+                                                </div>
+                                            </td>
+
+                                            <!-- 3. Kategori -->
+                                            <td class="py-3.5 px-3">
+                                                <div class="space-y-0.5">
+                                                    <span class="inline-block text-[11px] font-black text-slate-700 bg-slate-100/90 px-2.5 py-1 rounded-lg border border-slate-200/80">
+                                                        {{ g.kategori || 'Tas' }}
+                                                    </span>
+                                                    <p class="text-[9px] font-bold text-slate-400 ml-1">Satuan: {{ g.satuan || 'Pcs' }}</p>
+                                                </div>
+                                            </td>
+
+                                            <!-- 4. HPP Unit -->
+                                            <td class="py-3.5 px-3 text-right">
+                                                <button @click.stop="bukaKalkulatorHpp(g.variants[0]?.id)" type="button" class="group/hpp text-right inline-block" title="Klik untuk membuka kalkulasi HPP">
+                                                    <span :class="['text-xs font-black block group-hover/hpp:underline', getGroupHppMin(g) > 0 ? 'text-emerald-700' : 'text-amber-600']">
+                                                        {{ getGroupHppLabel(g) }}
+                                                    </span>
+                                                    <span v-if="getGroupHppMin(g) > 0" class="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block mt-0.5">
+                                                        <i class="fa-solid fa-circle-check text-[8px] mr-1"></i>HPP Ready
+                                                    </span>
+                                                    <span v-else class="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200 inline-block mt-0.5">
+                                                        <i class="fa-solid fa-triangle-exclamation text-[8px] mr-1"></i>Belum Lengkap
+                                                    </span>
+                                                </button>
+                                            </td>
+
+                                            <!-- 5. Upah Standar -->
+                                            <td class="py-3.5 px-3 text-right">
+                                                <div class="space-y-0.5 inline-block text-right">
+                                                    <p class="text-amber-700 font-black text-[11px]"><i class="fa-solid fa-scissors mr-1 opacity-70"></i>{{ formatRupiah(g.upah_potong) }}</p>
+                                                    <p class="text-indigo-700 font-black text-[11px]"><i class="fa-solid fa-shirt mr-1 opacity-70"></i>{{ formatRupiah(g.upah_jahit) }}</p>
+                                                </div>
+                                            </td>
+
+                                            <!-- 6. Stok Gudang -->
+                                            <td class="py-3.5 px-3 text-center">
+                                                <div class="space-y-1">
+                                                    <span :class="['inline-block px-2.5 py-1 rounded-xl text-xs font-black border', 
+                                                                    getTotalStokGrupPcs(g) > 10 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : (getTotalStokGrupPcs(g) > 0 ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200')]">
+                                                        {{ getTotalStokGrupPcs(g) }} Pcs
+                                                    </span>
+                                                    <p class="text-[9px] font-bold text-slate-400">{{ formatTotalStokGrup(g) }}</p>
+                                                </div>
+                                            </td>
+
+                                            <!-- 7. Status -->
+                                            <td class="py-3.5 px-3 text-center">
+                                                <span :class="['inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border', 
+                                                                (g.status || 'Aktif') === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200']">
+                                                    {{ g.status || 'Aktif' }}
+                                                </span>
+                                            </td>
+
+                                            <!-- 8. Update -->
+                                            <td class="py-3.5 px-3">
+                                                <div class="space-y-0.5">
+                                                    <p class="text-[11px] font-bold text-slate-700">{{ formatDateID(g.updated_at || g.created_at) || 'Tersinkron' }}</p>
+                                                    <p class="text-[9px] font-semibold text-slate-400">Oleh: {{ g.updated_by || g.created_by || 'Admin' }}</p>
+                                                </div>
+                                            </td>
+
+                                            <!-- Tindakan Terpusat di Baris Utama (Parent Model) -->
+                                            <td class="py-3.5 px-5 text-center" @click.stop>
+                                                <div class="flex items-center justify-center gap-1.5">
+                                                    <!-- 1. Tombol Kalkulator HPP -->
+                                                    <button @click="bukaKalkulatorHpp(g.variants[0]?.id)" type="button" class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-600 hover:text-white hover:scale-105 flex items-center justify-center transition-all shadow-2xs" title="Buka HPP Studio Model Ini">
+                                                        <i class="fa-solid fa-calculator text-xs"></i>
+                                                    </button>
+                                                    <!-- 2. Tombol Edit Model & Produk -->
+                                                    <button @click="editData('produk', g.variants[0])" type="button" class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white hover:scale-105 flex items-center justify-center transition-all shadow-2xs" title="Edit Model, Produk & Seluruh Varian">
+                                                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                                    </button>
+                                                    <!-- 3. Tombol Arsip / Buka Arsip -->
+                                                    <button v-if="userRole === 'owner' || userRole === 'admin'" @click="arsipkanProdukGrup(g)" type="button" :class="['w-8 h-8 rounded-xl border flex items-center justify-center transition-all shadow-2xs hover:scale-105', (g.status === 'Arsip') ? 'bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-600 hover:text-white' : 'bg-slate-100 border-slate-200 text-slate-600 hover:bg-slate-700 hover:text-white']" :title="(g.status === 'Arsip') ? 'Aktifkan Kembali Produk' : 'Arsipkan Produk & Seluruh Varian'">
+                                                        <i :class="['fa-solid text-xs', (g.status === 'Arsip') ? 'fa-box-open' : 'fa-box-archive']"></i>
+                                                    </button>
+                                                    <!-- 4. Tombol Hapus Permanen -->
+                                                    <button v-if="userRole === 'owner' || userRole === 'admin'" @click="hapusProdukGrup(g)" type="button" class="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 hover:bg-rose-600 hover:text-white hover:scale-105 flex items-center justify-center transition-all shadow-2xs" title="Hapus Produk & Seluruh Varian">
+                                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- BARIS DETAIL VARIAN WARNA (CHILD ROWS) -->
+                                        <tr v-show="expandedGroups[g.group_key || g.nama]" v-for="p in g.variants" :key="p.id" class="bg-slate-50/80 hover:bg-slate-100/70 border-b border-slate-200/60 transition-colors">
+                                            <!-- 1. Produk / Model Sub-Item -->
+                                            <td class="py-3 pl-12 pr-4">
+                                                <div class="flex items-center gap-3">
+                                                    <i class="fa-solid fa-level-up fa-rotate-90 text-slate-300 text-xs shrink-0"></i>
+                                                    <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 shadow-2xs p-0.5 flex items-center justify-center">
+                                                        <img v-if="p.foto" :src="p.foto" class="w-full h-full object-cover rounded-lg" alt="Varian">
+                                                        <i v-else class="fa-solid fa-image text-slate-300 text-base"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="font-bold text-slate-800 text-xs">{{ p.warna || 'Standar' }}</p>
+                                                        <span class="text-[9px] font-black uppercase tracking-wider text-slate-400">VARIAN SKU</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 2. SKU / Varian -->
+                                            <td class="py-3 px-3">
+                                                <div class="space-y-1">
+                                                    <p class="text-xs font-mono font-black text-blue-600 tracking-wider uppercase">{{ p.kode }}</p>
+                                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                                        <span v-if="p.id_variasi" class="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded border border-slate-200" title="Nomor Unik ID Variasi">
+                                                            <i class="fa-solid fa-tag text-[8px] text-slate-400"></i>{{ p.id_variasi }}
+                                                        </span>
+                                                        <span v-if="p.warna" class="inline-block text-[9px] font-black bg-white px-2 py-0.5 rounded-md border border-slate-200 text-slate-700 shadow-2xs">
+                                                            <i class="fa-solid fa-palette mr-1 opacity-70 text-indigo-500"></i>{{ p.warna }}
+                                                        </span>
+                                                        <span v-if="p.barcode" class="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded border border-indigo-200" title="ID Barcode / ID Nomor SKU">
+                                                            <i class="fa-solid fa-barcode text-[8px]"></i>{{ p.barcode }}
+                                                        </span>
+                                                        <span v-if="p.id_stok_item" class="inline-flex items-center gap-1 text-[9px] font-mono font-black bg-emerald-50 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-300" title="ID Stok Item Internal (Kekal & Unik)">
+                                                            <i class="fa-solid fa-warehouse text-[8px] text-emerald-600"></i>{{ p.id_stok_item }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 3. Kategori -->
+                                            <td class="py-3 px-3">
+                                                <span class="text-xs font-semibold text-slate-500">{{ p.kategori || g.kategori || 'Tas' }}</span>
+                                            </td>
+
+                                            <!-- 4. HPP Unit -->
+                                            <td class="py-3 px-3 text-right">
+                                                <button @click="bukaKalkulatorHpp(p.id)" type="button" class="text-right inline-block hover:underline" title="Buka HPP Varian">
+                                                    <span :class="['text-xs font-black block', Number(p.hpp_produk || 0) > 0 ? 'text-emerald-700' : 'text-amber-600']">
+                                                        {{ Number(p.hpp_produk || 0) > 0 ? formatRupiah(p.hpp_produk) : 'Belum diisi' }}
+                                                    </span>
+                                                </button>
+                                            </td>
+
+                                            <!-- 5. Upah -->
+                                            <td class="py-3 px-3 text-right">
+                                                <span class="text-[10px] font-bold text-slate-500">{{ formatRupiah(p.upah_potong || g.upah_potong) }} / {{ formatRupiah(p.upah_jahit || g.upah_jahit) }}</span>
+                                            </td>
+
+                                            <!-- 6. Stok Gudang -->
+                                            <td class="py-3 px-3 text-center">
+                                                <div class="space-y-0.5">
+                                                    <span :class="['inline-block text-xs font-black', getQtyProdukPcs(p.id, p.stok) > 10 ? 'text-emerald-600' : (getQtyProdukPcs(p.id, p.stok) > 0 ? 'text-amber-600' : 'text-rose-600')]">
+                                                        {{ formatQtyProduk(p.id, p.stok, true) }}
+                                                    </span>
+                                                    <p class="text-[9px] font-bold text-slate-400">
+                                                        Status: {{ getQtyProdukPcs(p.id, p.stok) >= 5 ? 'Aman' : (getQtyProdukPcs(p.id, p.stok) > 0 ? 'Menipis' : 'Kritis') }}
+                                                    </p>
+                                                </div>
+                                            </td>
+
+                                            <!-- 7. Status -->
+                                            <td class="py-3 px-3 text-center">
+                                                <span :class="['inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border',
+                                                                (p.status || 'Aktif') === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200']">
+                                                    {{ p.status || 'Aktif' }}
+                                                </span>
+                                            </td>
+
+                                            <!-- 8. Update -->
+                                            <td class="py-3 px-3">
+                                                <p class="text-[10px] font-bold text-slate-600">{{ formatDateID(p.updated_at || p.created_at) || '-' }}</p>
+                                            </td>
+
+                                            <!-- Tindakan Sub-Item (Dibersihkan sesuai instruksi) -->
+                                            <td class="py-3 px-5 text-center">
+                                                <span class="text-slate-300 font-bold text-xs select-none">-</span>
+                                            </td>
+                                        </tr>
+                                    </template>
+
+                                    <!-- Empty State Table -->
+                                    <tr v-if="!filteredProdukGrup.length">
+                                        <td colspan="9" class="px-6 py-20 text-center">
+                                            <div class="max-w-sm mx-auto space-y-3">
+                                                <div class="w-16 h-16 rounded-3xl bg-slate-100 text-slate-400 flex items-center justify-center text-2xl mx-auto shadow-inner">
+                                                    <i class="fa-solid fa-box-open"></i>
+                                                </div>
+                                                <h4 class="text-base font-black text-slate-800 tracking-tight">Belum Ada Data Produk</h4>
+                                                <p class="text-xs text-slate-500 font-semibold leading-relaxed">
+                                                    Tidak ada data produk yang cocok dengan pencarian atau filter yang dipilih. Tambahkan produk pertama untuk menghubungkan operasional produksi, stok, dan HPP.
+                                                </p>
+                                                <div class="pt-2 flex items-center justify-center gap-2">
+                                                    <button @click="resetFilterProdukMaster" type="button" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-black transition-all">
+                                                        Reset Filter
+                                                    </button>
+                                                    <button @click="openModal('produk')" type="button" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black shadow-md shadow-blue-600/20 transition-all">
+                                                        + Tambah Produk
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- RESPONSIVE MOBILE PRODUCT CARDS (MD:HIDDEN - PLAY STORE APP STYLE) -->
+                        <div class="md:hidden space-y-3.5">
+                            <div v-for="g in filteredProdukGrup" :key="'mob-' + (g.group_key || g.nama)" class="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-xs space-y-4">
+                                <div class="flex items-start gap-3.5">
+                                    <div class="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 overflow-hidden shrink-0 shadow-2xs p-0.5 flex items-center justify-center">
+                                        <img v-if="g.foto" :src="g.foto" class="w-full h-full object-cover rounded-xl" alt="Produk">
+                                        <i v-else class="fa-solid fa-boxes-stacked text-slate-300 text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200/70">
+                                                {{ g.kategori || 'Tas' }}
+                                            </span>
+                                            <span :class="['text-[9px] font-black px-2 py-0.5 rounded-full border',
+                                                            (g.status || 'Aktif') === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200']">
+                                                {{ g.status || 'Aktif' }}
+                                            </span>
+                                        </div>
+                                        <h4 class="text-sm font-black text-slate-900 tracking-tight mt-1 truncate">{{ g.nama }}</h4>
+                                        <p class="text-[10px] font-bold text-slate-400 mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                            <span>SKU: <span class="font-mono font-black text-slate-700 uppercase">{{ g.sku_induk || g.variants[0]?.kode || '-' }}</span></span>
+                                            <span v-if="g.id_produk" class="inline-flex items-center gap-1 text-[9px] font-mono font-bold bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded border border-slate-200">
+                                                <i class="fa-solid fa-fingerprint text-[8px] text-blue-500"></i>{{ g.id_produk }}
+                                            </span>
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Details Grid -->
+                                <div class="grid grid-cols-2 gap-2.5 p-3 rounded-2xl bg-slate-50 border border-slate-200/70 text-xs">
+                                    <div>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">HPP / Unit</p>
+                                        <p class="font-black text-emerald-700 text-xs mt-0.5">{{ getGroupHppLabel(g) }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Total Stok</p>
+                                        <p class="font-black text-slate-900 text-xs mt-0.5">{{ getTotalStokGrupPcs(g) }} Pcs <span class="text-[9px] font-bold text-slate-400">({{ formatTotalStokGrup(g) }})</span></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Upah Potong</p>
+                                        <p class="font-black text-amber-700 text-xs mt-0.5">{{ formatRupiah(g.upah_potong) }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Upah Jahit</p>
+                                        <p class="font-black text-indigo-700 text-xs mt-0.5">{{ formatRupiah(g.upah_jahit) }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Variants Expand -->
+                                <div class="space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                                            {{ g.variants.length }} Varian Warna:
+                                        </p>
+                                        <button @click="toggleGroup(g.group_key || g.nama)" type="button" class="text-[10px] font-black text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                                            <span>{{ expandedGroups[g.group_key || g.nama] ? 'Tutup Varian' : 'Buka Varian' }}</span>
+                                            <i class="fa-solid text-[9px]" :class="expandedGroups[g.group_key || g.nama] ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                                        </button>
+                                    </div>
+
+                                    <div v-show="expandedGroups[g.group_key || g.nama]" class="space-y-2 pt-1">
+                                        <div v-for="p in g.variants" :key="'mob-var-' + p.id" class="p-3 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3 shadow-2xs">
+                                            <div class="flex items-center gap-2.5 min-w-0">
+                                                <div class="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
+                                                    <img v-if="p.foto" :src="p.foto" class="w-full h-full object-cover rounded-md" alt="V">
+                                                    <i v-else class="fa-solid fa-image text-slate-300 text-xs"></i>
+                                                </div>
+                                                <div class="min-w-0">
+                                                    <p class="text-xs font-bold text-slate-800 truncate">{{ p.warna || 'Standar' }}</p>
+                                                    <div class="flex items-center gap-1.5 flex-wrap mt-0.5">
+                                                        <p class="text-[9px] font-mono font-black text-blue-600 uppercase">{{ p.kode }}</p>
+                                                        <span v-if="p.id_variasi" class="text-[8px] font-mono font-bold text-slate-700 bg-slate-100 px-1 py-0.5 rounded border border-slate-200">
+                                                            <i class="fa-solid fa-tag mr-0.5 text-[7px] text-slate-400"></i>{{ p.id_variasi }}
+                                                        </span>
+                                                        <span v-if="p.barcode" class="text-[8px] font-mono font-bold text-indigo-700 bg-indigo-50 px-1 py-0.5 rounded border border-indigo-200">
+                                                            <i class="fa-solid fa-barcode mr-0.5 text-[7px]"></i>{{ p.barcode }}
+                                                        </span>
+                                                        <span v-if="p.id_stok_item" class="text-[8px] font-mono font-black text-emerald-800 bg-emerald-50 px-1 py-0.5 rounded border border-emerald-300" title="ID Stok Item">
+                                                            <i class="fa-solid fa-warehouse mr-0.5 text-[7px] text-emerald-600"></i>{{ p.id_stok_item }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-right shrink-0">
+                                                <span :class="['text-xs font-black', getQtyProdukPcs(p.id, p.stok) > 10 ? 'text-emerald-600' : 'text-rose-600']">
+                                                    {{ formatQtyProduk(p.id, p.stok, true) }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Mobile Actions (Terpusat 4 Tombol) -->
+                                <div class="grid grid-cols-4 gap-2 pt-2 border-t border-slate-100">
+                                    <button @click="bukaKalkulatorHpp(g.variants[0]?.id)" type="button" class="py-2.5 px-1 bg-amber-50 text-amber-800 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 border border-amber-200/80">
+                                        <i class="fa-solid fa-calculator text-[10px]"></i>
+                                        <span>HPP</span>
+                                    </button>
+                                    <button @click="editData('produk', g.variants[0])" type="button" class="py-2.5 px-1 bg-blue-50 text-blue-700 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 border border-blue-200/80">
+                                        <i class="fa-solid fa-pen-to-square text-[10px]"></i>
+                                        <span>Edit</span>
+                                    </button>
+                                    <button v-if="userRole === 'owner' || userRole === 'admin'" @click="arsipkanProdukGrup(g)" type="button" :class="['py-2.5 px-1 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 border', (g.status === 'Arsip') ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-700 border-slate-200']">
+                                        <i :class="['fa-solid text-[10px]', (g.status === 'Arsip') ? 'fa-box-open' : 'fa-box-archive']"></i>
+                                        <span>{{ g.status === 'Arsip' ? 'Buka' : 'Arsip' }}</span>
+                                    </button>
+                                    <button v-if="userRole === 'owner' || userRole === 'admin'" @click="hapusProdukGrup(g)" type="button" class="py-2.5 px-1 bg-rose-50 text-rose-700 rounded-xl text-[11px] font-black flex items-center justify-center gap-1 border border-rose-200">
+                                        <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                        <span>Hapus</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div v-if="!filteredProdukGrup.length" class="p-8 text-center bg-white rounded-3xl border border-slate-200 text-slate-400 text-xs font-bold">
+                                Tidak ada produk ditemukan.
+                            </div>
+                        </div>
+                    </div>

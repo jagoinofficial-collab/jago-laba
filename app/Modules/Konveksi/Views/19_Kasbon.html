@@ -1,0 +1,112 @@
+<!-- =========================================================
+     MODUL: KASBON OPERASIONAL (CASH ADVANCE)
+     ========================================================= -->
+                    <div v-if="currentTab === 'kasbon'" class="space-y-6 w-full">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200">Cash Advance</span>
+                                    <span class="text-[10px] font-black text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-200"><i class="fa-solid fa-receipt mr-1 text-blue-500"></i>{{ riwayatKasbon.length }} Transaksi</span>
+                                </div>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">Kasbon Operasional</h3>
+                                <p class="text-xs text-slate-500 font-semibold mt-0.5">Pencairan dana talangan harian atau pinjaman singkat yang terhubung langsung ke buku kas.</p>
+                            </div>
+                            <button @click="openModal('kasbon_global')" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 px-6 py-3.5 rounded-2xl text-sm font-black btn-active shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2 shrink-0">
+                                <i class="fa-solid fa-money-bill-transfer"></i> Cairkan Dana Kasbon
+                            </button>
+                        </div>
+
+                        <!-- 3 KPI STAT CARDS FILTER (TOTAL TRANSAKSI, BULAN INI, TOTAL PENCAIRAN) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <!-- TOTAL TRANSAKSI CARD -->
+                            <div @click="filterStatusKasbon = 'semua'" 
+                                 :class="['jl-kpi-card cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusKasbon === 'semua' ? 'bg-gradient-to-br from-blue-50 to-indigo-50/40 border-blue-400 ring-2 ring-blue-500/25 shadow-blue-500/10' : 'bg-white border-slate-200/80 hover:border-blue-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL TRANSAKSI</p>
+                                        <span v-if="filterStatusKasbon === 'semua'" class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-slate-900 tracking-tight">{{ totalKasbonCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Semua riwayat kasbon harian</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-receipt text-blue-600 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BULAN INI CARD -->
+                            <div @click="filterStatusKasbon = 'bulan_ini'" 
+                                 :class="['jl-kpi-card cursor-pointer p-5 rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group', 
+                                          filterStatusKasbon === 'bulan_ini' ? 'bg-gradient-to-br from-amber-50 to-yellow-50/40 border-amber-400 ring-2 ring-amber-500/25 shadow-amber-500/10' : 'bg-white border-slate-200/80 hover:border-amber-200 hover:bg-slate-50/60']">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">BULAN INI</p>
+                                        <span v-if="filterStatusKasbon === 'bulan_ini'" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-3xl font-black text-amber-600 tracking-tight">{{ kasbonBulanIniCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">Pencairan bulan berjalan</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-calendar-days text-amber-600 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- TOTAL PENCAIRAN CARD -->
+                            <div class="jl-kpi-card card-pro p-5 rounded-3xl border border-slate-200/80 bg-white flex items-center justify-between shadow-sm relative overflow-hidden group">
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">TOTAL PENCAIRAN</p>
+                                    </div>
+                                    <h4 class="text-2xl sm:text-3xl font-black text-amber-600 tracking-tight">{{ formatRupiahSingkat(totalNominalKasbon) }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400">{{ formatRupiah(totalNominalKasbon) }}</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-hand-holding-dollar text-amber-600 text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TABEL DATA KASBON -->
+                        <div class="card-pro !p-0 overflow-x-auto border border-slate-200/80 shadow-sm rounded-3xl bg-white">
+                            <table class="w-full text-left whitespace-nowrap min-w-[800px]">
+                                <thead>
+                                    <tr class="bg-slate-50/80 border-b border-slate-200/80">
+                                        <th class="py-4 px-6 text-[10px] font-black uppercase tracking-wider text-slate-500">Informasi Pencairan</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Sumber Kas</th>
+                                        <th class="py-4 px-6 text-right text-[10px] font-black uppercase tracking-wider text-slate-500">Nominal (Rp)</th>
+                                        <th class="py-4 px-6 text-center text-[10px] font-black uppercase tracking-wider text-slate-500">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="k in riwayatKasbon" :key="k.id" class="hover:bg-amber-50/20 transition-colors">
+                                        <td class="py-5 px-6">
+                                            <p class="font-black text-slate-400 text-[10px] mb-1.5 uppercase tracking-widest flex items-center gap-1.5"><i class="fa-regular fa-calendar text-amber-500"></i>{{ formatDateID(k.tanggal) }}</p>
+                                            <p class="font-black text-slate-900 text-sm mb-1.5">{{ k.keterangan }}</p>
+                                            <p class="text-[9px] font-black text-slate-500 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-md w-max">Ref SPK: {{ String(k.id_dokumen).substring(8) || '-' }}</p>
+                                        </td>
+                                        <td class="text-center py-5 px-6"><span class="badge badge-neutral !bg-blue-50 !text-blue-700 !border-blue-200 font-bold"><i class="fa-solid fa-building-columns mr-1.5 text-blue-500"></i>{{ getRekeningName(k.id_rekening) }}</span></td>
+                                        <td class="text-right py-5 px-6"><p class="font-black text-amber-700 text-base">{{ formatRupiah(k.nominal) }}</p></td>
+                                        <td class="py-5 px-6">
+                                            <div class="flex items-center justify-center gap-2">
+                                                <button @click="bagikanWaKasbon(k)" :disabled="isSharingWhatsApp" class="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors shadow-2xs cursor-pointer disabled:opacity-50" title="Bagikan PDF via WhatsApp">
+                                                    <i v-if="sharingDocKey === 'Kasbon-' + k.id" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                                                    <i v-else class="fa-brands fa-whatsapp text-sm"></i>
+                                                </button>
+                                                <button @click="cetakUlangKasbon(k)" class="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors shadow-2xs" title="Cetak PDF"><i class="fa-solid fa-print text-xs"></i></button>
+                                                <button @click="editData('kasbon', k)" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 flex items-center justify-center transition-colors shadow-2xs" title="Edit Kasbon"><i class="fa-solid fa-pen text-xs"></i></button>
+                                                <button v-if="userRole==='owner'" @click="hapusData('kasbon', k.id)" class="w-8 h-8 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-red-600 hover:border-red-200 flex items-center justify-center transition-colors shadow-2xs" title="Hapus Kasbon"><i class="fa-solid fa-trash text-xs"></i></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr v-if="!riwayatKasbon.length"><td colspan="4" class="px-6 py-20 text-center text-slate-400 text-sm font-bold">Tidak ada riwayat kasbon.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>

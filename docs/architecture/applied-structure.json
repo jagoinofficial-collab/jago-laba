@@ -1,0 +1,1405 @@
+{
+  "created_at": "20261027-084511",
+  "root": "D:\\xampp\\htdocs\\jago-laba",
+  "backup": "D:\\JAGO_LABA_BACKUP\\restructure\\source-20261027-084511.zip",
+  "database_changed": false,
+  "moves": [
+    {
+      "source": "app/bootstrap.php",
+      "target": "app/Bootstrap/bootstrap.php",
+      "original_sha256": "192418a8afaaf73cf882c58dd421a255388125f344f28fcd68c9c9d87fb1a345"
+    },
+    {
+      "source": "app/Core/Database.php",
+      "target": "app/Core/Database/Database.php",
+      "original_sha256": "10a76c41ef267e9e57cfd9e1570cca65b19ebba1dae333b0832b669e6f52a4a7"
+    },
+    {
+      "source": "app/Http/JsonResponse.php",
+      "target": "app/Core/Http/JsonResponse.php",
+      "original_sha256": "74323a75d33ceb28695b2e2cb94373c6c17254478a080b494405548f2f4358aa"
+    },
+    {
+      "source": "app/Http/RpcRequest.php",
+      "target": "app/Core/Http/RpcRequest.php",
+      "original_sha256": "b8a57c1160851d1c01660d3a8b6fcc28cd2b835c5de8c1f64b00f2faa2283343"
+    },
+    {
+      "source": "app/Workspace.php",
+      "target": "app/Shared/Authorization/Workspace.php",
+      "original_sha256": "3d38a35bd7d37ab34835a024c543389030631422f109b98e62f2e9407e03d47f"
+    },
+    {
+      "source": "app/SchemaManager.php",
+      "target": "app/Shared/Support/SchemaManager.php",
+      "original_sha256": "406dfd6d5db8af46a53bba95248f4e6793283e384726675814c1bfe7bc2e76ce"
+    },
+    {
+      "source": "app/SnapshotImporter.php",
+      "target": "app/Shared/Support/SnapshotImporter.php",
+      "original_sha256": "2c4628515cc8dd4133d9a52b8569d95d17445cb18171f7b7a08f94bb48f21c77"
+    },
+    {
+      "source": "app/CollectionStore.php",
+      "target": "app/Shared/Support/CollectionStore.php",
+      "original_sha256": "4aa47f82d020d373bff3466f451d3a5952b850b77f3acbc51a90f52193618f8e"
+    },
+    {
+      "source": "app/AuditService.php",
+      "target": "app/Shared/Support/AuditService.php",
+      "original_sha256": "c7a26e3bcebae5e7948fdc73d2d75b0fbf9396bd166fab4a965d178414ebe473"
+    },
+    {
+      "source": "app/Security/MarketplaceTokenVault.php",
+      "target": "app/Shared/Security/MarketplaceTokenVault.php",
+      "original_sha256": "f6d2e5f9e6f97280e549070d91505cec8214b2a7b30ba4600c93ae8ea0cc6866"
+    },
+    {
+      "source": "app/RpcService.php",
+      "target": "app/Modules/Konveksi/Controllers/RpcService.php",
+      "original_sha256": "ce54f43156b82c7bc51c5714b5a86a9242b70ab25fbe4fb8064dc7dbf495f1e2"
+    },
+    {
+      "source": "app/Services/BackupService.php",
+      "target": "app/Shared/Support/BackupService.php",
+      "original_sha256": "b7eda96fa22725be4065f6f5e3f632603b6c78916a4681cfa8cf082deafa32b0"
+    },
+    {
+      "source": "app/Services/DocumentService.php",
+      "target": "app/Shared/Support/DocumentService.php",
+      "original_sha256": "8e00291433976a8bb340190f58e4ed6c1bf70caeec4199969812daffde912204"
+    },
+    {
+      "source": "app/Services/GeminiService.php",
+      "target": "app/Modules/Konveksi/Services/GeminiService.php",
+      "original_sha256": "ac6787a7b92443d01271d77eb1d049a772cca017ebbce08f66178b4d454434a4"
+    },
+    {
+      "source": "app/Services/HppService.php",
+      "target": "app/Modules/Konveksi/Services/HppService.php",
+      "original_sha256": "e34075add5ba9bed0789aa43b8875a3724fdb3704320bcfcc7bb924c0914e9cf"
+    },
+    {
+      "source": "app/Services/HutangKonveksiService.php",
+      "target": "app/Modules/Konveksi/Services/HutangKonveksiService.php",
+      "original_sha256": "b39cefee5f3b7f06298142867ef0d5f336d74b823c90e5edf2a3fdca6042d26c"
+    },
+    {
+      "source": "app/Services/InventoryService.php",
+      "target": "app/Modules/Konveksi/Services/InventoryService.php",
+      "original_sha256": "30f11b1fb73619ebf3b228701f56692c6c182b16809846e9063ebc6818bf6e84"
+    },
+    {
+      "source": "app/Services/MarketplaceAnalyticsCsv.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceAnalyticsCsv.php",
+      "original_sha256": "d65699a662156c3ce626486e1b33d4b149c0047605fbd89331834c03d3e64c66"
+    },
+    {
+      "source": "app/Services/MarketplaceAnalyticsService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceAnalyticsService.php",
+      "original_sha256": "aa1f1422978a0e6ab2c594318afdacecdbaa65dc800331e5cde6cd7d65f5fe02"
+    },
+    {
+      "source": "app/Services/MarketplaceApiService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceApiService.php",
+      "original_sha256": "d3d11e8cf48af4af81710253d1dd287527b1c2cc75c63bd956b098a3f9a38392"
+    },
+    {
+      "source": "app/Services/MarketplaceAutoSync.php",
+      "target": "app/Modules/Marketplace/Jobs/MarketplaceAutoSync.php",
+      "original_sha256": "92a4013b995d08d2fceca62f4f3804f2acba1fea1c54718af749fd1d822dcb29"
+    },
+    {
+      "source": "app/Services/MarketplaceBackgroundSync.php",
+      "target": "app/Modules/Marketplace/Jobs/MarketplaceBackgroundSync.php",
+      "original_sha256": "46b1f76c5be293de509cafddcde5bf0c6ccf466137fef9f5a095ca4068173b16"
+    },
+    {
+      "source": "app/Services/MarketplaceBrandingService.php",
+      "target": "app/Shared/Branding/MarketplaceBrandingService.php",
+      "original_sha256": "fd9cc5e9232dd3f7b852d1d3312f73d5fed7bfb69763af96e93470e7ddd35747"
+    },
+    {
+      "source": "app/Services/MarketplaceCatalogService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceCatalogService.php",
+      "original_sha256": "5054f57fe93f62b5782529d2612c70597a9c211ddab46e2b167c501d9116b564"
+    },
+    {
+      "source": "app/Services/MarketplaceDashboardService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceDashboardService.php",
+      "original_sha256": "6b16f179d1b4bb717964ea41a9101544a96efa2da0993321f2d39fa8dc7d0674"
+    },
+    {
+      "source": "app/Services/MarketplaceFinanceNormalizer.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceFinanceNormalizer.php",
+      "original_sha256": "3bb169cb13c97b70fe86dee6e9bba32bc1b14a4d8f3549d0c07979ac0f7889e2"
+    },
+    {
+      "source": "app/Services/MarketplaceFulfillmentService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceFulfillmentService.php",
+      "original_sha256": "86418bfe0454760f8e717d8e2b09112bfbd40a582bff1934ddc5654731c5b00d"
+    },
+    {
+      "source": "app/Services/MarketplaceInboxService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceInboxService.php",
+      "original_sha256": "eed2167e7cb3d9915680e15bd59531c0e38ad99faa2e1b4a9754bf817890a9d3"
+    },
+    {
+      "source": "app/Services/MarketplaceIncomeService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceIncomeService.php",
+      "original_sha256": "635831c4b2486f2093f6b6225b8f5d94f2790bab9c17fd290bd7b97b865f5039"
+    },
+    {
+      "source": "app/Services/MarketplaceIngestionService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceIngestionService.php",
+      "original_sha256": "39bc36678751fe40db6044c383d6029f852b263b616e71e5a40efc22e2bb0f2e"
+    },
+    {
+      "source": "app/Services/MarketplaceOAuthOrigin.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceOAuthOrigin.php",
+      "original_sha256": "c663a9e61bb8fec76b6a56d64bd0080037ad26fcb4c7b67ac4a22d01c34b1eb2"
+    },
+    {
+      "source": "app/Services/MarketplaceOAuthService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceOAuthService.php",
+      "original_sha256": "aa9ae8a57ab3bad74baf15500c31b9bd7a5b7e74dfd9df59cbf681c2eb5fdacb"
+    },
+    {
+      "source": "app/Services/MarketplaceOrderPresentation.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceOrderPresentation.php",
+      "original_sha256": "16b33ee1220e7365b1c398e5d2a333ed03e69a12a8a9fcb5dc279d0d29028661"
+    },
+    {
+      "source": "app/Services/MarketplaceOrdersService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceOrdersService.php",
+      "original_sha256": "4ab6a840aba3509651fc3b51bbc089505e9bdcfd2963b09dd76d7df81275fb9d"
+    },
+    {
+      "source": "app/Services/MarketplacePartnerSettings.php",
+      "target": "app/Modules/Marketplace/Services/MarketplacePartnerSettings.php",
+      "original_sha256": "d84888a69e625a6c6b772ab6c0ac88cb68b6d9dae14458f956dacc9aa3b5f6e4"
+    },
+    {
+      "source": "app/Services/MarketplacePriceService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplacePriceService.php",
+      "original_sha256": "6ab426295a778c51bb399f94fe4d2fd587e78b9d0764ba6c1264ed7b3f11b59f"
+    },
+    {
+      "source": "app/Services/MarketplaceScopeService.php",
+      "target": "app/Shared/Companies/MarketplaceScopeService.php",
+      "original_sha256": "e0de3c06752439fd125c3b0476d377b8364a9a5c6a6dfa23ebf67a880e7e47cd"
+    },
+    {
+      "source": "app/Services/MarketplaceService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceService.php",
+      "original_sha256": "953fd871a2a23f7b5c27a597f719e5b273ec96d385c538aabd7139ab33dc2b3c"
+    },
+    {
+      "source": "app/Services/MarketplaceShippingDocumentService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceShippingDocumentService.php",
+      "original_sha256": "747845806cd5344623968b9b4f5b1f1f5df5c9de595bf64c4d72ed531569b28d"
+    },
+    {
+      "source": "app/Services/MarketplaceStockService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceStockService.php",
+      "original_sha256": "93b142770d515d9be9de4c9f948916836055b21ac68aa8f7e26b6ddf6ff72064"
+    },
+    {
+      "source": "app/Services/MarketplaceStoreSelection.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceStoreSelection.php",
+      "original_sha256": "108c0bae580328f4a72d4da64b360e50cb6fe1c66a32d9984ba2c94b23ef3a50"
+    },
+    {
+      "source": "app/Services/MarketplaceSyncService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceSyncService.php",
+      "original_sha256": "32588652fc10dad79934f6e89c46ee4bcf944db70dfa0b1246d87612cdae1d98"
+    },
+    {
+      "source": "app/Services/MarketplaceSyncWindow.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceSyncWindow.php",
+      "original_sha256": "0fd0b3288b98cd86086d89d6a28c76b7d3c4eb53f5335721a6956616e2aa211b"
+    },
+    {
+      "source": "app/Services/MarketplaceWithdrawalService.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceWithdrawalService.php",
+      "original_sha256": "991e4af649b543548a619b89a948d9810f9bd80f3061b9d15db53df3598268d1"
+    },
+    {
+      "source": "app/Services/MarketplaceWithdrawalXlsx.php",
+      "target": "app/Modules/Marketplace/Services/MarketplaceWithdrawalXlsx.php",
+      "original_sha256": "d3a6ecde0aa780f9305edfd0617dd449855ef3e66926bd5a0421bb42afe8369d"
+    },
+    {
+      "source": "app/Services/PurchaseService.php",
+      "target": "app/Modules/Konveksi/Services/PurchaseService.php",
+      "original_sha256": "fe6bd514e85aa82ddeda2c7293094c102a9433c9775fdef67095a776df04fb81"
+    },
+    {
+      "source": "app/Services/SalesService.php",
+      "target": "app/Modules/Konveksi/Services/SalesService.php",
+      "original_sha256": "c2f3c15d8fc0c0612c2b66989d74b4e96379c12c4e9c04c7d04547ed19af22df"
+    },
+    {
+      "source": "app/Services/ShopeeOrderDataClient.php",
+      "target": "app/Modules/Marketplace/Integrations/Shopee/ShopeeOrderDataClient.php",
+      "original_sha256": "86b52a43c643fd7b14f45623ad80586daa962b7ce5976d36f825f19ce911d2ee"
+    },
+    {
+      "source": "app/views/00_Base.html",
+      "target": "app/Modules/Konveksi/Views/00_Base.html",
+      "original_sha256": "fec784d840eaaec7a42a004bab4232d8b5ae77b93aff93c30f165ac7fa2e03f7"
+    },
+    {
+      "source": "app/views/01_Dashboard.html",
+      "target": "app/Modules/Konveksi/Views/01_Dashboard.html",
+      "original_sha256": "1182f291bb86944cad18eeccc9ad16ab9dc897034764ffd3cca10725ed07a1c0"
+    },
+    {
+      "source": "app/views/02_Konveksi.html",
+      "target": "app/Modules/Konveksi/Views/02_Konveksi.html",
+      "original_sha256": "3392e10dcb2c1f249a6c14d68581711ec53d78c4b95c8b50218221b4bf1f676e"
+    },
+    {
+      "source": "app/views/03_Master_Produk.html",
+      "target": "app/Modules/Konveksi/Views/03_Master_Produk.html",
+      "original_sha256": "ac75cc8822401e70329a4eca22cc9806ffc40e585f9c4606980ab6aeb070d1b9"
+    },
+    {
+      "source": "app/views/04_Master_Bahan.html",
+      "target": "app/Modules/Konveksi/Views/04_Master_Bahan.html",
+      "original_sha256": "c8dfe23a45cd6d1edb1b32ed8577ca6d4e1f1abc78cca9566ac2aab62e9f9756"
+    },
+    {
+      "source": "app/views/05_HPP_Produksi.html",
+      "target": "app/Modules/Konveksi/Views/05_HPP_Produksi.html",
+      "original_sha256": "663092268f2caa156b204c575efb7f20bbef393e57fb4d526be63a4a02a90b7b"
+    },
+    {
+      "source": "app/views/06_Master_Stok.html",
+      "target": "app/Modules/Konveksi/Views/06_Master_Stok.html",
+      "original_sha256": "ebe571fd747937a9a2708830a55ae1ddd1f04fdf3c556c4acd7332b34f9e13bf"
+    },
+    {
+      "source": "app/views/07_Pembelian_Bahan.html",
+      "target": "app/Modules/Konveksi/Views/07_Pembelian_Bahan.html",
+      "original_sha256": "eeabd42c0da62a9b847353bb60b06716218dbb4e9f4d2b19a4a37a54b4d41fa0"
+    },
+    {
+      "source": "app/views/08_Pembelian_Vendor.html",
+      "target": "app/Modules/Konveksi/Views/08_Pembelian_Vendor.html",
+      "original_sha256": "752844f62bb398d9da752caa00c5f952996b169238d7fdc9ebc99f1d4892255d"
+    },
+    {
+      "source": "app/views/09_Distribusi.html",
+      "target": "app/Modules/Konveksi/Views/09_Distribusi.html",
+      "original_sha256": "88a90176f45b10ee671a15aae59fb1a69eccbb87a995b22d9c1a3717d381646c"
+    },
+    {
+      "source": "app/views/10_Eksekutif.html",
+      "target": "app/Modules/Konveksi/Views/10_Eksekutif.html",
+      "original_sha256": "2f36d370ac1995c0e52cc1cdf715b817f39a324a2e771c524f988ef9d7462243"
+    },
+    {
+      "source": "app/views/11_SPK_Potong.html",
+      "target": "app/Modules/Konveksi/Views/11_SPK_Potong.html",
+      "original_sha256": "b3f0b6ede53f7be96d0efa3a27b089b2d2ccec4b58418f18e8fb0780d7e98685"
+    },
+    {
+      "source": "app/views/12_SPK_Jahit.html",
+      "target": "app/Modules/Konveksi/Views/12_SPK_Jahit.html",
+      "original_sha256": "2134417fa713e93034c897af4854d01715a938c2221fdfd260f5a89d574f32cd"
+    },
+    {
+      "source": "app/views/13_Penjualan_Produksi.html",
+      "target": "app/Modules/Konveksi/Views/13_Penjualan_Produksi.html",
+      "original_sha256": "9b04bca2139f2ae51d7ff5694f5a96eed72bea22c02d83baa06e886a0fd57ec2"
+    },
+    {
+      "source": "app/views/14_Pegawai.html",
+      "target": "app/Modules/Konveksi/Views/14_Pegawai.html",
+      "original_sha256": "0d96e9fcd141b8210bf0fbc3e3f0d5706ba93dda5d93416ef702ed0abd7aaacf"
+    },
+    {
+      "source": "app/views/15_Setting.html",
+      "target": "app/Modules/Konveksi/Views/15_Setting.html",
+      "original_sha256": "f542ebb3a703da005a79ab6d3d48a1ec2e30e79e627f1b21c5342e1f36c498b3"
+    },
+    {
+      "source": "app/views/16_Supplier.html",
+      "target": "app/Modules/Konveksi/Views/16_Supplier.html",
+      "original_sha256": "2a00fc7aa14d7c337a3ad17ab149903bedd1743d2d46d7a93a2fb94618a2ce77"
+    },
+    {
+      "source": "app/views/17_Keuangan.html",
+      "target": "app/Modules/Konveksi/Views/17_Keuangan.html",
+      "original_sha256": "fb8a2905cc73cde11666b0a143cdf96b062ca89013f92915c722ad0a332d7cf4"
+    },
+    {
+      "source": "app/views/18_Rekening.html",
+      "target": "app/Modules/Konveksi/Views/18_Rekening.html",
+      "original_sha256": "b768d16334079058990f16e2e4be4db5fb5877b2bf492c7f579638220d690e45"
+    },
+    {
+      "source": "app/views/19_Kasbon.html",
+      "target": "app/Modules/Konveksi/Views/19_Kasbon.html",
+      "original_sha256": "baed82e5db6774b7c5d8e9cd67d803a3ae19d0ab3a82d7bde915f2d7322759e6"
+    },
+    {
+      "source": "app/views/20_Piutang.html",
+      "target": "app/Modules/Konveksi/Views/20_Piutang.html",
+      "original_sha256": "cdac6c3c3d0175780133870a07b7bd30fac58010ce93fba543a93dc3d20862af"
+    },
+    {
+      "source": "app/views/21_Hutang_Usaha.html",
+      "target": "app/Modules/Konveksi/Views/21_Hutang_Usaha.html",
+      "original_sha256": "348bc1c1a6037a6c0ba7bd5c4f4e640b3c465d7d2e678953e38871ffa04a4605"
+    },
+    {
+      "source": "app/views/22_Hutang_Konveksi.html",
+      "target": "app/Modules/Konveksi/Views/22_Hutang_Konveksi.html",
+      "original_sha256": "32235b963cf87708a8be8b5bb47a3e7382b98b28cda6e3c2ef42fcebc14cc926"
+    },
+    {
+      "source": "app/views/23_Setting_Profil.html",
+      "target": "app/Modules/Konveksi/Views/23_Setting_Profil.html",
+      "original_sha256": "1ea97bf09760f8e69ad9f00847aaf40b7b3b5dd0d7c30d9c0da54f223216e0aa"
+    },
+    {
+      "source": "app/views/24_Setting_Pengguna.html",
+      "target": "app/Modules/Konveksi/Views/24_Setting_Pengguna.html",
+      "original_sha256": "29d62ee52de22644fcc732f472138331d9b53370c7b127bc838a5fb7b2d191e9"
+    },
+    {
+      "source": "app/views/25_Setting_Hak_Akses.html",
+      "target": "app/Modules/Konveksi/Views/25_Setting_Hak_Akses.html",
+      "original_sha256": "af11cd22284d56fe8d962b194ccb83f4019b968ec22a43a89e127ec7692ec8a3"
+    },
+    {
+      "source": "app/views/26_Setting_Backup.html",
+      "target": "app/Modules/Konveksi/Views/26_Setting_Backup.html",
+      "original_sha256": "044631c62d98cc871b1204474a6d379e88321b2c99a894466145396022e7b390"
+    },
+    {
+      "source": "app/views/27_UI_Components.html",
+      "target": "app/Modules/Konveksi/Views/27_UI_Components.html",
+      "original_sha256": "a6b66ca5463f9af74e3ea4f52aaa08e18cd66d9b67a971d08d66bd10b61fdf74"
+    },
+    {
+      "source": "app/views/28_Core.html",
+      "target": "app/Modules/Konveksi/Views/28_Core.html",
+      "original_sha256": "a82a415f5510b08de18b2d3fe37a961d5bbd15dc0c29d9300cca27de41003ef9"
+    },
+    {
+      "source": "app/views/browser_auto_sync_driver.php",
+      "target": "app/Modules/Marketplace/Views/browser_auto_sync_driver.php",
+      "original_sha256": "688311d5057ced4dcb9d14d330d2cf5af34290fed93c67cdb012700ae58c2940"
+    },
+    {
+      "source": "app/views/marketplace_add_stores.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_add_stores.php",
+      "original_sha256": "db706c3f9ecc372793ef5fd9a52c001e4f3a1fe17d3104b0eb80b7fc35319de1"
+    },
+    {
+      "source": "app/views/marketplace_analytics_charts.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_analytics_charts.php",
+      "original_sha256": "a64fbd5e7d8c983cb66749477c32cb5cdec7d77697921496e794030d4a992ce6"
+    },
+    {
+      "source": "app/views/marketplace_auto_sync_controls.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_auto_sync_controls.php",
+      "original_sha256": "fb412a0747a2e423d8c15df33747fc1b7dbc7f48dc7e440fc9f19f2b42b68aec"
+    },
+    {
+      "source": "app/views/marketplace_background_sync.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_background_sync.php",
+      "original_sha256": "2c62f2b5718a87bf20cdf1fd570d88a056bb1fe30b19e10371d5ae8ffa3c62b4"
+    },
+    {
+      "source": "app/views/marketplace_brand.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_brand.php",
+      "original_sha256": "8d9f005f5237e8e021d26a491d2f2fa2f08399f330f61b97078951eb4ec1293d"
+    },
+    {
+      "source": "app/views/marketplace_branding_settings.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_branding_settings.php",
+      "original_sha256": "419872a9a203753dd47f5d50227b80d5c0551de704470c3e4f992f7ac59a4e59"
+    },
+    {
+      "source": "app/views/marketplace_context_sidebar.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_context_sidebar.php",
+      "original_sha256": "ed48c7ed3e82105502600b39a648a053b57c1cd5e8a3e682f648d706a1488d4a"
+    },
+    {
+      "source": "app/views/marketplace_date_range.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_date_range.php",
+      "original_sha256": "e5587bd36455e0763085cdaadf3a567bdda286beda50e173bb4afa65dfe50620"
+    },
+    {
+      "source": "app/views/marketplace_global.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global.php",
+      "original_sha256": "6869c2a786464e3ef92640ff922ceff93f41be3cc7f7d55b62b59fc14badb31d"
+    },
+    {
+      "source": "app/views/marketplace_global_analytics.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global_analytics.php",
+      "original_sha256": "fc7ce114377683d4159f646543c85686d21a455ef09b0a8925cf900ecc7abfc2"
+    },
+    {
+      "source": "app/views/marketplace_global_expenses.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global_expenses.php",
+      "original_sha256": "93db55b0913da844ec58296d4e8d9c1f0ff3cabe713b3a0ef3630d3a195b1ce7"
+    },
+    {
+      "source": "app/views/marketplace_global_marketing.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global_marketing.php",
+      "original_sha256": "fe9ef1b8ebd660a2bd86c8dc7ef8796ef5b63ee6e72faee8e19e0ba1ae955335"
+    },
+    {
+      "source": "app/views/marketplace_global_navigation_config.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global_navigation_config.php",
+      "original_sha256": "31ecc09892b1cce384c24c7151b446421cb3d504f42408bc288b41e895c37f5c"
+    },
+    {
+      "source": "app/views/marketplace_global_products.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global_products.php",
+      "original_sha256": "9a6eeca2e184cd0da25074a3aaac8cb5149b077a6124241c64efa5a402268ca4"
+    },
+    {
+      "source": "app/views/marketplace_global_sidebar.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_global_sidebar.php",
+      "original_sha256": "42435c0db0b9d5b6c6e6efb25a69851b78e0fb76d8645a45cc0ae674e0d9c3b6"
+    },
+    {
+      "source": "app/views/marketplace_hpp_editor.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_hpp_editor.php",
+      "original_sha256": "4bdbf53cbea2a5e3feae06386c3013b96ccd315be7764bfc14ce02d075fdf206"
+    },
+    {
+      "source": "app/views/marketplace_icons.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_icons.php",
+      "original_sha256": "9c735f860536eb64df0a72d3a690247fe3f142add35ed9957faaac7cc65f52e3"
+    },
+    {
+      "source": "app/views/marketplace_income.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_income.php",
+      "original_sha256": "3f6e7b71d5025ee2144a5b8a6e1b0333e3fbc8e018515f2b4585fde4d9df1d62"
+    },
+    {
+      "source": "app/views/marketplace_integrations.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_integrations.php",
+      "original_sha256": "40f9f23947d4d8e97d99023d2ed9ffc454690d43b5d387287deae63d7f7e51f9"
+    },
+    {
+      "source": "app/views/marketplace_integration_page.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_integration_page.php",
+      "original_sha256": "b3d65edb3e1a49173033e03c5402e0573a32d85baeed4bccac1e6a0f25e575c0"
+    },
+    {
+      "source": "app/views/marketplace_orders.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_orders.php",
+      "original_sha256": "68f63feaf961c5305fd2c892382d96907dddea9ef25712f765cd91ec2014da72"
+    },
+    {
+      "source": "app/views/marketplace_platform_logo.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_platform_logo.php",
+      "original_sha256": "1208254ed4c38f496d1baea5821e620f507e37aaf923103d8561bb75b34c3c8d"
+    },
+    {
+      "source": "app/views/marketplace_price_editor.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_price_editor.php",
+      "original_sha256": "2cdf4adfde846abf77bf28189481fad6826ffb8db614648ad8eeae853bb7329c"
+    },
+    {
+      "source": "app/views/marketplace_settings_tabs.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_settings_tabs.php",
+      "original_sha256": "9e6af254e99c9f5e14cac582119489e797f858a4f2ffb2f075aae26ac49783ba"
+    },
+    {
+      "source": "app/views/marketplace_store_dashboard.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_store_dashboard.php",
+      "original_sha256": "24acf1d2b82a62e0b6e97acca5a02b11033edbcce83f520c498c504dfc1a0a14"
+    },
+    {
+      "source": "app/views/marketplace_store_picker.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_store_picker.php",
+      "original_sha256": "cffd37a76a64b713d44c1bee59f5bc30d94705d4e74e4b9299e7ec098aafc619"
+    },
+    {
+      "source": "app/views/marketplace_store_products.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_store_products.php",
+      "original_sha256": "a6f7dee111f3709b92116b3c948239577e4d12cadaeabdcb8b9ab799bbaa5efb"
+    },
+    {
+      "source": "app/views/marketplace_store_sidebar.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_store_sidebar.php",
+      "original_sha256": "6454bcecda1b7b9bc942f68a3048934c636bda441b841f35e0fc4c8889e0e8bf"
+    },
+    {
+      "source": "app/views/marketplace_store_stock.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_store_stock.php",
+      "original_sha256": "0f191aa1d62f2faa8b4205e96e53d4469f8d01f59ce718d9efff9d674a701204"
+    },
+    {
+      "source": "app/views/marketplace_sync.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_sync.php",
+      "original_sha256": "47594092b9bf537d2cdd22b6e42343e859ca8da49efdda68368aeefdd1333539"
+    },
+    {
+      "source": "app/views/marketplace_withdrawals.php",
+      "target": "app/Modules/Marketplace/Views/marketplace_withdrawals.php",
+      "original_sha256": "f79cfe3117bd90e41110fd93f557161c39b0813029ef6cd0a2ce553767e9b0b3"
+    },
+    {
+      "source": "public/marketplace.php",
+      "target": "app/Modules/Marketplace/Controllers/marketplace.php",
+      "original_sha256": "0517d8df6e3d248d55ff43d4f9341abd5c73d23a9579b407ffb2b34f4d4df498"
+    },
+    {
+      "source": "public/workspace.php",
+      "target": "app/Shared/Auth/workspace.php",
+      "original_sha256": "896b23f1da356b53e3d6eecb1441a83c6f869d7c3af37d6a1f1c418afe2f5ac2"
+    },
+    {
+      "source": "public/api/auth-diagnostic.php",
+      "target": "app/Shared/Support/Api/auth-diagnostic.php",
+      "original_sha256": "f3aa53f30bdaaa466b056f0407dbff7736e143383a7e92ef8838f924e9168e26"
+    },
+    {
+      "source": "public/api/diagnostics.php",
+      "target": "app/Shared/Support/Api/diagnostics.php",
+      "original_sha256": "87c73b2c8cb03c7ea912b462702b2e0d7ac45e2334f52809fa772092ba56219a"
+    },
+    {
+      "source": "public/api/health.php",
+      "target": "app/Shared/Support/Api/health.php",
+      "original_sha256": "3de5ddaab416e97e1a77b07f5d60b3eb200bfb99bddd0460192e9103513e01e1"
+    },
+    {
+      "source": "public/api/logout.php",
+      "target": "app/Shared/Auth/Api/logout.php",
+      "original_sha256": "90b1ac8050ffd2782a10744f5809661c26ecad85d8bfadddc5c48a5f775fb42c"
+    },
+    {
+      "source": "public/api/marketplace-ajax.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-ajax.php",
+      "original_sha256": "20bfaeb0d60845a32d8b5db2a7f67c05a7580206f9090e2ec9f1fad643b95194"
+    },
+    {
+      "source": "public/api/marketplace-analytics.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-analytics.php",
+      "original_sha256": "69faae0e6014e0c90d70d0304a72161ff58d73e301922bdebb00093347472ada"
+    },
+    {
+      "source": "public/api/marketplace-auto-sync.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-auto-sync.php",
+      "original_sha256": "210a4e8cd8e509b4db98d5af72c28bd35bfaf040b02882b0e2bfa01e542bfc72"
+    },
+    {
+      "source": "public/api/marketplace-branding.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-branding.php",
+      "original_sha256": "a048d7a96c2569340dc98ef7cd56bc0cafdcd4bf7c9574e408b58b8474240c10"
+    },
+    {
+      "source": "public/api/marketplace-browser-pulse.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-browser-pulse.php",
+      "original_sha256": "1c4c3d1e4da0d2ffc89f379696f1d92a96a1299707fdf6d5f83fc30ac047e6a9"
+    },
+    {
+      "source": "public/api/marketplace-dashboard.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-dashboard.php",
+      "original_sha256": "0aa68286486cd7b7f91107f50064be73d827f4adacbe7b9de1f434808d06e050"
+    },
+    {
+      "source": "public/api/marketplace-fulfillment.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-fulfillment.php",
+      "original_sha256": "21b0a2d96f8834cc29961b3cc74fb951d9bdacf9847540b72c3798c1314032f1"
+    },
+    {
+      "source": "public/api/marketplace-oauth.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-oauth.php",
+      "original_sha256": "d5b1ef73cab7feb3f57534de7628cec9e47a09be040219b974b4d3a0be5fe043"
+    },
+    {
+      "source": "public/api/marketplace-order-finance.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-order-finance.php",
+      "original_sha256": "ba230a7ca52688a297954809bd61fece16bba7cf1adbc0a5e18777087b3353fc"
+    },
+    {
+      "source": "public/api/marketplace-orders.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-orders.php",
+      "original_sha256": "9d4d583007f2f581617be3c39ae95e33ba6eccf02f97e34be05085787c449151"
+    },
+    {
+      "source": "public/api/marketplace-partner-settings.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-partner-settings.php",
+      "original_sha256": "f2339888d72a660286c553f9cb1022c5e38c976d569daa097c0cc3ea1b06fbc4"
+    },
+    {
+      "source": "public/api/marketplace-price.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-price.php",
+      "original_sha256": "57a3f0ca9007f0fedacb059ea42bc749b65d4fa086f0c2115463f3107094ac36"
+    },
+    {
+      "source": "public/api/marketplace-shipping-document.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-shipping-document.php",
+      "original_sha256": "0202200d8bb43994f263316e4aba3e2e6aa211c0678cf68ffdc98a2430e01628"
+    },
+    {
+      "source": "public/api/marketplace-stock.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-stock.php",
+      "original_sha256": "3fc650a7fce66c948e7e75877c3439130573e397ff22f718a9eb627b3c941b45"
+    },
+    {
+      "source": "public/api/marketplace-sync.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-sync.php",
+      "original_sha256": "f779297054b5183ebbaad46eeb54652814bf87e6bbd95308fe4eade5cbd57eb1"
+    },
+    {
+      "source": "public/api/marketplace-webhook.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-webhook.php",
+      "original_sha256": "6dda81a13fc7132ef732cfebb31f2d1507acb4e21efd2c930db96efad782af3c"
+    },
+    {
+      "source": "public/api/marketplace-withdrawals.php",
+      "target": "app/Modules/Marketplace/Controllers/Api/marketplace-withdrawals.php",
+      "original_sha256": "8d26c70a1bb534cd7578f2c1c7f6ff0bdfb748e54c83bb56e60c70d75a186253"
+    },
+    {
+      "source": "public/api/rpc.php",
+      "target": "app/Modules/Konveksi/Controllers/Api/rpc.php",
+      "original_sha256": "636c96890c5d411548b08e2a367dbb00a752c6091274f8786437fc080fcac4ac"
+    },
+    {
+      "source": "public/api/workspace.php",
+      "target": "app/Shared/Auth/Api/workspace.php",
+      "original_sha256": "3e2e72218a32867f10ee5d236dc4bd008f4c06830153e77aefbb3b07b7b3b117"
+    },
+    {
+      "source": "scripts/backup.php",
+      "target": "scripts/backup/backup.php",
+      "original_sha256": "2b57a2f8b6922d16207d854f8622c728dcaa25bd47827f8c09cb1037b7dd5f81"
+    },
+    {
+      "source": "scripts/backup_mysql.ps1",
+      "target": "scripts/backup/backup_mysql.ps1",
+      "original_sha256": "904874350e8cfcffe9e8273be3900ce543f00beebdbf59ecf916b0f003cdc2ef"
+    },
+    {
+      "source": "scripts/check-live-price-read.php",
+      "target": "scripts/diagnostics/check-live-price-read.php",
+      "original_sha256": "1597e518e12b407aaefb8eef6a359eee7df0ab759e8af88b3ac7a1f4da6b77dd"
+    },
+    {
+      "source": "scripts/check-marketplace-catalog.php",
+      "target": "scripts/diagnostics/check-marketplace-catalog.php",
+      "original_sha256": "5b4a6f9a51ed590c1d5a9a93f67e4e909e4712ca521341eb4b88a235724f4f9a"
+    },
+    {
+      "source": "scripts/check-marketplace-finance.php",
+      "target": "scripts/diagnostics/check-marketplace-finance.php",
+      "original_sha256": "d546989052bbe3146db2286262778973636934a671d99d16275b9f223744ee4f"
+    },
+    {
+      "source": "scripts/check-marketplace-hpp.php",
+      "target": "scripts/diagnostics/check-marketplace-hpp.php",
+      "original_sha256": "40a7b62c100de377c33633d27256509d12ff91efca4a798117a8b9aad158eafb"
+    },
+    {
+      "source": "scripts/check-marketplace-price-read.php",
+      "target": "scripts/diagnostics/check-marketplace-price-read.php",
+      "original_sha256": "ffa3e29642a924798f2bca01efdc30fdbc9524e7d4e9107a5f36fd83fba489da"
+    },
+    {
+      "source": "scripts/check-order-status.php",
+      "target": "scripts/diagnostics/check-order-status.php",
+      "original_sha256": "a4b770c348fd635b365e880f79adc21f658e62967b0ca2bcdb7bbd89bf9dab0e"
+    },
+    {
+      "source": "scripts/check_marketplace_fulfillment_readonly.php",
+      "target": "scripts/diagnostics/check_marketplace_fulfillment_readonly.php",
+      "original_sha256": "c42a1522db22b1de8cf173313e024d27f1f138df6a47a763e4ff9b34e0b7e475"
+    },
+    {
+      "source": "scripts/check_marketplace_shipping_readonly.php",
+      "target": "scripts/diagnostics/check_marketplace_shipping_readonly.php",
+      "original_sha256": "3152a5f9d08bbc9db447a23a1d32d26842e86af480cf98fe911171168eaf057e"
+    },
+    {
+      "source": "scripts/diagnose-tiktok-return-shape.php",
+      "target": "scripts/diagnostics/diagnose-tiktok-return-shape.php",
+      "original_sha256": "e9eb1d0751166b6001ce8a2f4e25c6351a6481e3609b5a17bc34bbd914da047c"
+    },
+    {
+      "source": "scripts/fill-missing-marketplace-hpp.php",
+      "target": "scripts/development/fill-missing-marketplace-hpp.php",
+      "original_sha256": "99fa39096cc3d1378d9637133b24cc21dafdcb86708ab1a68e2ca89f64c34610"
+    },
+    {
+      "source": "scripts/install-marketplace-auto-sync.ps1",
+      "target": "scripts/deployment/install-marketplace-auto-sync.ps1",
+      "original_sha256": "66af18b725b8d234042425aa46dc54177c9e82e297753acb4fe468297f817175"
+    },
+    {
+      "source": "scripts/INSTALL_BACKUP_OTOMATIS_ADMIN.bat",
+      "target": "scripts/backup/INSTALL_BACKUP_OTOMATIS_ADMIN.bat",
+      "original_sha256": "009d3635a043d0eb79ed7344a805f9b3c4ac0999f75877c159c94c7f6a3ac64c"
+    },
+    {
+      "source": "scripts/install_backup_task.ps1",
+      "target": "scripts/backup/install_backup_task.ps1",
+      "original_sha256": "233a9692b3b2b171ca14bf9559bf96903f3fc69af4d31878b2c10b11b150231c"
+    },
+    {
+      "source": "scripts/marketplace-auto-sync.php",
+      "target": "bin/workers/marketplace-auto-sync.php",
+      "original_sha256": "5d3bdc08455397cfab1571723953f44764772efeee0ff30988a179eb7c6fc705"
+    },
+    {
+      "source": "scripts/marketplace-background-control.php",
+      "target": "scripts/development/marketplace-background-control.php",
+      "original_sha256": "90e599677c30380231076ed772c78a2e3bcbca30b4490a21db1528c9ba7afc31"
+    },
+    {
+      "source": "scripts/marketplace-background-worker.php",
+      "target": "bin/workers/marketplace-background-worker.php",
+      "original_sha256": "e68b44f678039310c8e6344bc136af93ca33c3c5b0ef228d9d19ad79f4032a73"
+    },
+    {
+      "source": "scripts/marketplace-cron.php",
+      "target": "bin/workers/marketplace-cron.php",
+      "original_sha256": "8abb82ed2d712975bb7d4f5338d3d5146ac9bcc94fb23fb5e72561632738e4a4"
+    },
+    {
+      "source": "scripts/preview_shopee_live.php",
+      "target": "scripts/diagnostics/preview_shopee_live.php",
+      "original_sha256": "67e8791aacc94b2e06458ea070006e6ea2a09b31a074006e3a149d886c7657dd"
+    },
+    {
+      "source": "scripts/remove_backup_task.ps1",
+      "target": "scripts/backup/remove_backup_task.ps1",
+      "original_sha256": "762e2b98e9b7e39d7eb887d12986578e4d32b6fd98c385cb3aed6f01310d6339"
+    },
+    {
+      "source": "scripts/sync-marketplace-catalog.php",
+      "target": "scripts/development/sync-marketplace-catalog.php",
+      "original_sha256": "f98469cb975b1c69c2456c2e07248f29ba9725140fbed4d6e438fb7dab75892a"
+    },
+    {
+      "source": "scripts/sync-marketplace-order-finance.php",
+      "target": "scripts/development/sync-marketplace-order-finance.php",
+      "original_sha256": "115788374a5122f2988b35f57b9b476100ef6a0600df25b39046351142356029"
+    },
+    {
+      "source": "scripts/verify_shipping_download.php",
+      "target": "scripts/diagnostics/verify_shipping_download.php",
+      "original_sha256": "45b85bc32d56abced5f5e5f25903af2e6e6d52c3f445be5f6e12b186175374a5"
+    },
+    {
+      "source": "database/check_audit_cols.php",
+      "target": "scripts/diagnostics/check_audit_cols.php",
+      "original_sha256": "84037507c474c94f46ebed64a7351b162bfc42cbe25826a0706a31e9bb3678a7"
+    },
+    {
+      "source": "database/check_collation.php",
+      "target": "scripts/diagnostics/check_collation.php",
+      "original_sha256": "775682f53eabc84cf05897f8f0ae00712647d23f31706c53e159ba374820a9d2"
+    },
+    {
+      "source": "database/check_tables.php",
+      "target": "scripts/diagnostics/check_tables.php",
+      "original_sha256": "da42d856a5c6092889342b8df97e5013262007c20936e36cfd3122b319858e44"
+    },
+    {
+      "source": "database/current_database_snapshot.json",
+      "target": "database/legacy/current_database_snapshot.json",
+      "original_sha256": "9335e911bf1f9d59500b55389fc853a61875f33a644b419f0bc787f8a1a0e252"
+    },
+    {
+      "source": "database/fix_collation.php",
+      "target": "scripts/diagnostics/fix_collation.php",
+      "original_sha256": "c275ceb8b33a76e56270f4440fbcbd0c0c4383e053aa7f9314b2e36cfca9b721"
+    },
+    {
+      "source": "database/inspect_accounts.php",
+      "target": "scripts/diagnostics/inspect_accounts.php",
+      "original_sha256": "5f05a1cb910f09db9e37058b1d68d0cfe895a5264766f802e90551ef6efa5b22"
+    },
+    {
+      "source": "database/inspect_cols.php",
+      "target": "scripts/diagnostics/inspect_cols.php",
+      "original_sha256": "e65c1b59a1fc0299ee1ef8bf735ab39a79bf3825878d8d1dd5eb66cb7f985438"
+    },
+    {
+      "source": "database/inspect_inventory.php",
+      "target": "scripts/diagnostics/inspect_inventory.php",
+      "original_sha256": "0b00385f48ddb66de02af6fe530a2425a5cc6781f44c9db1e765657435aab134"
+    },
+    {
+      "source": "database/JAGO_LABA_DB_KONVEKSI_SOURCE.xlsx",
+      "target": "database/legacy/JAGO_LABA_DB_KONVEKSI_SOURCE.xlsx",
+      "original_sha256": "8528bc279f3fb3483fc4c71ee523c44ef8b0d90dcb199432b5a036fefce11ff5"
+    },
+    {
+      "source": "database/MigrateSnapshotTo3NF.php",
+      "target": "scripts/diagnostics/MigrateSnapshotTo3NF.php",
+      "original_sha256": "1213c87fea28a26be7752b991bf92e70504be569f84bc034063d9eb61eb1158b"
+    },
+    {
+      "source": "database/migration_advanced_marketplace.php",
+      "target": "database/migrations/marketplace/migration_advanced_marketplace.php",
+      "original_sha256": "a8f3c8b625576692ece70ac4c5d2ba20298cd8a29609935409d191770a367680"
+    },
+    {
+      "source": "database/migration_expenses_and_api.sql",
+      "target": "database/migrations/marketplace/migration_expenses_and_api.sql",
+      "original_sha256": "9293f5ae38b29fa142dc2149446d91e89a75c733dd30523edcddbefbd006cbb5"
+    },
+    {
+      "source": "database/migration_marketing_ads.php",
+      "target": "database/migrations/marketplace/migration_marketing_ads.php",
+      "original_sha256": "1827526f650e227a54a145c3832156855e05a7ba4b923ad0fd3416c78271d616"
+    },
+    {
+      "source": "database/migration_marketplace_active_catalog.php",
+      "target": "database/migrations/marketplace/migration_marketplace_active_catalog.php",
+      "original_sha256": "1cd849d233fa9ee89dc3076b0c9a3c6cac6bbd58f9def23a726f25cf59afa829"
+    },
+    {
+      "source": "database/migration_marketplace_auto_sync.php",
+      "target": "database/migrations/marketplace/migration_marketplace_auto_sync.php",
+      "original_sha256": "0cf4547cd682ea798278097c7618299b02f293a75fc73cbd9837508922305afc"
+    },
+    {
+      "source": "database/migration_marketplace_background_sync.php",
+      "target": "database/migrations/marketplace/migration_marketplace_background_sync.php",
+      "original_sha256": "69d83c32701f516178d150cccbffc982edd20f88c2c73ab068635bc7300fb699"
+    },
+    {
+      "source": "database/migration_marketplace_branding.php",
+      "target": "database/migrations/marketplace/migration_marketplace_branding.php",
+      "original_sha256": "f3ce501f9063e36a3a99d7319f01d8d66fb103b688856de77f8238380348023e"
+    },
+    {
+      "source": "database/migration_marketplace_catalog.php",
+      "target": "database/migrations/marketplace/migration_marketplace_catalog.php",
+      "original_sha256": "6542ca9b212f6ef3f944f75eb73d8bbdc7363bc4f25341abe4a0a88767987ae1"
+    },
+    {
+      "source": "database/migration_marketplace_engine.sql",
+      "target": "database/migrations/marketplace/migration_marketplace_engine.sql",
+      "original_sha256": "dacec7b24954e9e5f886c275ba750b5511fe9bbfa3e66c1bb2cfe49b6f60e99e"
+    },
+    {
+      "source": "database/migration_marketplace_finance_auto.php",
+      "target": "database/migrations/marketplace/migration_marketplace_finance_auto.php",
+      "original_sha256": "cbdb061c9c5a80f3827af083f6d72eaa828b9dd9936ed852a8dd424d56be13eb"
+    },
+    {
+      "source": "database/migration_marketplace_fulfillment.php",
+      "target": "database/migrations/marketplace/migration_marketplace_fulfillment.php",
+      "original_sha256": "6345abdb6dfb5905e85c31a247f3803aaa35e91b04b15de2ba29a99f1a6d32fd"
+    },
+    {
+      "source": "database/migration_marketplace_integration_review.sql",
+      "target": "database/migrations/marketplace/migration_marketplace_integration_review.sql",
+      "original_sha256": "3ead06a3fa4f21755920bf7e62013ea13c4c3c4f0e8a08bf25fe012883e7cea6"
+    },
+    {
+      "source": "database/migration_marketplace_oauth.php",
+      "target": "database/migrations/marketplace/migration_marketplace_oauth.php",
+      "original_sha256": "932498b98e8caaf3eab96c9ee59079886cdc6ed59645e231830e27d917eb4bee"
+    },
+    {
+      "source": "database/migration_marketplace_oauth.sql",
+      "target": "database/migrations/marketplace/migration_marketplace_oauth.sql",
+      "original_sha256": "a1d8ccc96c394cd801d2cc0548741f970f27e7ac8bc28be901cb966ca1b68280"
+    },
+    {
+      "source": "database/migration_marketplace_order_status_index.php",
+      "target": "database/migrations/marketplace/migration_marketplace_order_status_index.php",
+      "original_sha256": "8ee1da25c84b3026cdbe39d7aec6b0d34d637d2c147a2a727182b1a92fb42736"
+    },
+    {
+      "source": "database/migration_marketplace_price_editor.php",
+      "target": "database/migrations/marketplace/migration_marketplace_price_editor.php",
+      "original_sha256": "bd7894bb771c22f2580a384c2594f6eb24511f0f41f71d4758921609ab79ff45"
+    },
+    {
+      "source": "database/migration_marketplace_scope.php",
+      "target": "database/migrations/marketplace/migration_marketplace_scope.php",
+      "original_sha256": "16751f998e13eb1980f4f8684a0d6128132524545976df3831ef185c5ebf0965"
+    },
+    {
+      "source": "database/migration_marketplace_shipping_documents.php",
+      "target": "database/migrations/marketplace/migration_marketplace_shipping_documents.php",
+      "original_sha256": "14695e33e489616b8f8d793836ecc16c8832429b74ebe772b6f4b648e733d7b5"
+    },
+    {
+      "source": "database/migration_marketplace_shipping_packing_slip.php",
+      "target": "database/migrations/marketplace/migration_marketplace_shipping_packing_slip.php",
+      "original_sha256": "bfbf2b8fd1866128d4b285e954ec0bcd0a33325444c7160b350a036fd65d2130"
+    },
+    {
+      "source": "database/migration_marketplace_stock.php",
+      "target": "database/migrations/marketplace/migration_marketplace_stock.php",
+      "original_sha256": "7929ee7d072733acc58d66124439bf6b89cf254041dc722fa48c2e77a162bb84"
+    },
+    {
+      "source": "database/migration_marketplace_store_archive.php",
+      "target": "database/migrations/marketplace/migration_marketplace_store_archive.php",
+      "original_sha256": "ea14a801f1a816bcd623f43ee730159d4b919834f047e2a78e32b6b48519164d"
+    },
+    {
+      "source": "database/migration_marketplace_sync_calendar.php",
+      "target": "database/migrations/marketplace/migration_marketplace_sync_calendar.php",
+      "original_sha256": "f0441ebafa37bf592d7714a7743a27adb5263ba57d4117851942a1f3a28c5af3"
+    },
+    {
+      "source": "database/migration_marketplace_sync_worker.php",
+      "target": "database/migrations/marketplace/migration_marketplace_sync_worker.php",
+      "original_sha256": "44c28c99f115b381ca906662c1d92ebeba665619dc979ccffa917eb6f7e1f95b"
+    },
+    {
+      "source": "database/migration_marketplace_transaction_detail.php",
+      "target": "database/migrations/marketplace/migration_marketplace_transaction_detail.php",
+      "original_sha256": "44eba6c2bf54cb837520462a05596d7235464b278788e3d41595f1acfdb73c00"
+    },
+    {
+      "source": "database/migration_marketplace_withdrawals.php",
+      "target": "database/migrations/marketplace/migration_marketplace_withdrawals.php",
+      "original_sha256": "7fcab7b468bea9fc5c100efc6c894ff088008b8617ac91a6701d5e747f7ee8f2"
+    },
+    {
+      "source": "database/migration_marketplace_withdrawal_xlsx.php",
+      "target": "database/migrations/marketplace/migration_marketplace_withdrawal_xlsx.php",
+      "original_sha256": "b59c709556ff5cbf9c949c23ae5d9c5e252ddda97fe2e89ab5074145e5f8284f"
+    },
+    {
+      "source": "database/migration_normalized_3nf.sql",
+      "target": "database/migrations/shared/migration_normalized_3nf.sql",
+      "original_sha256": "25c24377a66f3cdf593a15aaa88f6da8b7cec6ddc81d88a1b3749878a68c0432"
+    },
+    {
+      "source": "database/migration_settings_and_stores.php",
+      "target": "database/migrations/marketplace/migration_settings_and_stores.php",
+      "original_sha256": "47131ab2d13f92f5a41a351b3b288b9281ddfcab0d58011dc94fd3ac236235b3"
+    },
+    {
+      "source": "database/migration_workspace_review.sql",
+      "target": "database/migrations/shared/migration_workspace_review.sql",
+      "original_sha256": "1d836902ed089d835084eef89fe44e4b1f6af9b81b3857989319dea1b3a85531"
+    },
+    {
+      "source": "database/SeedExactFinkamiReference.php",
+      "target": "database/seeders/SeedExactFinkamiReference.php",
+      "original_sha256": "e515fb4ff5e5f06cce9c5050d90bd6ec219bc06254eb1e9b22184aaefbdc7143"
+    },
+    {
+      "source": "database/SeedExactMenuPages.php",
+      "target": "database/seeders/SeedExactMenuPages.php",
+      "original_sha256": "c122d787336d96eacceb3ead88ee7fe7f0cf35f9b21fa874fa0e172b0f0d728f"
+    },
+    {
+      "source": "database/SeedMarketplaceData.php",
+      "target": "database/seeders/SeedMarketplaceData.php",
+      "original_sha256": "c8eec5492365b615a08943146f1bdd5234ef2e5c1e114a7a1c7cb46b5e93b9ee"
+    },
+    {
+      "source": "database/seed_advanced_marketplace.php",
+      "target": "database/seeders/seed_advanced_marketplace.php",
+      "original_sha256": "47be38eab3cfd8ff384fc8780e9748a3e2bb1b305e345495b1f44096c219076a"
+    },
+    {
+      "source": "database/seed_order_items.php",
+      "target": "database/seeders/seed_order_items.php",
+      "original_sha256": "26be479eaa2ceaa5568a05ed986aef6b38e5b3d7d04df0bbd4b898136c5619f6"
+    },
+    {
+      "source": "database/SOURCE_MANIFEST.json",
+      "target": "database/legacy/SOURCE_MANIFEST.json",
+      "original_sha256": "61df23bd9ddde7c847afa53fd0aaeaf87760e5ac366a0d41f2041fdd958cee6e"
+    },
+    {
+      "source": "tests/browser_autosync_driver.cjs",
+      "target": "tests/Feature/browser_autosync_driver.cjs",
+      "original_sha256": "5de8be029b866fa5398f5c2bd9d60d88d39cd5a35bf22e4bec046eb6e1506818"
+    },
+    {
+      "source": "tests/marketplace_analytics_smoke.php",
+      "target": "tests/Integration/marketplace_analytics_smoke.php",
+      "original_sha256": "769c9af323fc3bacdf063676947a2205b259d380e1ef4a37a4d5af24967c679b"
+    },
+    {
+      "source": "tests/marketplace_branding_smoke.php",
+      "target": "tests/Integration/marketplace_branding_smoke.php",
+      "original_sha256": "7aa553b786d855efeb24fda35c0323f64efd2a09cb216ce4f62c54c9cfd453d9"
+    },
+    {
+      "source": "tests/marketplace_browser_autosync_scope.php",
+      "target": "tests/Integration/marketplace_browser_autosync_scope.php",
+      "original_sha256": "1ef5f36f3596901df0118e4e682163e186e6afd71760bfb499c0b976efbeb24a"
+    },
+    {
+      "source": "tests/marketplace_catalog_smoke.php",
+      "target": "tests/Integration/marketplace_catalog_smoke.php",
+      "original_sha256": "7bb54f1b05faf07daa681506b610ffbd222552cdc1c226b11b0acd674e29e67d"
+    },
+    {
+      "source": "tests/marketplace_dashboard_smoke.php",
+      "target": "tests/Integration/marketplace_dashboard_smoke.php",
+      "original_sha256": "62146966d12b9cf5fa05840a5e0537536426a1579fc6b6bd5ad02dcdd4240781"
+    },
+    {
+      "source": "tests/marketplace_finance_smoke.php",
+      "target": "tests/Integration/marketplace_finance_smoke.php",
+      "original_sha256": "a31b1d87ae799e30a4f4f995e335f4491de19eb025253abad8ce868b2ebe29dc"
+    },
+    {
+      "source": "tests/marketplace_fulfillment_smoke.php",
+      "target": "tests/Integration/marketplace_fulfillment_smoke.php",
+      "original_sha256": "1b072e67e723cf8f759fc9adc74480042e54f7225b5e17b0adcba782581752b2"
+    },
+    {
+      "source": "tests/marketplace_global_expenses_smoke.php",
+      "target": "tests/Integration/marketplace_global_expenses_smoke.php",
+      "original_sha256": "94cdd4587af6fc2e60f4166f6889745d9487b1609ffc8c21ddbf0a40742c8cfb"
+    },
+    {
+      "source": "tests/marketplace_income_smoke.php",
+      "target": "tests/Integration/marketplace_income_smoke.php",
+      "original_sha256": "635e1282f90e10893d324d156e1cbdd1213ce7db67ba1c5e06c7ffabeb9062b6"
+    },
+    {
+      "source": "tests/marketplace_ingestion_smoke.php",
+      "target": "tests/Integration/marketplace_ingestion_smoke.php",
+      "original_sha256": "7943e8b6d0f4473696b8c4e5cbc41f7f38bdb016c134479e4bd22ad4c4477a18"
+    },
+    {
+      "source": "tests/marketplace_loading_benchmark.php",
+      "target": "tests/Integration/marketplace_loading_benchmark.php",
+      "original_sha256": "5449d4552e62335e97a3e6c8978438629164e436aad70b663376c7d24aeff78c"
+    },
+    {
+      "source": "tests/marketplace_oauth_origin_smoke.php",
+      "target": "tests/Integration/marketplace_oauth_origin_smoke.php",
+      "original_sha256": "6ca7200943972c8efce66bf43a9ee85b879b85acabf0127920f399231365bc8d"
+    },
+    {
+      "source": "tests/marketplace_oauth_smoke.php",
+      "target": "tests/Integration/marketplace_oauth_smoke.php",
+      "original_sha256": "385958437e9e891cfe31e41bb17da9a5f0156b25c0fd5d9f1b50cc35941fa165"
+    },
+    {
+      "source": "tests/marketplace_orders_smoke.php",
+      "target": "tests/Integration/marketplace_orders_smoke.php",
+      "original_sha256": "111dc29c671569c5d0f1f2776448a96a4bbd345488d5db457fdd9c98252760b1"
+    },
+    {
+      "source": "tests/marketplace_order_status_smoke.php",
+      "target": "tests/Integration/marketplace_order_status_smoke.php",
+      "original_sha256": "3d0be3e957337ae4416d1d560ec8c0bc0758ce8a1b77829fe45d3ff627d5183b"
+    },
+    {
+      "source": "tests/marketplace_page_readcheck.php",
+      "target": "tests/Feature/marketplace_page_readcheck.php",
+      "original_sha256": "ef8321bf40068956a98cf01dc6d00436339f582a3cf415b2d97226c9abd88042"
+    },
+    {
+      "source": "tests/marketplace_price_smoke.php",
+      "target": "tests/Integration/marketplace_price_smoke.php",
+      "original_sha256": "3724fde55f19deedd29c7def1fe6be8df0e342ddae452f79ac90a0d70f333b37"
+    },
+    {
+      "source": "tests/marketplace_product_ads_smoke.php",
+      "target": "tests/Integration/marketplace_product_ads_smoke.php",
+      "original_sha256": "13ac85ac04462a16f80125594986abf36844ed3f0c05624deffa1c337f216b3d"
+    },
+    {
+      "source": "tests/marketplace_shipping_documents_smoke.php",
+      "target": "tests/Integration/marketplace_shipping_documents_smoke.php",
+      "original_sha256": "5ed4049ea803105b28036c5328e439da5d319a5670d51ee8d83b8d75d4025c8b"
+    },
+    {
+      "source": "tests/marketplace_stock_smoke.php",
+      "target": "tests/Integration/marketplace_stock_smoke.php",
+      "original_sha256": "202947a105c080ceee5218163e2a1a1566b52771894a75da345bad5570cacb0c"
+    },
+    {
+      "source": "tests/marketplace_store_archive_smoke.php",
+      "target": "tests/Integration/marketplace_store_archive_smoke.php",
+      "original_sha256": "c715b949dc5638bc22850a85661f6f384389014cb3278099d3cf741378d1e81a"
+    },
+    {
+      "source": "tests/marketplace_store_selection_smoke.php",
+      "target": "tests/Integration/marketplace_store_selection_smoke.php",
+      "original_sha256": "c390048084a0d7b3f1c46245eed10a4b0bec841faba0831b0fd105be4ed74e61"
+    },
+    {
+      "source": "tests/marketplace_sync_smoke.php",
+      "target": "tests/Integration/marketplace_sync_smoke.php",
+      "original_sha256": "3116eae4dad008942f4f1c3b9594148e63a10fa97ef5b96a4589c0209b8cc9dc"
+    },
+    {
+      "source": "tests/marketplace_sync_window_smoke.php",
+      "target": "tests/Integration/marketplace_sync_window_smoke.php",
+      "original_sha256": "cf657802dc3b013204628291b6b0216dac2b7f1fd4fcc6144a43440008465bd2"
+    },
+    {
+      "source": "tests/marketplace_transaction_detail_smoke.php",
+      "target": "tests/Integration/marketplace_transaction_detail_smoke.php",
+      "original_sha256": "47cea27a99b668fd0eda844bbe99e87dc63ec801858c6446381a22b4445a6ef2"
+    },
+    {
+      "source": "tests/marketplace_withdrawal_smoke.php",
+      "target": "tests/Integration/marketplace_withdrawal_smoke.php",
+      "original_sha256": "cd2d8f7ed0967797bdf6303f808664fcb057d24e42a779412b14f8f9cfe2c49e"
+    },
+    {
+      "source": "tests/marketplace_withdrawal_xlsx_smoke.php",
+      "target": "tests/Integration/marketplace_withdrawal_xlsx_smoke.php",
+      "original_sha256": "2f3e2c4bf33a23a7b77cd5ffb9a375482c14d6916635c40d0f98a2ccc7731d2a"
+    },
+    {
+      "source": "tests/render_hpp_editor_preview.php",
+      "target": "tests/Feature/render_hpp_editor_preview.php",
+      "original_sha256": "83d2af28780ba06560a321527b45f00ab432acff738219bab48a17744e4b95e9"
+    },
+    {
+      "source": "tests/render_marketplace_design_preview.php",
+      "target": "tests/Feature/render_marketplace_design_preview.php",
+      "original_sha256": "73b617d6c936cd26e86680d3bcbd3834b0e6287a3312db282caad56ed2fc0dd6"
+    },
+    {
+      "source": "tests/render_marketplace_price_preview.php",
+      "target": "tests/Feature/render_marketplace_price_preview.php",
+      "original_sha256": "c0dbab8e079258bff0f5c546d570e78bf8ad9b60e7df1c5b4ad307586ea9eba1"
+    },
+    {
+      "source": "tests/render_settings_integration_preview.php",
+      "target": "tests/Feature/render_settings_integration_preview.php",
+      "original_sha256": "58162af3963bb384e4e75d2ac169b2a967043a5f722dd32abd6098dbab0ef21f"
+    },
+    {
+      "source": "tests/shopee_integration_smoke.php",
+      "target": "tests/Integration/shopee_integration_smoke.php",
+      "original_sha256": "cfdab6fb9b71983f5858ea1c0e7ca7eb31678f6ef306d54e031df498824aa515"
+    },
+    {
+      "source": "tests/workspace_migration_smoke.php",
+      "target": "tests/Integration/workspace_migration_smoke.php",
+      "original_sha256": "bbbda09be5021339551e00239f71687eed760fcd6d0ce67493e6bd17e4d7f461"
+    },
+    {
+      "source": "tests/workspace_policy.php",
+      "target": "tests/Integration/workspace_policy.php",
+      "original_sha256": "70f374330d8fa4b5183dccf335ff732ebdec353bc6a2db5d7aef1404185e94d8"
+    },
+    {
+      "source": "public/assets/product-ad-report-template.csv",
+      "target": "public/assets/marketplace/product-ad-report-template.csv",
+      "original_sha256": "072f32cd379d9b155a00c593ec16911bb8db8fa8247f3452a1004e125d132c6c"
+    },
+    {
+      "source": "public/assets/css/date-range.css",
+      "target": "public/assets/shared/css/date-range.css",
+      "original_sha256": "640c8875c5d00bd594fbfd819d4ef2198ea34553127e0384c33209a96d545ac8"
+    },
+    {
+      "source": "public/assets/css/marketplace-dashboard.css",
+      "target": "public/assets/marketplace/css/marketplace-dashboard.css",
+      "original_sha256": "3fc4f58698b1bff7b67e89103cb36a71e17ee26bdeefe457924ccf9f0e299785"
+    },
+    {
+      "source": "public/assets/css/marketplace-hpp-editor.css",
+      "target": "public/assets/marketplace/css/marketplace-hpp-editor.css",
+      "original_sha256": "3bb47cd000de2494e207103de9b7af00716671e1535a974205b81d958aa3b494"
+    },
+    {
+      "source": "public/assets/css/marketplace-orders.css",
+      "target": "public/assets/marketplace/css/marketplace-orders.css",
+      "original_sha256": "4cbb84aaf7a5db8e7787d6a65754cf433f5504fec1d944c317525f9ae1c4f2e7"
+    },
+    {
+      "source": "public/assets/css/marketplace-price.css",
+      "target": "public/assets/marketplace/css/marketplace-price.css",
+      "original_sha256": "a817b4f287ce3446b177e20dbafbdab0ad32bd2762114b4608abfde4e85fac05"
+    },
+    {
+      "source": "public/assets/css/marketplace-settings.css",
+      "target": "public/assets/marketplace/css/marketplace-settings.css",
+      "original_sha256": "09bd5f7ccb0175d8abb0997205bb372e549d0e71239136ffb2e9f9a14a31f2bb"
+    },
+    {
+      "source": "public/assets/css/marketplace-sync-preview.css",
+      "target": "public/assets/marketplace/css/marketplace-sync-preview.css",
+      "original_sha256": "c7ee31ef195c540c8479a81daa7ed4e90d101b4cab8ea99015f2279f77fa944d"
+    },
+    {
+      "source": "public/assets/css/marketplace-system.css",
+      "target": "public/assets/marketplace/css/marketplace-system.css",
+      "original_sha256": "c5b8e88ddcea242d753647f833d6b04719045012e46bdb0d062810a4013410e2"
+    },
+    {
+      "source": "public/assets/css/marketplace-ui.css",
+      "target": "public/assets/marketplace/css/marketplace-ui.css",
+      "original_sha256": "68af12ae3330d78941925c5bd5cbea26aaae224b6411b4b00c8c8c002c3a79f9"
+    },
+    {
+      "source": "public/assets/icons/marketplace.svg",
+      "target": "public/assets/marketplace/icons/marketplace.svg",
+      "original_sha256": "26d963df7826d9ccea153b2ae5eac79c92d86610b0f53030e645ca8ae9bb3de1"
+    },
+    {
+      "source": "public/assets/js/date-range.js",
+      "target": "public/assets/shared/js/date-range.js",
+      "original_sha256": "6f8c00e9cccd6a87bc12d813375d31a68abd2f7e137f24095a8a84c617dfac04"
+    },
+    {
+      "source": "public/assets/js/global-analytics.js",
+      "target": "public/assets/marketplace/js/global-analytics.js",
+      "original_sha256": "926d6471835b96d9971bcc517e4fba561eda3b7509aae56e3a3f5731e9dd09f9"
+    },
+    {
+      "source": "public/assets/js/global-expenses.js",
+      "target": "public/assets/marketplace/js/global-expenses.js",
+      "original_sha256": "22466d2892879a83284ddd1d2fcaa648f55bb61a0adce8d08b6da101884a35a5"
+    },
+    {
+      "source": "public/assets/js/jl-api.js",
+      "target": "public/assets/konveksi/js/jl-api.js",
+      "original_sha256": "af899385628d7b42e1b1ec42f8abc5224bb0a8c59d283563b7c9742d706a7226"
+    },
+    {
+      "source": "public/assets/js/marketplace-auto-refresh.js",
+      "target": "public/assets/marketplace/js/marketplace-auto-refresh.js",
+      "original_sha256": "c7f32b040fa992332945e6c078f0d5aaf5f63015822b7fff93caf49a3d5eec13"
+    },
+    {
+      "source": "public/assets/js/marketplace-auto-sync.js",
+      "target": "public/assets/marketplace/js/marketplace-auto-sync.js",
+      "original_sha256": "2835d841a65ed2043aca2f09da6c4fd0f4d0c9d8f7f7bd749c751c208e0488c8"
+    },
+    {
+      "source": "public/assets/js/marketplace-background-sync.js",
+      "target": "public/assets/marketplace/js/marketplace-background-sync.js",
+      "original_sha256": "2d6194040cca668bb7f9d6f00e36ee89e0edd51f0e730d2715e66ad89bea65ad"
+    },
+    {
+      "source": "public/assets/js/marketplace-branding.js",
+      "target": "public/assets/marketplace/js/marketplace-branding.js",
+      "original_sha256": "d8a96dbc1b98f749cb3977d13c8e691b6014f7a47c37f104a7c7e8e782c1527f"
+    },
+    {
+      "source": "public/assets/js/marketplace-browser-pulse.js",
+      "target": "public/assets/marketplace/js/marketplace-browser-pulse.js",
+      "original_sha256": "f6baab401c9535fb07d80e120a98be1dd1899f89a488820ff001d749cf1bd755"
+    },
+    {
+      "source": "public/assets/js/marketplace-catalog-sync.js",
+      "target": "public/assets/marketplace/js/marketplace-catalog-sync.js",
+      "original_sha256": "c01ba84deea85ddb570bd13d98c5c2fbde65624bf08971bf68089248e4907095"
+    },
+    {
+      "source": "public/assets/js/marketplace-dashboard.js",
+      "target": "public/assets/marketplace/js/marketplace-dashboard.js",
+      "original_sha256": "005ae17a67fcd85c17fa574befb44f714412404f3058278f9defd60681974920"
+    },
+    {
+      "source": "public/assets/js/marketplace-hpp-editor.js",
+      "target": "public/assets/marketplace/js/marketplace-hpp-editor.js",
+      "original_sha256": "738d617a323225f46c07159eba4531df91c1930ce4cd49710515a18b71a2ebc1"
+    },
+    {
+      "source": "public/assets/js/marketplace-orders.js",
+      "target": "public/assets/marketplace/js/marketplace-orders.js",
+      "original_sha256": "4ef8303db5802a59526d0ccebc8c7316e5ff479ccbd77fc8cda9a3c2a3c9cee8"
+    },
+    {
+      "source": "public/assets/js/marketplace-price.js",
+      "target": "public/assets/marketplace/js/marketplace-price.js",
+      "original_sha256": "a7050937ae5f447e218638d59c28130bb168aebb09651718bb6fae3e90f57373"
+    },
+    {
+      "source": "public/assets/js/marketplace-settings-integration.js",
+      "target": "public/assets/marketplace/js/marketplace-settings-integration.js",
+      "original_sha256": "f5adf157dfe5e096ced436218e222f1649de031148e43f1ad4792070b1e22776"
+    },
+    {
+      "source": "public/assets/js/marketplace-stock.js",
+      "target": "public/assets/marketplace/js/marketplace-stock.js",
+      "original_sha256": "2f730aac770e000d9c0c239677e017f58387a5803d79ffaafc3678b83400d017"
+    },
+    {
+      "source": "public/assets/js/marketplace-sync.js",
+      "target": "public/assets/marketplace/js/marketplace-sync.js",
+      "original_sha256": "4bc6189232c788eb7b357269591137eadbdebbcfc2f5baf9b1e5f61a7558694c"
+    },
+    {
+      "source": "public/assets/js/marketplace-system.js",
+      "target": "public/assets/marketplace/js/marketplace-system.js",
+      "original_sha256": "ef2f027a7c0f5be873db32fb9f85b696a666c5212f0d8faf494f34a1b6597efc"
+    },
+    {
+      "source": "public/assets/js/marketplace-withdrawals.js",
+      "target": "public/assets/marketplace/js/marketplace-withdrawals.js",
+      "original_sha256": "8fef690b028aabca998c0dcdb29c7fb2e1607056fa1ed82c0e338d1ecf2dd3e8"
+    },
+    {
+      "source": "public/assets/js/order-transaction-detail.js",
+      "target": "public/assets/marketplace/js/order-transaction-detail.js",
+      "original_sha256": "b85ee6dffa9dbfa9e25ec6f60acfa3bf1465d736b52c1b571326b866e8f3a439"
+    },
+    {
+      "source": "public/assets/konveksi/.gitkeep",
+      "target": "public/assets/marketplace/konveksi/.gitkeep",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "public/assets/marketplace/.gitkeep",
+      "target": "public/assets/marketplace/marketplace/.gitkeep",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "public/assets/shared/.gitkeep",
+      "target": "public/assets/marketplace/shared/.gitkeep",
+      "original_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "public/assets/images/marketplaces/shopee.png",
+      "target": "public/assets/marketplace/images/marketplaces/shopee.png",
+      "original_sha256": "ea294cd03a8f3e8415cf936e17d6aaf21c272f804ed1f32bd10f3961e753f20a"
+    },
+    {
+      "source": "public/assets/images/marketplaces/tiktok.png",
+      "target": "public/assets/marketplace/images/marketplaces/tiktok.png",
+      "original_sha256": "07dc9fa1ec21bd175db844c6d568c03748961ac4e9226818b0f6773c1a1e0984"
+    },
+    {
+      "source": "app/config.php",
+      "target": "app/Bootstrap/config.php",
+      "original_sha256": "5d99f6c5f6f79689b5bedff6dc47b3e6740bea8dfbdde73f5da635d3ba33f21d"
+    },
+    {
+      "source": "app/Shared/Runtime.php",
+      "target": "app/Bootstrap/SharedRuntime.php",
+      "original_sha256": "c62ad1c25891155b7e7ff70a98e17a59aaea58302b658271c2326be907557b12"
+    }
+  ],
+  "compatibility": "PHP entry-point wrappers; legacy static asset aliases and operation scripts retained",
+  "notes": [
+    "Runtime storage and database contents were not moved.",
+    "No migration or seed executed."
+  ],
+  "additional_configuration": [
+    "config/storage.php",
+    "config/queue.php",
+    "config/integrations.php",
+    "routes/web.php",
+    "routes/api.php",
+    "routes/konveksi.php",
+    "routes/marketplace.php",
+    "composer.json",
+    "composer.lock",
+    "bin/console"
+  ]
+}

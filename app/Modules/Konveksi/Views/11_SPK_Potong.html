@@ -1,0 +1,687 @@
+<!-- =========================================================
+     MODUL: SPK POTONG (CUTTING WORK ORDER)
+     ========================================================= -->
+                    <div v-if="currentTab === 'potong'" class="space-y-5 sm:space-y-6 w-full">
+                        <!-- HEADER CARD EKSEKUTIF -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100">Operasional Konveksi</span>
+                                    <span class="text-[10px] font-black text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200"><i class="fa-solid fa-scissors mr-1 text-amber-500"></i>{{ filteredPotong.length }} Dokumen SPK</span>
+                                    <span class="text-[10px] font-black text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-up text-emerald-500"></i> Auto-Backup Drive Aktif</span>
+                                </div>
+                                <h3 class="text-2xl font-black text-slate-900 tracking-tight">SPK Potong Bahan</h3>
+                                <p class="text-xs text-slate-500 font-semibold mt-0.5">Target lembar pola, hasil pemotongan aktual, rincian upah borongan, dan pipeline siap jahit.</p>
+                            </div>
+                            <button @click="openModal('potong')" class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-3.5 rounded-2xl text-sm font-black btn-active shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 shrink-0 transition-all cursor-pointer">
+                                <i class="fa-solid fa-plus text-amber-300"></i> Buat SPK Potong
+                            </button>
+                        </div>
+
+                        <!-- 4 EXECUTIVE KPI STAT CARDS (Height 100-115px) -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+                            <!-- TOTAL DATA CARD -->
+                            <div @click="filterStatusPotong = 'semua'" 
+                                 :class="['cursor-pointer p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group min-h-[96px] sm:min-h-[105px] max-h-[115px]', 
+                                          filterStatusPotong === 'semua' ? 'bg-gradient-to-br from-blue-50 to-indigo-50/40 border-blue-400 ring-2 ring-blue-500/25 shadow-blue-500/10' : 'bg-white border-slate-200/80 hover:border-blue-200 hover:bg-slate-50/60']">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">TOTAL DATA</p>
+                                        <span v-if="filterStatusPotong === 'semua'" class="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-none my-1">{{ totalPotongCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 truncate">Seluruh riwayat SPK</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-file-lines text-blue-600 text-lg sm:text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AKTIF CARD -->
+                            <div @click="filterStatusPotong = 'aktif'" 
+                                 :class="['cursor-pointer p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group min-h-[96px] sm:min-h-[105px] max-h-[115px]', 
+                                          filterStatusPotong === 'aktif' ? 'bg-gradient-to-br from-amber-50 to-yellow-50/40 border-amber-400 ring-2 ring-amber-500/25 shadow-amber-500/10' : 'bg-white border-slate-200/80 hover:border-amber-200 hover:bg-slate-50/60']">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">AKTIF / PROSES</p>
+                                        <span v-if="filterStatusPotong === 'aktif'" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-2xl sm:text-3xl font-black text-amber-600 tracking-tight leading-none my-1">{{ potongAktifCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 truncate">Sedang dipotong</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-scissors text-amber-600 text-lg sm:text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SELESAI CARD -->
+                            <div @click="filterStatusPotong = 'selesai'" 
+                                 :class="['cursor-pointer p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group min-h-[96px] sm:min-h-[105px] max-h-[115px]', 
+                                          filterStatusPotong === 'selesai' ? 'bg-gradient-to-br from-emerald-50 to-teal-50/40 border-emerald-400 ring-2 ring-emerald-500/25 shadow-emerald-500/10' : 'bg-white border-slate-200/80 hover:border-emerald-200 hover:bg-slate-50/60']">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">SELESAI</p>
+                                        <span v-if="filterStatusPotong === 'selesai'" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-2xl sm:text-3xl font-black text-emerald-600 tracking-tight leading-none my-1">{{ potongSelesaiCount }}</h4>
+                                    <p class="text-[10px] font-bold text-slate-400 truncate">Rampung & dilunasi</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-circle-check text-emerald-600 text-lg sm:text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- STOK SIAP JAHIT CARD -->
+                            <div @click="filterStatusPotong = 'siap_jahit'" 
+                                 :class="['cursor-pointer p-4 sm:p-4.5 rounded-2xl sm:rounded-3xl border transition-all duration-200 flex items-center justify-between shadow-sm relative overflow-hidden group min-h-[96px] sm:min-h-[105px] max-h-[115px]', 
+                                          filterStatusPotong === 'siap_jahit' ? 'bg-gradient-to-br from-violet-50 to-purple-50/40 border-violet-400 ring-2 ring-violet-500/25 shadow-violet-500/10' : 'bg-white border-slate-200/80 hover:border-violet-200 hover:bg-slate-50/60']">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-500">STOK SIAP JAHIT</p>
+                                        <span v-if="filterStatusPotong === 'siap_jahit'" class="w-2 h-2 rounded-full bg-violet-600 animate-pulse"></span>
+                                    </div>
+                                    <h4 class="text-lg sm:text-xl font-black text-violet-700 tracking-tight leading-none my-1 truncate max-w-[170px]" :title="formatPcsLusin(totalStokSiapJahitPcs, true)">
+                                        {{ formatPcsLusin(totalStokSiapJahitPcs, true) }}
+                                    </h4>
+                                    <p class="text-[10px] font-bold text-slate-400 truncate">{{ spkSiapJahitCount }} SPK belum dijahit</p>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-layer-group text-violet-600 text-lg sm:text-xl"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TOOLBAR & FILTER BAR INTERAKTIF -->
+                        <div class="bg-white p-3.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+                            <!-- Search Bar -->
+                            <div class="relative w-full md:w-80 shrink-0">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                <input v-model="searchPotong" type="text" placeholder="Cari No. SPK, produk, pemotong..." 
+                                       class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl sm:rounded-2xl text-xs font-bold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                                <button v-if="searchPotong" @click="searchPotong = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                                    <i class="fa-solid fa-circle-xmark text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Dropdowns Filter Controls Group -->
+                            <div class="flex flex-wrap items-center gap-2 justify-start md:justify-end">
+                                <!-- Status Dropdown -->
+                                <div class="relative min-w-[140px]">
+                                    <select v-model="filterStatusPotong" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold py-2 pl-3 pr-7 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-slate-300 transition-all">
+                                        <option value="semua">Semua Status</option>
+                                        <option value="aktif">Sedang Dipotong (Proses)</option>
+                                        <option value="selesai">Selesai & Dilunasi</option>
+                                        <option value="siap_jahit">Siap Dijahit (Ada Sisa Stok)</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Pekerja Dropdown -->
+                                <div class="relative min-w-[150px]">
+                                    <select v-model="filterPekerjaPotong" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold py-2 pl-3 pr-7 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-slate-300 transition-all">
+                                        <option value="semua">Semua Pemotong</option>
+                                        <option v-for="pg in getPegawaiByDivisi('potong')" :key="pg.id" :value="pg.id">
+                                            {{ pg.nama }}
+                                        </option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Periode Dropdown -->
+                                <div class="relative min-w-[125px]">
+                                    <select v-model="filterPeriodePotong" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold py-2 pl-3 pr-7 rounded-xl sm:rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer hover:border-slate-300 transition-all">
+                                        <option value="semua">Semua Periode</option>
+                                        <option value="hari_ini">Hari Ini</option>
+                                        <option value="7_hari">7 Hari Terakhir</option>
+                                        <option value="bulan_ini">Bulan Ini</option>
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
+                                        <i class="fa-solid fa-chevron-down text-[9px]"></i>
+                                    </div>
+                                </div>
+
+                                <!-- Reset Button -->
+                                <button v-if="isFilterPotongActive" @click="resetFilterPotong" 
+                                        class="px-3 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl sm:rounded-2xl text-xs font-black transition-all border border-red-100 flex items-center gap-1.5 shadow-2xs cursor-pointer" title="Reset Filter">
+                                    <i class="fa-solid fa-rotate-left text-[11px]"></i> Reset
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- DESKTOP / TABLET TABLE: 8-COLUMN TWO-TIER STICKY HEADER -->
+                        <div class="card-pro !p-0 overflow-x-auto border border-slate-200/80 shadow-sm rounded-2xl sm:rounded-3xl bg-white hidden md:block">
+                            <table class="w-full text-left whitespace-nowrap min-w-[1220px]">
+                                <thead class="jl-sticky-header select-none">
+                                    <tr class="bg-gradient-to-r from-slate-50 via-slate-100/70 to-slate-50 border-b border-slate-200/90 text-slate-700">
+                                        <!-- 1. DETAIL / ACCORDION TOGGLE -->
+                                        <th class="py-3 px-3 w-12 text-center rounded-tl-2xl sm:rounded-tl-3xl">
+                                            <span class="text-[10px] font-black uppercase tracking-wider text-slate-400">#</span>
+                                        </th>
+
+                                        <!-- 2. DOKUMEN SPK -->
+                                        <th class="py-3 px-4 min-w-[150px]">
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-solid fa-file-lines"></i>
+                                                </span>
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Dokumen SPK</span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400 pl-6.5">Nomor & Target Total</p>
+                                        </th>
+
+                                        <!-- 3. TIMELINE KERJA -->
+                                        <th class="py-3 px-4 min-w-[140px]">
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="w-5 h-5 rounded-md bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-regular fa-calendar-days"></i>
+                                                </span>
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Timeline</span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400 pl-6.5">Mulai & Selesai</p>
+                                        </th>
+
+                                        <!-- 4. OPERATOR PIC -->
+                                        <th class="py-3 px-4 min-w-[150px]">
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="w-5 h-5 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-solid fa-scissors"></i>
+                                                </span>
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Operator PIC</span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400 pl-6.5">Pemotong Bahan</p>
+                                        </th>
+
+                                        <!-- 5. TARGET PRODUKSI & MODEL -->
+                                        <th class="py-3 px-4 min-w-[230px]">
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-solid fa-layer-group"></i>
+                                                </span>
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Target Model</span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400 pl-6.5">Nama Produk & Qty Target</p>
+                                        </th>
+
+                                        <!-- 6. PIPELINE HASIL POTONG / SIAP JAHIT -->
+                                        <th class="py-3 px-4 min-w-[260px]">
+                                            <div class="flex items-center gap-1.5 mb-0.5">
+                                                <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-solid fa-shirt"></i>
+                                                </span>
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Pipeline Siap Jahit</span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400 pl-6.5">Stok Sisa / Integrasi Alokasi</p>
+                                        </th>
+
+                                        <!-- 7. KALKULASI UPAH (RATA KANAN) -->
+                                        <th class="py-3 px-4 text-right min-w-[160px]">
+                                            <div class="flex items-center justify-end gap-1.5 mb-0.5">
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Upah Borongan</span>
+                                                <span class="w-5 h-5 rounded-md bg-teal-100 text-teal-700 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-solid fa-wallet"></i>
+                                                </span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400 pr-6.5">Kotor, Kasbon & Bersih</p>
+                                        </th>
+
+                                        <!-- 8. STATUS & TINDAKAN (STICKY RIGHT) -->
+                                        <th class="jl-sticky-col-right-header text-right py-3 px-4 min-w-[180px] rounded-tr-2xl sm:rounded-tr-3xl">
+                                            <div class="flex items-center justify-end gap-1.5 mb-0.5">
+                                                <span class="text-[11px] font-black uppercase tracking-wider text-slate-700">Status & Tindakan</span>
+                                                <span class="w-5 h-5 rounded-md bg-slate-200 text-slate-700 flex items-center justify-center text-[10px]">
+                                                    <i class="fa-solid fa-sliders"></i>
+                                                </span>
+                                            </div>
+                                            <p class="text-[9px] font-bold text-slate-400">Progres, WA & Berkas</p>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-slate-700">
+                                    <template v-for="pt in filteredPotong" :key="pt.id">
+                                        <!-- MAIN DATA ROW -->
+                                        <tr class="jl-spk-row hover:bg-blue-50/20 transition-colors">
+                                            <!-- 1. ACCORDION EXPAND TOGGLE -->
+                                            <td class="py-3.5 px-3 text-center align-middle">
+                                                <button @click="toggleExpandPotong(pt.id)" 
+                                                        class="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                                        :title="expandedSpkPotong === pt.id ? 'Tutup Rincian' : 'Buka Rincian SPK'">
+                                                    <i :class="['fa-solid text-[11px] transition-transform duration-200', expandedSpkPotong === pt.id ? 'fa-chevron-down rotate-180 text-blue-600' : 'fa-chevron-right']"></i>
+                                                </button>
+                                            </td>
+
+                                            <!-- 2. DOKUMEN SPK -->
+                                            <td class="py-3.5 px-4 align-middle">
+                                                <div class="flex items-center gap-1.5">
+                                                    <button @click="bukaDetailDrawerSPK('potong', pt)" 
+                                                            class="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-mono font-black bg-blue-50 text-blue-700 border border-blue-200/80 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
+                                                            title="Klik untuk membuka slide-over detail">
+                                                        SPK-POT-{{ String(pt.id).slice(-4) }}
+                                                    </button>
+                                                    <span v-if="pt.catatan" class="text-slate-400 hover:text-slate-600 cursor-help" :title="'Catatan: ' + pt.catatan">
+                                                        <i class="fa-regular fa-comment-dots text-xs"></i>
+                                                    </span>
+                                                </div>
+                                                <div class="text-[10px] font-bold text-slate-500 mt-1 flex items-center gap-1">
+                                                    <span>Target:</span>
+                                                    <span class="font-black text-slate-700">{{ formatPcsLusin(getTotalTargetPotongPcs(pt), true) }}</span>
+                                                </div>
+                                            </td>
+
+                                            <!-- 3. TIMELINE KERJA -->
+                                            <td class="py-3.5 px-4 align-middle">
+                                                <div class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                                                    <i class="fa-regular fa-calendar text-blue-500 text-[11px]"></i>
+                                                    <span>{{ formatDateID(pt.tanggal) }}</span>
+                                                </div>
+                                                <div v-if="pt.tanggal_selesai" class="text-[10px] font-semibold text-emerald-600 flex items-center gap-1 mt-1">
+                                                    <i class="fa-solid fa-check text-[9px]"></i>
+                                                    <span>{{ formatDateID(pt.tanggal_selesai) }}</span>
+                                                </div>
+                                                <div v-else class="text-[10px] font-medium text-amber-600 flex items-center gap-1 mt-1">
+                                                    <i class="fa-regular fa-clock text-[9px] animate-pulse"></i>
+                                                    <span>Sedang Diproses</span>
+                                                </div>
+                                            </td>
+
+                                            <!-- 4. OPERATOR PIC -->
+                                            <td class="py-3.5 px-4 align-middle">
+                                                <div class="flex items-center gap-2">
+                                                    <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200/70 flex items-center justify-center text-amber-700 text-xs shrink-0 font-black">
+                                                        <i class="fa-solid fa-scissors"></i>
+                                                    </div>
+                                                    <div class="truncate max-w-[130px]">
+                                                        <span class="text-xs font-black text-slate-800 block truncate" :title="getPegawaiName(pt.id_pegawai)">{{ getPegawaiName(pt.id_pegawai) }}</span>
+                                                        <span class="text-[9px] text-amber-700 font-bold bg-amber-50 px-1.5 py-0.2 rounded border border-amber-100 inline-block">Tukang Potong</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 5. TARGET MODEL -->
+                                            <td class="py-3.5 px-4 align-middle min-w-[230px]">
+                                                <div class="space-y-1">
+                                                    <div v-for="(it, idx) in (pt.items || []).slice(0, 2)" :key="idx" class="flex items-center justify-between gap-2 text-xs">
+                                                        <div class="flex items-center gap-1.5 truncate max-w-[150px]" :title="getProdukName(it.id_produk)">
+                                                            <div class="w-5 h-5 rounded-md bg-slate-100 border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center text-[8px] font-bold text-slate-500">
+                                                                <img v-if="getProdukPhoto(it.id_produk)" :src="getProdukPhoto(it.id_produk)" class="w-full h-full object-cover">
+                                                                <span v-else>{{ (getProdukName(it.id_produk) || 'P').charAt(0) }}</span>
+                                                            </div>
+                                                            <span class="font-bold text-slate-800 truncate text-[11px]">{{ getProdukName(it.id_produk) }}</span>
+                                                        </div>
+                                                        <span class="text-[10px] font-black text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100 whitespace-nowrap">
+                                                            {{ formatQtyProduk(it.id_produk, (pt.status === 'Selesai' ? getQtyHasilPotong(pt, it) : it.qty), true) }}
+                                                        </span>
+                                                    </div>
+                                                    <div v-if="(pt.items || []).length > 2" class="pt-0.5">
+                                                        <button @click="toggleExpandPotong(pt.id)" class="text-[10px] font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer flex items-center gap-1">
+                                                            <span>+{{ pt.items.length - 2 }} model lainnya</span>
+                                                            <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
+
+                                            <!-- 6. PIPELINE HASIL POTONG / SIAP JAHIT -->
+                                            <td class="py-3.5 px-4 align-middle min-w-[260px]">
+                                                <div v-if="pt.status === 'Selesai'">
+                                                    <div v-if="getStokPerluJahitSPK(pt).length" class="rounded-xl bg-amber-50/70 border border-amber-200/90 p-2 shadow-2xs">
+                                                        <div class="flex items-center justify-between gap-2 mb-1.5">
+                                                            <span class="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-amber-800">
+                                                                <i class="fa-solid fa-shirt text-amber-500 text-[10px]"></i> Siap Dijahit
+                                                            </span>
+                                                            <span class="text-[9px] font-black text-amber-800 bg-amber-100/90 px-1.5 py-0.2 rounded border border-amber-200">
+                                                                {{ getJumlahModelPerluJahitSPK(pt) }} Model
+                                                            </span>
+                                                        </div>
+                                                        <div class="space-y-1">
+                                                            <div v-for="stok in getStokPerluJahitSPK(pt).slice(0, 2)" :key="String(pt.id)+'-'+String(stok.id_produk)" class="flex items-center justify-between gap-2 text-[10px]">
+                                                                <span class="font-bold text-slate-700 truncate max-w-[140px]" :title="stok.nama">{{ stok.nama }}</span>
+                                                                <span class="font-black text-amber-900">{{ formatQtyProduk(stok.id_produk, stok.qty, true) }}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div v-if="getStokPerluJahitSPK(pt).length > 2" class="mt-1 pt-1 border-t border-amber-200/60 flex items-center justify-between text-[9px]">
+                                                            <button @click="toggleExpandPotong(pt.id)" class="font-bold text-amber-800 hover:underline cursor-pointer">
+                                                                +{{ getStokPerluJahitSPK(pt).length - 2 }} lainnya
+                                                            </button>
+                                                            <span class="font-black text-amber-900">Total: {{ formatPcsLusin(getTotalStokPerluJahitSPK(pt), true) }}</span>
+                                                        </div>
+                                                        <div v-else class="mt-1 pt-1 border-t border-amber-200/60 flex items-center justify-between text-[9px]">
+                                                            <span class="font-bold text-amber-800">Sisa Stok</span>
+                                                            <span class="font-black text-amber-900">{{ formatPcsLusin(getTotalStokPerluJahitSPK(pt), true) }}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div v-else class="rounded-xl bg-emerald-50/70 border border-emerald-200/90 py-2 px-3 text-center shadow-2xs">
+                                                        <div class="flex items-center justify-center gap-1.5 text-emerald-700">
+                                                            <i class="fa-solid fa-circle-check text-xs text-emerald-500"></i>
+                                                            <span class="text-[10px] font-black uppercase tracking-wider">Sudah Teralokasi</span>
+                                                        </div>
+                                                        <p class="text-[9px] font-semibold text-emerald-600 mt-0.5">100% dialokasikan ke SPK Jahit</p>
+                                                    </div>
+                                                </div>
+                                                <div v-else class="rounded-xl bg-slate-50 border border-slate-200 py-2.5 px-3 text-center shadow-2xs">
+                                                    <div class="flex items-center justify-center gap-1.5 text-slate-500">
+                                                        <i class="fa-solid fa-hourglass-half text-amber-500 text-xs animate-pulse"></i>
+                                                        <span class="text-[10px] font-black uppercase tracking-wider">Menunggu Selesai</span>
+                                                    </div>
+                                                    <p class="text-[9px] font-medium text-slate-400 mt-0.5">Stok aktif saat SPK diselesaikan</p>
+                                                </div>
+                                            </td>
+
+                                            <!-- 7. KALKULASI UPAH -->
+                                            <td class="text-right py-3.5 px-4 align-middle min-w-[160px]">
+                                                <div class="font-bold text-slate-900 text-xs leading-none">
+                                                    {{ formatRupiah(getUpahTotalSPK(pt, 'potong')) }}
+                                                </div>
+                                                <div class="flex flex-col items-end gap-0.5 mt-1">
+                                                    <span v-if="pt.kasbon > 0" class="text-[9px] font-bold text-red-600 bg-red-50 px-1.5 py-0.2 rounded border border-red-100">
+                                                        Kasbon: -{{ formatRupiah(pt.kasbon) }}
+                                                    </span>
+                                                    <span v-if="pt.pembayaran_piutang > 0" class="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                                                        Piutang: -{{ formatRupiah(pt.pembayaran_piutang) }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-[11px] font-black text-emerald-600 mt-1">
+                                                    Bersih: {{ formatRupiah(pt.upah_bersih || (getUpahTotalSPK(pt, 'potong') - (pt.kasbon || 0) - (pt.pembayaran_piutang || 0))) }}
+                                                </div>
+                                            </td>
+
+                                            <!-- 8. STATUS & TINDAKAN (STICKY RIGHT) -->
+                                            <td class="jl-sticky-col-right py-3.5 px-4 align-middle text-right">
+                                                <div class="flex items-center justify-end gap-1.5">
+                                                    <!-- Status Badge -->
+                                                    <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black border shadow-2xs mr-1', 
+                                                                  pt.status === 'Selesai' ? 'badge-success !bg-emerald-50 !text-emerald-700 !border-emerald-200' : 'badge-neutral !bg-amber-50 !text-amber-800 !border-amber-200']">
+                                                        <i :class="['text-[8px]', pt.status === 'Selesai' ? 'fa-solid fa-check' : 'fa-solid fa-hourglass-half animate-pulse']"></i>
+                                                        <span>{{ pt.status === 'Selesai' ? 'Selesai' : 'Proses' }}</span>
+                                                    </span>
+
+                                                    <!-- Selesaikan Button (if Proses) -->
+                                                    <button v-if="pt.status==='Proses'" @click="bukaModalSelesai('bayar_potong', pt.id)" 
+                                                            class="px-2.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white rounded-xl text-[10px] font-black transition-all shadow-sm flex items-center shadow-emerald-500/20 cursor-pointer" title="Selesaikan & Bayar Upah">
+                                                        <i class="fa-solid fa-check mr-1 text-[9px]"></i> Selesai
+                                                    </button>
+
+                                                    <!-- WA Share Button -->
+                                                    <button @click="bagikanKeWA('SPK_Potong', pt)" :disabled="isSharingWhatsApp" 
+                                                            class="w-7.5 h-7.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 hover:bg-emerald-100 flex items-center justify-center transition-colors shadow-2xs cursor-pointer disabled:opacity-50" 
+                                                            title="Bagikan PDF via WhatsApp">
+                                                        <i v-if="sharingDocKey === 'SPK_Potong-' + pt.id" class="fa-solid fa-spinner fa-spin text-xs"></i>
+                                                        <i v-else class="fa-brands fa-whatsapp text-sm"></i>
+                                                    </button>
+
+                                                    <!-- PDF Button -->
+                                                    <button @click="generateAndSavePDF('SPK_Potong', pt)" 
+                                                            class="w-7.5 h-7.5 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors shadow-2xs cursor-pointer" 
+                                                            title="Cetak PDF & Auto-Backup Drive">
+                                                        <i class="fa-solid fa-print text-xs"></i>
+                                                    </button>
+
+                                                    <!-- Dropdown Action Menu [⋮] -->
+                                                    <div class="relative inline-block text-left">
+                                                        <button @click.stop="toggleSpkMenu('potong-' + pt.id)" 
+                                                                class="w-7.5 h-7.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                                                                title="Menu Lainnya">
+                                                            <i class="fa-solid fa-ellipsis-vertical text-xs"></i>
+                                                        </button>
+                                                        <div v-if="activeSpkMenu === 'potong-' + pt.id" @click.stop 
+                                                             class="absolute right-0 top-full mt-1 w-44 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-40 divide-y divide-slate-100 text-left animate-dropdown">
+                                                            <div class="py-1">
+                                                                <button @click="bukaDetailDrawerSPK('potong', pt); closeSpkMenu()" 
+                                                                        class="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 cursor-pointer">
+                                                                    <i class="fa-solid fa-folder-open text-blue-500 w-4 text-center"></i> Detail Dokumen
+                                                                </button>
+                                                                <button @click="toggleExpandPotong(pt.id); closeSpkMenu()" 
+                                                                        class="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 cursor-pointer">
+                                                                    <i class="fa-solid fa-table-list text-indigo-500 w-4 text-center"></i> Rincian Tabel
+                                                                </button>
+                                                                <button @click="editData('potong', pt); closeSpkMenu()" 
+                                                                        class="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-600 flex items-center gap-2 cursor-pointer">
+                                                                    <i class="fa-solid fa-pen text-slate-400 w-4 text-center"></i> Edit SPK
+                                                                </button>
+                                                            </div>
+                                                            <div v-if="userRole === 'owner'" class="py-1">
+                                                                <button @click="hapusData('potong', pt.id); closeSpkMenu()" 
+                                                                        class="w-full text-left px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 cursor-pointer">
+                                                                    <i class="fa-solid fa-trash text-red-500 w-4 text-center"></i> Hapus SPK
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <!-- ACCORDION EXPANDED DETAIL ROW (3 SECTIONS) -->
+                                        <tr v-if="expandedSpkPotong === pt.id" class="bg-slate-50/70 border-b border-slate-200 select-text">
+                                            <td colspan="8" class="p-4 sm:p-5">
+                                                <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
+                                                    <!-- ACCORDION HEADER BAR -->
+                                                    <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                                                        <div class="flex items-center gap-2">
+                                                            <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-black">
+                                                                <i class="fa-solid fa-scissors"></i>
+                                                            </span>
+                                                            <div>
+                                                                <h5 class="text-sm font-black text-slate-800">Rincian Komprehensif SPK-POT-{{ String(pt.id).slice(-4) }}</h5>
+                                                                <p class="text-[10px] font-bold text-slate-400">Pekerja: {{ getPegawaiName(pt.id_pegawai) }} • Tanggal: {{ formatDateID(pt.tanggal) }}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="flex items-center gap-2">
+                                                            <button @click="bukaDetailDrawerSPK('potong', pt)" class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-black transition-colors flex items-center gap-1.5 cursor-pointer">
+                                                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Buka di Drawer Samping
+                                                            </button>
+                                                            <button @click="toggleExpandPotong(pt.id)" class="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-600 flex items-center justify-center cursor-pointer">
+                                                                <i class="fa-solid fa-xmark text-xs"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- 3 ENTERPRISE SECTIONS GRID -->
+                                                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                                        <!-- SECTION A: PRODUK & TARGET POTONG -->
+                                                        <div class="bg-slate-50/70 rounded-xl p-3.5 border border-slate-200/80 space-y-2.5">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                                                    <i class="fa-solid fa-layer-group text-blue-500"></i> Produk & Target Potong
+                                                                </span>
+                                                                <span class="text-[10px] font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                                                                    {{ (pt.items || []).length }} Model
+                                                                </span>
+                                                            </div>
+                                                            <div class="divide-y divide-slate-200/60 max-h-48 overflow-y-auto pr-1">
+                                                                <div v-for="(it, idx) in pt.items" :key="idx" class="py-2 first:pt-0 last:pb-0 flex items-start justify-between gap-2">
+                                                                    <div class="flex items-start gap-2">
+                                                                        <div class="w-7 h-7 rounded-lg bg-white border border-slate-200 shrink-0 overflow-hidden flex items-center justify-center text-[9px] font-bold text-slate-500 mt-0.5">
+                                                                            <img v-if="getProdukPhoto(it.id_produk)" :src="getProdukPhoto(it.id_produk)" class="w-full h-full object-cover">
+                                                                            <span v-else>{{ (getProdukName(it.id_produk) || 'P').charAt(0) }}</span>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p class="text-xs font-bold text-slate-800">{{ getProdukName(it.id_produk) }}</p>
+                                                                            <p class="text-[10px] text-slate-400">Varian: {{ getProdukVarianLabel(it.id_produk) }}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="text-right shrink-0">
+                                                                        <span class="text-xs font-black text-slate-900 block">
+                                                                            {{ formatQtyProduk(it.id_produk, (pt.status === 'Selesai' ? getQtyHasilPotong(pt, it) : it.qty), true) }}
+                                                                        </span>
+                                                                        <span class="text-[9px] font-semibold text-slate-400">
+                                                                            @{{ formatRupiah(it.upah || 0) }}
+                                                                        </span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div class="pt-2 border-t border-slate-200 flex items-center justify-between text-xs font-black">
+                                                                <span class="text-slate-600">Total Produksi:</span>
+                                                                <span class="text-blue-700">{{ formatPcsLusin(getTotalTargetPotongPcs(pt), true) }}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- SECTION B: PIPELINE HASIL & INTEGRASI JAHIT -->
+                                                        <div class="bg-amber-50/50 rounded-xl p-3.5 border border-amber-200/80 space-y-2.5">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-[10px] font-black uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
+                                                                    <i class="fa-solid fa-shirt text-amber-600"></i> Pipeline Siap Jahit
+                                                                </span>
+                                                                <span v-if="pt.status === 'Selesai'" :class="['text-[10px] font-black px-2 py-0.5 rounded border', getStokPerluJahitSPK(pt).length ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-800 border-emerald-300']">
+                                                                    {{ getStokPerluJahitSPK(pt).length ? 'Ada Sisa Stok' : 'Semua Teralokasi' }}
+                                                                </span>
+                                                                <span v-else class="text-[10px] font-black bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                                                                    Menunggu Rampung
+                                                                </span>
+                                                            </div>
+                                                            <div v-if="pt.status === 'Selesai'">
+                                                                <div v-if="getStokPerluJahitSPK(pt).length" class="divide-y divide-amber-200/60 max-h-48 overflow-y-auto pr-1">
+                                                                    <div v-for="stok in getStokPerluJahitSPK(pt)" :key="'acc-'+pt.id+'-'+stok.id_produk" class="py-2 first:pt-0 last:pb-0 flex items-center justify-between gap-2">
+                                                                        <span class="text-xs font-bold text-slate-800 truncate" :title="stok.nama">{{ stok.nama }}</span>
+                                                                        <span class="text-xs font-black text-amber-900 shrink-0">{{ formatQtyProduk(stok.id_produk, stok.qty, true) }}</span>
+                                                                    </div>
+                                                                </div>
+                                                                <div v-else class="py-6 text-center text-emerald-700">
+                                                                    <i class="fa-solid fa-check-circle text-2xl text-emerald-500 mb-1"></i>
+                                                                    <p class="text-xs font-black">Semua Hasil Potong Telah Dijahit</p>
+                                                                    <p class="text-[10px] text-emerald-600">Tidak ada sisa tumpukan kain tanpa SPK Jahit.</p>
+                                                                </div>
+                                                                <div v-if="getStokPerluJahitSPK(pt).length" class="pt-2 border-t border-amber-200 flex items-center justify-between text-xs font-black">
+                                                                    <span class="text-amber-800">Sisa Siap Dijahit:</span>
+                                                                    <span class="text-amber-900">{{ formatPcsLusin(getTotalStokPerluJahitSPK(pt), true) }}</span>
+                                                                </div>
+                                                            </div>
+                                                            <div v-else class="py-6 text-center text-slate-400">
+                                                                <i class="fa-solid fa-hourglass-half text-2xl text-amber-400 mb-1 animate-pulse"></i>
+                                                                <p class="text-xs font-bold text-slate-600">Pekerjaan Sedang Berjalan</p>
+                                                                <p class="text-[10px] text-slate-400">Stok siap jahit akan terbentuk saat SPK Potong diselesaikan.</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- SECTION C: KEUANGAN & RINCIAN UPAH -->
+                                                        <div class="bg-slate-50/70 rounded-xl p-3.5 border border-slate-200/80 space-y-2.5">
+                                                            <div class="flex items-center justify-between">
+                                                                <span class="text-[10px] font-black uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                                                    <i class="fa-solid fa-wallet text-emerald-600"></i> Rincian Upah & Pelunasan
+                                                                </span>
+                                                                <span :class="['text-[10px] font-black px-2 py-0.5 rounded border', pt.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-800 border-amber-200']">
+                                                                    {{ pt.status === 'Selesai' ? 'Lunas' : 'Belum Dibayar' }}
+                                                                </span>
+                                                            </div>
+                                                            <div class="space-y-1.5 text-xs">
+                                                                <div class="flex items-center justify-between">
+                                                                    <span class="text-slate-500">Upah Kotor:</span>
+                                                                    <span class="font-bold text-slate-800">{{ formatRupiah(getUpahTotalSPK(pt, 'potong')) }}</span>
+                                                                </div>
+                                                                <div class="flex items-center justify-between" v-if="pt.kasbon > 0">
+                                                                    <span class="text-red-600">Potongan Kasbon:</span>
+                                                                    <span class="font-bold text-red-600">-{{ formatRupiah(pt.kasbon) }}</span>
+                                                                </div>
+                                                                <div class="flex items-center justify-between" v-if="pt.pembayaran_piutang > 0">
+                                                                    <span class="text-amber-700">Potongan Piutang:</span>
+                                                                    <span class="font-bold text-amber-700">-{{ formatRupiah(pt.pembayaran_piutang) }}</span>
+                                                                </div>
+                                                                <div class="pt-2 border-t border-slate-200 flex items-center justify-between">
+                                                                    <span class="font-black text-slate-800">Upah Bersih:</span>
+                                                                    <span class="font-black text-sm text-emerald-600">
+                                                                        {{ formatRupiah(pt.upah_bersih || (getUpahTotalSPK(pt, 'potong') - (pt.kasbon || 0) - (pt.pembayaran_piutang || 0))) }}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                            <div v-if="pt.catatan" class="mt-2 pt-2 border-t border-slate-200 text-[10px] text-slate-500 italic">
+                                                                <i class="fa-regular fa-comment-dots mr-1"></i>Catatan: {{ pt.catatan }}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr v-if="!filteredPotong.length">
+                                        <td colspan="8" class="px-6 py-16 text-center text-slate-400 text-sm font-bold">
+                                            Tidak ada data SPK Potong yang sesuai dengan filter.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- MOBILE CARD VIEW (di bawah 768px) -->
+                        <div class="md:hidden space-y-3">
+                            <div v-for="pt in filteredPotong" :key="'mob-pot-'+pt.id" class="bg-white rounded-2xl border border-slate-200/90 p-4 shadow-sm space-y-3">
+                                <!-- Top Bar: SPK Badge, Status, and Action Button -->
+                                <div class="flex items-center justify-between gap-2">
+                                    <button @click="bukaDetailDrawerSPK('potong', pt)" class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-blue-50 text-blue-700 border border-blue-200/80">
+                                        SPK-POT-{{ String(pt.id).slice(-4) }}
+                                    </button>
+                                    <div class="flex items-center gap-1.5">
+                                        <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black border', pt.status === 'Selesai' ? 'badge-success !bg-emerald-50 !text-emerald-700 !border-emerald-200' : 'badge-neutral !bg-amber-50 !text-amber-800 !border-amber-200']">
+                                            <i :class="['text-[8px]', pt.status === 'Selesai' ? 'fa-solid fa-check' : 'fa-solid fa-hourglass-half animate-pulse']"></i>
+                                            <span>{{ pt.status === 'Selesai' ? 'Selesai' : 'Proses' }}</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Operator & Timeline -->
+                                <div class="flex items-center justify-between text-xs py-1 border-y border-slate-100">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-md bg-amber-50 text-amber-700 flex items-center justify-center text-[10px] font-black">
+                                            <i class="fa-solid fa-scissors"></i>
+                                        </div>
+                                        <span class="font-bold text-slate-800">{{ getPegawaiName(pt.id_pegawai) }}</span>
+                                    </div>
+                                    <span class="text-slate-500 font-medium text-[11px]">{{ formatDateID(pt.tanggal) }}</span>
+                                </div>
+
+                                <!-- Products & Pipeline -->
+                                <div class="space-y-1 text-xs">
+                                    <div v-for="(it, idx) in (pt.items || []).slice(0, 2)" :key="'mob-it-'+idx" class="flex items-center justify-between">
+                                        <span class="font-bold text-slate-700 truncate max-w-[180px]">{{ getProdukName(it.id_produk) }}</span>
+                                        <span class="font-black text-blue-700">{{ formatQtyProduk(it.id_produk, (pt.status === 'Selesai' ? getQtyHasilPotong(pt, it) : it.qty), true) }}</span>
+                                    </div>
+                                    <div v-if="(pt.items || []).length > 2" class="text-[10px] font-bold text-blue-600">
+                                        +{{ pt.items.length - 2 }} model lainnya
+                                    </div>
+                                </div>
+
+                                <!-- Sisa Stok Siap Jahit (if Selesai) -->
+                                <div v-if="pt.status === 'Selesai' && getStokPerluJahitSPK(pt).length" class="bg-amber-50 p-2 rounded-xl border border-amber-200/80 flex items-center justify-between text-xs">
+                                    <span class="text-[10px] font-black text-amber-800 uppercase tracking-wider">Sisa Siap Jahit:</span>
+                                    <span class="font-black text-amber-900">{{ formatPcsLusin(getTotalStokPerluJahitSPK(pt), true) }}</span>
+                                </div>
+
+                                <!-- Financial & Actions -->
+                                <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                                    <div>
+                                        <span class="text-[10px] font-bold text-slate-400 block">Upah Bersih:</span>
+                                        <span class="text-xs font-black text-emerald-600">
+                                            {{ formatRupiah(pt.upah_bersih || (getUpahTotalSPK(pt, 'potong') - (pt.kasbon || 0) - (pt.pembayaran_piutang || 0))) }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button v-if="pt.status==='Proses'" @click="bukaModalSelesai('bayar_potong', pt.id)" class="px-2.5 py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black shadow-xs flex items-center gap-1">
+                                            <i class="fa-solid fa-check text-[9px]"></i> Selesai
+                                        </button>
+                                        <button @click="bagikanKeWA('SPK_Potong', pt)" :disabled="isSharingWhatsApp" class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center">
+                                            <i class="fa-brands fa-whatsapp text-sm"></i>
+                                        </button>
+                                        <button @click="generateAndSavePDF('SPK_Potong', pt)" class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+                                            <i class="fa-solid fa-print text-xs"></i>
+                                        </button>
+                                        <button @click="bukaDetailDrawerSPK('potong', pt)" class="w-8 h-8 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center">
+                                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="!filteredPotong.length" class="bg-white rounded-2xl border border-slate-200 p-8 text-center text-slate-400 text-sm font-bold">
+                                Tidak ada data SPK Potong yang sesuai dengan filter.
+                            </div>
+                        </div>
+                    </div>

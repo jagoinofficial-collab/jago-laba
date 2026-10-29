@@ -1,0 +1,141 @@
+<!-- =========================================================
+     MODUL: AKUN REKENING KAS (EXECUTIVE TREASURY)
+     ========================================================= -->
+                    <div v-if="currentTab === 'rekening' && userRole === 'owner'" class="space-y-6 w-full">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100">Finance Control</span>
+                                    <span class="text-[10px] font-black text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-md border border-amber-200"><i class="fa-solid fa-wallet mr-1 text-amber-500"></i>{{ rekening.length }} Akun Kas</span>
+                                </div>
+                                <h3 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">Akun Rekening Kas</h3>
+                                <p class="text-xs lg:text-sm text-slate-500 font-semibold mt-0.5">Saldo awal sebagai modal dasar, mutasi kas masuk/keluar terhubung otomatis secara real-time.</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2.5 justify-end">
+                                <button @click="openModal('rekening')" class="bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-5 py-3.5 rounded-2xl text-sm font-black btn-active shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-plus text-amber-300"></i> Tambah Akun
+                                </button>
+                                <button v-if="rekening.length" @click="openSaldoAwal()" class="bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 px-5 py-3.5 rounded-2xl text-sm font-black btn-active shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-coins"></i> Atur Saldo Awal
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Top 3 Executive Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="card-pro bg-gradient-to-br from-[#0b132b] via-[#1c2541] to-[#0b132b] p-6 rounded-3xl border border-amber-400/20 text-white shadow-xl relative overflow-hidden group">
+                                <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-amber-400/10 blur-xl"></div>
+                                <div class="relative z-10 flex items-center justify-between">
+                                    <div>
+                                        <span class="text-slate-300 text-xs font-bold uppercase tracking-wider">Total Saldo Likuid</span>
+                                        <div class="text-2xl lg:text-3xl font-black text-amber-400 mt-2 tracking-tight">{{ formatRupiah(totalSemuaSaldo) }}</div>
+                                        <div class="text-[11px] font-semibold text-slate-300 mt-1 flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Seluruh akun kas aktif
+                                        </div>
+                                    </div>
+                                    <div class="jl-kpi-spin-frame shrink-0">
+                                        <div class="jl-kpi-spin-inner-dark">
+                                            <i class="fa-solid fa-vault text-amber-400 text-lg"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-pro p-6 rounded-3xl border border-slate-200/80 shadow-sm border-l-4 border-l-emerald-500 flex items-center justify-between group">
+                                <div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Pemasukan</span>
+                                    <div class="text-2xl lg:text-3xl font-black text-emerald-600 mt-2 tracking-tight">{{ formatRupiah(totalPemasukan) }}</div>
+                                    <div class="text-[11px] font-bold text-slate-400 mt-1">Jurnal periode aktif</div>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-arrow-down text-emerald-500 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-pro p-6 rounded-3xl border border-slate-200/80 shadow-sm border-l-4 border-l-red-500 flex items-center justify-between group">
+                                <div>
+                                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Pengeluaran</span>
+                                    <div class="text-2xl lg:text-3xl font-black text-red-600 mt-2 tracking-tight">{{ formatRupiah(totalPengeluaran) }}</div>
+                                    <div class="text-[11px] font-bold text-slate-400 mt-1">Bahan, SPK, & kasbon</div>
+                                </div>
+                                <div class="jl-kpi-spin-frame shrink-0">
+                                    <div class="jl-kpi-spin-inner">
+                                        <i class="fa-solid fa-arrow-up text-red-500 text-lg"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-if="!filteredRekening.length" class="bg-white p-12 text-center rounded-3xl border border-slate-200/80 shadow-sm">
+                            <div class="w-16 h-16 mx-auto rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl mb-4"><i class="fa-solid fa-building-columns"></i></div>
+                            <h4 class="font-black text-slate-900 text-lg">Belum ada akun rekening</h4>
+                            <p class="text-sm text-slate-500 font-semibold mt-1">Tambahkan rekening pertama dan isi saldo awalnya.</p>
+                            <button @click="openModal('rekening')" class="mt-5 bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 py-3 rounded-xl text-xs font-black shadow-md">+ Tambah Rekening</button>
+                        </div>
+
+                        <!-- Realistic Luxury Debit/Credit Cards Grid -->
+                        <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <article v-for="rek in filteredRekening" :key="rek.id" class="rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-[#0b132b] via-[#1c2541] to-[#0e1738] border border-amber-400/30 text-white shadow-xl group hover:shadow-2xl transition-all duration-300">
+                                <!-- Luxury background decoration -->
+                                <div class="absolute -right-12 -top-12 w-36 h-36 rounded-full bg-blue-500/10 blur-2xl group-hover:bg-amber-500/15 transition-colors"></div>
+                                <div class="absolute right-0 bottom-0 w-48 h-32 opacity-5 pointer-events-none">
+                                    <i class="fa-solid fa-building-columns text-8xl text-white"></i>
+                                </div>
+
+                                <div class="relative z-10">
+                                    <!-- Card Header: EMV Chip & Account Brand -->
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-11 h-8 rounded-lg bg-gradient-to-br from-amber-300 via-amber-400 to-yellow-500 flex items-center justify-center shadow-md border border-amber-200/50">
+                                                <i class="fa-solid fa-microchip text-slate-900 text-xs opacity-80"></i>
+                                            </div>
+                                            <div>
+                                                <span class="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400/90">Rekening Kas</span>
+                                                <h4 class="font-black text-lg text-white tracking-tight leading-none truncate mt-0.5">{{ rek.nama || '-' }}</h4>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5 bg-white/10 backdrop-blur-md rounded-xl p-1 border border-white/10">
+                                            <button @click="openSaldoAwal(rek)" class="w-8 h-8 rounded-lg bg-amber-400/20 text-amber-300 hover:bg-amber-400 hover:text-slate-950 flex items-center justify-center transition-colors shadow-2xs" title="Atur saldo awal"><i class="fa-solid fa-coins text-xs"></i></button>
+                                            <button @click="editData('rekening', rek)" class="w-8 h-8 rounded-lg bg-white/10 text-slate-300 hover:bg-white/20 hover:text-white flex items-center justify-center transition-colors shadow-2xs" title="Edit akun"><i class="fa-solid fa-pen text-xs"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Account Number / Code -->
+                                    <div class="mt-4 flex items-center justify-between text-xs text-slate-400 font-mono tracking-widest">
+                                        <span>KODE: {{ rek.kode || 'KAS-01' }}</span>
+                                        <span class="text-[10px] uppercase tracking-wider text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">Aktif</span>
+                                    </div>
+
+                                    <!-- Saldo Display -->
+                                    <div class="mt-4 p-4 rounded-2xl bg-white/5 backdrop-blur-md border border-white/10">
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Saldo Saat Ini</div>
+                                        <div :class="['text-2xl lg:text-3xl font-black mt-1 tracking-tight', 0 > getSaldoRekening(rek.id) ? 'text-red-400' : 'text-amber-400']">{{ formatRupiah(getSaldoRekening(rek.id)) }}</div>
+                                    </div>
+
+                                    <!-- Flow Stats -->
+                                    <div class="grid grid-cols-2 gap-2.5 mt-4">
+                                        <div class="rounded-xl bg-emerald-500/15 border border-emerald-500/20 p-2.5">
+                                            <div class="text-[9px] font-black uppercase tracking-widest text-emerald-400">Pemasukan</div>
+                                            <div class="text-xs font-black text-emerald-300 mt-0.5 truncate">{{ formatRupiah(getPemasukanRekening(rek.id)) }}</div>
+                                        </div>
+                                        <div class="rounded-xl bg-red-500/15 border border-red-500/20 p-2.5">
+                                            <div class="text-[9px] font-black uppercase tracking-widest text-red-400">Pengeluaran</div>
+                                            <div class="text-xs font-black text-red-300 mt-0.5 truncate">{{ formatRupiah(getPengeluaranRekening(rek.id)) }}</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-2.5 mt-2.5">
+                                        <div class="rounded-xl bg-white/5 border border-white/5 p-2.5">
+                                            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Saldo Awal</div>
+                                            <div class="text-xs font-black text-blue-300 mt-0.5 truncate">{{ formatRupiah(rek.saldo_awal || 0) }}</div>
+                                        </div>
+                                        <div class="rounded-xl bg-white/5 border border-white/5 p-2.5">
+                                            <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Mutasi Bersih</div>
+                                            <div class="text-xs font-black text-white mt-0.5 truncate">{{ formatRupiah(getSaldoRekening(rek.id) - Number(rek.saldo_awal || 0)) }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>

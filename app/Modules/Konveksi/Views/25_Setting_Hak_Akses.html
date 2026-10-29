@@ -1,0 +1,86 @@
+<!-- =========================================================
+     PENGATURAN SISTEM • HAK AKSES
+     ========================================================= -->
+<div v-if="currentTab === 'hak_akses'" class="max-w-7xl mx-auto w-full pb-16 space-y-6">
+    <!-- Header & Breadcrumb Dinamis -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">PENGATURAN / Hak Akses</div>
+            <h1 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mt-1">Hak Akses</h1>
+        </div>
+        
+    </div>
+
+    <!-- Sub-Tab Navigation Bar (Horizontal Pills) -->
+    <div class="bg-white p-1.5 rounded-2xl border border-slate-200/80 shadow-sm inline-flex flex-wrap items-center gap-1.5">
+        <button type="button" @click="switchTab('profil')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'profil' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-building"></i>
+            <span>Profil Perusahaan</span>
+        </button>
+        <button type="button" @click="switchTab('pengguna')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'pengguna' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-users"></i>
+            <span>Pengguna</span>
+        </button>
+        <button type="button" @click="switchTab('hak_akses')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'hak_akses' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Hak Akses</span>
+        </button>
+        <button type="button" @click="switchTab('backup')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'backup' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Backup Data</span>
+        </button>
+    </div>
+
+    <!-- Konten Sub-Modul Hak Akses -->
+                        <div v-if="currentTab === 'hak_akses'" class="space-y-6">
+                            <!-- Action Bar Hak Akses -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <button type="button" @click="openTambahRole()" class="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer">
+                                        <i class="fa-solid fa-plus text-white"></i> Tambah Role Baru
+                                    </button>
+                                </div>
+                                <div class="text-[11px] font-bold text-slate-400">
+                                    Otorisasi & izin modul konveksi
+                                </div>
+                            </div>
+
+                            <!-- Tabel Peran & Matriks Hak Akses -->
+                            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                                    <h3 class="font-black text-slate-900 text-base">Peran (Role) & Matriks Hak Akses Modul</h3>
+                                    <span class="text-xs text-slate-400 font-semibold">Tersimpan di Sheet Hak_Akses</span>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-slate-100 bg-slate-50/60 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                                                <th class="py-4 px-6">ROLE ID</th>
+                                                <th class="py-4 px-6">NAMA PERAN</th>
+                                                <th class="py-4 px-6">DESKRIPSI</th>
+                                                <th class="py-4 px-6">STATUS</th>
+                                                <th class="py-4 px-6 text-right">AKSI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 text-xs">
+                                            <tr v-for="r in hakAkses" :key="r.role_id" class="hover:bg-slate-50/60 transition-colors">
+                                                <td class="py-4 px-6 font-mono font-bold text-slate-700">{{ r.role_id }}</td>
+                                                <td class="py-4 px-6 font-black text-slate-900">{{ r.nama_peran }}</td>
+                                                <td class="py-4 px-6 text-slate-500">{{ r.deskripsi || ('Role bawaan ' + r.nama_peran) }}</td>
+                                                <td class="py-4 px-6">
+                                                    <span class="px-3 py-1 rounded-full text-[11px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                        {{ r.status || 'Aktif' }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-4 px-6 text-right">
+                                                    <button type="button" @click="openModalHakAkses(r)" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs inline-flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer">
+                                                        <i class="fa-solid fa-shield-halved"></i> Atur Hak Akses Modul
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+</div>

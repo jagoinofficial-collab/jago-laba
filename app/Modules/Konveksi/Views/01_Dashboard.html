@@ -1,0 +1,431 @@
+                    <!-- TAB 1: IKHTISAR UTAMA / DASHBOARD EKSEKUTIF -->
+                    <div v-if="currentTab === 'dashboard'" class="space-y-6 lg:space-y-8 w-full">
+                        <section class="kv-integrity" aria-label="Status data Konveksi">
+                          <div><span class="kv-eyebrow">KUALITAS DATA OPERASIONAL</span><h2>Penyimpanan &amp; konsistensi</h2><p data-kv-state role="status">Menunggu data dari server…</p></div>
+                          <div class="kv-checks"><div><strong data-kv-missing>—</strong><span>Produk tanpa ID stok</span></div><div><strong data-kv-duplicates>—</strong><span>ID stok berulang</span></div><div><strong data-kv-negative>—</strong><span>Saldo stok negatif</span></div></div>
+                          <p>Riwayat impor dipertahankan. Temuan di atas perlu direkonsiliasi; sistem tidak menghapus atau mengoreksi saldo secara otomatis.</p>
+                        </section>
+
+                        
+                        <!-- HERO COMMAND CENTER: EXECUTIVE BLUE & GOLD EDITION — ROTATING GRADIENT BORDER -->
+                        <div class="jl-cmd-spin-wrapper">
+                        <section class="relative overflow-hidden rounded-[22px] bg-gradient-to-br from-[#0b132b] via-[#1e3a8a] to-[#2563eb] text-white p-7 lg:p-9 shadow-2xl">
+                            <!-- Subtle golden & blue background decorative blurs -->
+                            <div class="absolute -right-20 -top-20 w-72 h-72 rounded-full bg-amber-400/15 blur-3xl pointer-events-none"></div>
+                            <div class="absolute right-1/3 -bottom-20 w-80 h-80 rounded-full bg-blue-400/20 blur-3xl pointer-events-none"></div>
+
+                            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                                <div class="space-y-2">
+                                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300 text-[10px] font-black uppercase tracking-widest shadow-sm">
+                                        <i class="fa-solid fa-crown text-amber-400 text-xs"></i>
+                                        <span>{{ (profil.nama || 'JAGO LABA').toUpperCase() }} ENTERPRISE • COMMAND CENTER</span>
+                                    </div>
+                                    <h1 class="text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight">
+                                        Pusat Kendali Operasional Konveksi
+                                    </h1>
+                                    <p class="text-xs lg:text-sm text-blue-100 font-semibold max-w-2xl leading-relaxed">
+                                        Pantau bahan, pekerjaan potong dan jahit, barang jadi, serta keuangan berdasarkan dokumen yang tersimpan.
+                                    </p>
+                                </div>
+
+                                <div class="flex flex-wrap lg:flex-nowrap items-center gap-3 shrink-0">
+                                    <!-- Status chip -->
+                                    <div class="px-4 py-2.5 rounded-2xl bg-slate-950/60 border border-white/10 backdrop-blur-md flex items-center gap-2.5 text-xs font-bold text-slate-200 shadow-inner">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                        <span>Ruang Kerja Konveksi</span>
+                                    </div>
+                                    <button @click="switchTab('hpp_produksi')" class="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-2xl btn-active shadow-lg shadow-amber-400/25 flex items-center gap-2 transition-all">
+                                        <i class="fa-solid fa-calculator text-sm"></i>
+                                        <span>Studio HPP</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Mini KPI highlight row inside Hero -->
+                            <div class="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8 pt-6 border-t border-white/10">
+                                <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                    <div class="text-[9px] font-black uppercase tracking-widest text-amber-300/80">Material Gudang</div>
+                                    <div class="text-xl font-black text-white mt-1">{{ bahan.length }} <span class="text-xs font-semibold text-blue-200">Jenis</span></div>
+                                </div>
+                                <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                    <div class="text-[9px] font-black uppercase tracking-widest text-amber-300/80">Komponen HPP</div>
+                                    <div class="text-xl font-black text-white mt-1">{{ (bahanHPP || []).length }} <span class="text-xs font-semibold text-blue-200">Item</span></div>
+                                </div>
+                                <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                    <div class="text-[9px] font-black uppercase tracking-widest text-amber-300/80">Katalog Model</div>
+                                    <div class="text-xl font-black text-white mt-1">{{ produk.length }} <span class="text-xs font-semibold text-blue-200">SKU</span></div>
+                                </div>
+                                <div class="p-3.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                                    <div class="text-[9px] font-black uppercase tracking-widest text-amber-300/80">SPK Berjalan</div>
+                                    <div class="text-xl font-black text-amber-400 mt-1">{{ potongAktif + jahitAktif }} <span class="text-xs font-semibold text-blue-200">Batch</span></div>
+                                </div>
+                            </div>
+                        </section>
+                        </div>
+
+
+                        <!-- QUICK ACTION PILLS (TINDAKAN CEPAT) -->
+                        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider whitespace-nowrap pl-1 mr-1">Tindakan Cepat:</span>
+                            <a href="workspace.php" onclick="return jlConfirmWorkspaceSwitch(event)" class="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-2xl text-xs font-black whitespace-nowrap shadow-sm shadow-orange-500/20 flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-shop"></i> Keuangan Marketplace
+                            </a>
+                            <a href="workspace.php" onclick="return jlConfirmWorkspaceSwitch(event)" class="px-4 py-2.5 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white rounded-2xl text-xs font-black whitespace-nowrap shadow-sm shadow-rose-500/20 flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-bullhorn"></i> Marketing Ads ROAS
+                            </a>
+                            <button @click="bukaModalPenjualan()" class="px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2 cursor-pointer">
+                                <i class="fa-solid fa-cash-register text-emerald-600"></i> + Jual Produk
+                            </button>
+                            <button @click="openModal('potong')" class="px-4 py-2.5 bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-scissors text-amber-500"></i> + SPK Potong
+                            </button>
+                            <button @click="openModal('jahit')" class="px-4 py-2.5 bg-white hover:bg-purple-50 text-purple-700 border border-purple-200 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-shirt text-purple-600"></i> + SPK Jahit
+                            </button>
+                            <button @click="openModal('pembelian')" class="px-4 py-2.5 bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-cart-shopping text-sky-600"></i> + Faktur Beli
+                            </button>
+                            <button @click="openModal('bahan_hpp')" class="px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-tags text-amber-600"></i> + Bahan HPP
+                            </button>
+                            <button @click="openModal('produk')" class="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-plus text-blue-600"></i> + Model Produk
+                            </button>
+                            <button @click="openModal('piutang')" class="px-4 py-2.5 bg-white hover:bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-2xl text-xs font-black whitespace-nowrap btn-active shadow-sm flex items-center gap-2">
+                                <i class="fa-solid fa-hand-holding-hand text-cyan-600"></i> + Piutang
+                            </button>
+                        </div>
+
+                        <!-- 5 EXECUTIVE STAT CARDS -->
+                        <div v-if="userRole === 'owner'" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-5">
+                            <!-- Kas Tersedia -->
+                            <div @click="switchTab('keuangan')" class="jl-kpi-card card-pro p-6 cursor-pointer hover:border-amber-300 hover:shadow-lg transition-all relative overflow-hidden group border-l-4 border-amber-400">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="jl-kpi-spin-frame">
+                                        <div class="jl-kpi-spin-inner text-amber-600 text-xl">
+                                            <i class="fa-solid fa-vault"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase">Likuid</span>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Kas Tersedia</p>
+                                <p class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mt-1">{{ formatRupiahSingkat(totalSemuaSaldo) }}</p>
+                                <p class="text-[10px] font-bold text-amber-600 mt-2 flex items-center gap-1">
+                                    <span>Saldo akun kas</span>
+                                    <i class="fa-solid fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
+                                </p>
+                            </div>
+
+                            <!-- Pemasukan -->
+                            <div @click="switchTab('keuangan')" class="jl-kpi-card card-pro p-6 cursor-pointer hover:border-emerald-300 hover:shadow-lg transition-all relative overflow-hidden group border-l-4 border-emerald-500">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="jl-kpi-spin-frame">
+                                        <div class="jl-kpi-spin-inner text-emerald-600 text-xl">
+                                            <i class="fa-solid fa-arrow-trend-up"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase">Masuk</span>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Pemasukan Periode</p>
+                                <p class="text-2xl lg:text-3xl font-black text-emerald-700 tracking-tight mt-1">{{ formatRupiahSingkat(totalPemasukan) }}</p>
+                                <p class="text-[10px] font-bold text-emerald-600 mt-2">Rentang filter</p>
+                            </div>
+
+                            <!-- Pengeluaran -->
+                            <div @click="switchTab('keuangan')" class="jl-kpi-card card-pro p-6 cursor-pointer hover:border-red-300 hover:shadow-lg transition-all relative overflow-hidden group border-l-4 border-red-500">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="jl-kpi-spin-frame">
+                                        <div class="jl-kpi-spin-inner text-red-600 text-xl">
+                                            <i class="fa-solid fa-arrow-trend-down"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 uppercase">Keluar</span>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Pengeluaran Periode</p>
+                                <p class="text-2xl lg:text-3xl font-black text-red-600 tracking-tight mt-1">{{ formatRupiahSingkat(totalPengeluaran) }}</p>
+                                <p class="text-[10px] font-bold text-red-500 mt-2">Belanja & upah</p>
+                            </div>
+
+                            <!-- SPK Berjalan -->
+                            <div @click="switchTab('potong')" class="jl-kpi-card card-pro p-6 cursor-pointer hover:border-blue-300 hover:shadow-lg transition-all relative overflow-hidden group border-l-4 border-blue-600">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="jl-kpi-spin-frame">
+                                        <div class="jl-kpi-spin-inner text-blue-600 text-xl">
+                                            <i class="fa-solid fa-industry"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase">Aktif</span>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">SPK Berjalan</p>
+                                <p class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mt-1">{{ potongAktif + jahitAktif }} <span class="text-xs font-semibold text-slate-400">Order</span></p>
+                                <p class="text-[10px] font-bold text-blue-600 mt-2">{{ potongAktif }} Potong • {{ jahitAktif }} Jahit</p>
+                            </div>
+
+                            <!-- Hutang Upah Konveksi -->
+                            <div @click="switchTab('hutang_konveksi')" class="jl-kpi-card card-pro p-6 cursor-pointer hover:border-purple-300 hover:shadow-lg transition-all relative overflow-hidden group border-l-4 border-purple-500 col-span-2 sm:col-span-1">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="jl-kpi-spin-frame">
+                                        <div class="jl-kpi-spin-inner text-purple-600 text-xl">
+                                            <i class="fa-solid fa-sack-dollar"></i>
+                                        </div>
+                                    </div>
+                                    <span class="text-[9px] font-black px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 uppercase">Titipan</span>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Hutang Konveksi</p>
+                                <p class="text-2xl lg:text-3xl font-black text-purple-700 tracking-tight mt-1">{{ formatRupiahSingkat(totalHutangKonveksi) }}</p>
+                                <p class="text-[10px] font-bold text-purple-600 mt-2 flex items-center justify-between">
+                                    <span>{{ jumlahPegawaiHutangKonveksi }} Pekerja ber-saldo</span>
+                                    <i class="fa-solid fa-arrow-right text-[9px] group-hover:translate-x-1 transition-transform"></i>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- OPERATIONAL USER STAT CARDS -->
+                        <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+                            <div @click="switchTab('produk')" class="card-pro p-6 cursor-pointer hover:border-blue-300 group">
+                                <div class="jl-kpi-spin-frame mb-4">
+                                    <div class="jl-kpi-spin-inner text-blue-600 text-xl">
+                                        <i class="fa-solid fa-boxes-stacked"></i>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Katalog Model</p>
+                                <p class="text-3xl font-black text-slate-900 tracking-tight mt-1">{{ produk.length }}</p>
+                            </div>
+                            <div @click="switchTab('bahan')" class="card-pro p-6 cursor-pointer hover:border-teal-300 group">
+                                <div class="jl-kpi-spin-frame mb-4">
+                                    <div class="jl-kpi-spin-inner text-teal-600 text-xl">
+                                        <i class="fa-solid fa-layer-group"></i>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Data Material</p>
+                                <p class="text-3xl font-black text-slate-900 tracking-tight mt-1">{{ bahan.length }}</p>
+                            </div>
+                            <div @click="switchTab('potong')" class="card-pro p-6 cursor-pointer hover:border-amber-300 group">
+                                <div class="jl-kpi-spin-frame mb-4">
+                                    <div class="jl-kpi-spin-inner text-amber-600 text-xl">
+                                        <i class="fa-solid fa-scissors"></i>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">SPK Potong</p>
+                                <p class="text-3xl font-black text-slate-900 tracking-tight mt-1">{{ potongAktif }}</p>
+                            </div>
+                            <div @click="switchTab('jahit')" class="card-pro p-6 cursor-pointer hover:border-purple-300 group">
+                                <div class="jl-kpi-spin-frame mb-4">
+                                    <div class="jl-kpi-spin-inner text-purple-600 text-xl">
+                                        <i class="fa-solid fa-shirt"></i>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] font-black text-slate-400 uppercase tracking-widest">SPK Jahit</p>
+                                <p class="text-3xl font-black text-slate-900 tracking-tight mt-1">{{ jahitAktif }}</p>
+                            </div>
+                        </div>
+
+                        <!-- WARNING STOCK ALERT BANNER -->
+                        <div v-if="bahanTipis.length || produkTipis.length" class="bg-gradient-to-r from-amber-50 via-amber-50/80 to-amber-100/50 border-2 border-amber-300 rounded-3xl p-6 flex flex-col sm:flex-row gap-5 items-start sm:items-center justify-between shadow-sm">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 text-xl shadow-md shadow-amber-400/30">
+                                    <i class="fa-solid fa-triangle-exclamation animate-bounce"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-amber-950 font-black text-sm uppercase tracking-wide">Peringatan Inventaris Kritis</h3>
+                                    <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs font-bold text-amber-900">
+                                        <span v-if="bahanTipis.length"><i class="fa-solid fa-circle text-[7px] mr-1.5 text-red-600"></i><b class="text-red-700">{{ bahanTipis.length }}</b> Material Gudang menipis</span>
+                                        <span v-if="produkTipis.length"><i class="fa-solid fa-circle text-[7px] mr-1.5 text-amber-700"></i><b class="text-amber-800">{{ produkTipis.length }}</b> Model Produk stok rendah</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <button v-if="bahanTipis.length" @click="openModal('pembelian')" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs rounded-xl shadow-sm btn-active flex-1 sm:flex-initial">
+                                    + Beli Bahan
+                                </button>
+                                <button v-if="produkTipis.length" @click="openModal('potong')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-black text-xs rounded-xl shadow-sm btn-active flex-1 sm:flex-initial">
+                                    + Terbitkan SPK
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- PRODUCTION PIPELINE & CATALOG DUAL OVERVIEW -->
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <!-- Jalur Produksi -->
+                            <section class="card-pro p-6 lg:p-7 border-t-4 border-blue-600">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="text-[10px] font-black uppercase tracking-widest text-blue-600">ALUR PRODUKSI KONVEKSI</div>
+                                        <h3 class="text-lg font-black text-slate-900 mt-1">Pipeline Pemotongan & Penjahitan</h3>
+                                        <p class="text-xs font-semibold text-slate-500 mt-1">Status work order aktif yang sedang dikerjakan operator.</p>
+                                    </div>
+                                    <div class="jl-kpi-spin-frame-sm">
+                                        <div class="jl-kpi-spin-inner text-blue-600 text-sm">
+                                            <i class="fa-solid fa-diagram-project"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3 mt-5">
+                                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="text-[9px] font-black text-slate-400 uppercase">Material Gudang</div>
+                                        <strong class="text-lg font-black text-slate-900 block mt-0.5">{{ bahan.length }}</strong>
+                                        <span class="text-[10px] font-semibold text-slate-500">Item siap pakai</span>
+                                    </div>
+                                    <div class="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-100">
+                                        <div class="text-[9px] font-black text-amber-700 uppercase">SPK Potong</div>
+                                        <strong class="text-lg font-black text-amber-800 block mt-0.5">{{ potongAktif }}</strong>
+                                        <span class="text-[10px] font-semibold text-amber-700">Dalam proses</span>
+                                    </div>
+                                    <div class="p-3.5 rounded-2xl bg-purple-50/60 border border-purple-100">
+                                        <div class="text-[9px] font-black text-purple-700 uppercase">SPK Jahit</div>
+                                        <strong class="text-lg font-black text-purple-800 block mt-0.5">{{ jahitAktif }}</strong>
+                                        <span class="text-[10px] font-semibold text-purple-700">Perlu dijahit</span>
+                                    </div>
+                                </div>
+                                <div class="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center">
+                                    <button @click="switchTab('potong')" class="text-xs font-black text-blue-600 hover:text-blue-800 flex items-center gap-1.5">
+                                        <span>Buka SPK Potong</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                    </button>
+                                    <button @click="switchTab('jahit')" class="text-xs font-black text-purple-600 hover:text-purple-800 flex items-center gap-1.5">
+                                        <span>Buka SPK Jahit</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <!-- Katalog & Estimasi HPP -->
+                            <section class="card-pro p-6 lg:p-7 border-t-4 border-amber-400">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="text-[10px] font-black uppercase tracking-widest text-amber-600">INVENTARIS & HPP PRODUK</div>
+                                        <h3 class="text-lg font-black text-slate-900 mt-1">Katalog Model & Acuan HPP</h3>
+                                        <p class="text-xs font-semibold text-slate-500 mt-1">Master model tas, rumus HPP standar, dan persediaan jadi.</p>
+                                    </div>
+                                    <div class="jl-kpi-spin-frame-sm">
+                                        <div class="jl-kpi-spin-inner text-amber-600 text-sm">
+                                            <i class="fa-solid fa-tags"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-3 gap-3 mt-5">
+                                    <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="text-[9px] font-black text-slate-400 uppercase">Model Produk</div>
+                                        <strong class="text-lg font-black text-slate-900 block mt-0.5">{{ produk.length }}</strong>
+                                        <span class="text-[10px] font-semibold text-slate-500">Terdaftar</span>
+                                    </div>
+                                    <div class="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-100">
+                                        <div class="text-[9px] font-black text-blue-700 uppercase">Bahan HPP</div>
+                                        <strong class="text-lg font-black text-blue-800 block mt-0.5">{{ (bahanHPP || []).length }}</strong>
+                                        <span class="text-[10px] font-semibold text-blue-700">Komponen acuan</span>
+                                    </div>
+                                    <div class="p-3.5 rounded-2xl bg-emerald-50/60 border border-emerald-100">
+                                        <div class="text-[9px] font-black text-emerald-700 uppercase">Faktur Beli</div>
+                                        <strong class="text-lg font-black text-emerald-800 block mt-0.5">{{ pembelian.length }}</strong>
+                                        <span class="text-[10px] font-semibold text-emerald-700">Transaksi</span>
+                                    </div>
+                                </div>
+                                <div class="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center">
+                                    <button @click="switchTab('produk')" class="text-xs font-black text-blue-600 hover:text-blue-800 flex items-center gap-1.5">
+                                        <span>Lihat Katalog Produk</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                    </button>
+                                    <button @click="switchTab('bahan_hpp')" class="text-xs font-black text-amber-600 hover:text-amber-800 flex items-center gap-1.5">
+                                        <span>Master Bahan HPP</span>
+                                        <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                                    </button>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- CASH FLOW OVERVIEW & HEALTH STATUS -->
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <section class="card-pro p-6 lg:p-7">
+                                <div class="flex items-center justify-between mb-5">
+                                    <div>
+                                        <h3 class="text-base font-black text-slate-900 tracking-tight">Ringkasan Arus Kas</h3>
+                                        <p class="text-xs font-semibold text-slate-400 mt-0.5">Perbandingan pemasukan vs pengeluaran pada filter aktif</p>
+                                    </div>
+                                    <div class="jl-kpi-spin-frame-sm">
+                                        <div class="jl-kpi-spin-inner text-blue-600 text-sm">
+                                            <i class="fa-solid fa-chart-column"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-xs font-bold mb-1">
+                                            <span class="text-emerald-700 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Pemasukan</span>
+                                            <span class="text-emerald-700 font-black">{{ formatRupiahSingkat(totalPemasukan) }}</span>
+                                        </div>
+                                        <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-emerald-500 rounded-full transition-all" :style="{width: ((totalPemasukan + totalPengeluaran) ? Math.max(5, totalPemasukan/(totalPemasukan+totalPengeluaran)*100) : 0) + '%'}"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-xs font-bold mb-1">
+                                            <span class="text-red-700 flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span> Pengeluaran</span>
+                                            <span class="text-red-700 font-black">{{ formatRupiahSingkat(totalPengeluaran) }}</span>
+                                        </div>
+                                        <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-red-500 rounded-full transition-all" :style="{width: ((totalPemasukan + totalPengeluaran) ? Math.max(5, totalPengeluaran/(totalPemasukan+totalPengeluaran)*100) : 0) + '%'}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-5 pt-4 border-t border-slate-100 flex justify-between items-center">
+                                    <span class="text-xs font-bold text-slate-500">Total Likuiditas Kas Seluruh Akun:</span>
+                                    <span class="text-base font-black text-slate-900">{{ formatRupiah(totalSemuaSaldo) }}</span>
+                                </div>
+                            </section>
+
+                            <section class="card-pro p-6 lg:p-7">
+                                <div class="flex items-center justify-between mb-5">
+                                    <div>
+                                        <h3 class="text-base font-black text-slate-900 tracking-tight">Kesehatan Operasional</h3>
+                                        <p class="text-xs font-semibold text-slate-400 mt-0.5">Indikator kesiapan produksi dan tim kerja</p>
+                                    </div>
+                                    <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm">
+                                        <i class="fa-solid fa-heart-pulse"></i>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Tim Karyawan</div>
+                                        <div class="text-2xl font-black text-slate-900 mt-1">{{ pegawai.length }} <span class="text-xs font-semibold text-slate-400">Orang</span></div>
+                                    </div>
+                                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Piutang Aktif</div>
+                                        <div class="text-2xl font-black text-cyan-600 mt-1">{{ formatRupiahSingkat(totalPiutangAktif || 0) }}</div>
+                                    </div>
+                                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Vendor / Supplier</div>
+                                        <div class="text-2xl font-black text-slate-900 mt-1">{{ supplier.length }} <span class="text-xs font-semibold text-slate-400">Toko</span></div>
+                                    </div>
+                                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                        <div class="text-[9px] font-black uppercase tracking-widest text-slate-400">Akun Rekening</div>
+                                        <div class="text-2xl font-black text-amber-600 mt-1">{{ rekening.length }} <span class="text-xs font-semibold text-slate-400">Bank</span></div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- SYSTEM RECENT ACTIVITY LOG -->
+                        <div class="card-pro overflow-hidden">
+                            <div class="px-8 py-5 border-b border-slate-100 bg-white flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-black text-slate-900 text-base tracking-tight">Riwayat Aktivitas Terkini</h3>
+                                    <p class="text-xs font-semibold text-slate-400 mt-0.5">Catatan aktivitas transaksi dan perubahan data sistem</p>
+                                </div>
+                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 uppercase">Live Log</span>
+                            </div>
+                            <ul class="divide-y divide-slate-50 bg-white">
+                                <li v-for="log in aktivitasTerbaru" :key="log.id" class="px-8 py-4 flex items-center justify-between hover:bg-slate-50/80 transition-colors">
+                                    <div class="flex items-center gap-4">
+                                        <div :class="['w-2.5 h-2.5 rounded-full', log.color || 'bg-blue-600']"></div>
+                                        <span class="text-xs sm:text-sm font-bold text-slate-800">{{ log.pesan }}</span>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-slate-400 shrink-0 ml-4">{{ log.tanggal }}</span>
+                                </li>
+                                <li v-if="!aktivitasTerbaru.length" class="px-8 py-10 text-center text-slate-400 text-xs font-bold">
+                                    Belum ada aktivitas terekam hari ini.
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+

@@ -1,0 +1,116 @@
+<!-- =========================================================
+     PENGATURAN SISTEM • PENGGUNA
+     ========================================================= -->
+<div v-if="currentTab === 'pengguna'" class="max-w-7xl mx-auto w-full pb-16 space-y-6">
+    <!-- Header & Breadcrumb Dinamis -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">PENGATURAN / Pengguna</div>
+            <h1 class="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight mt-1">Pengguna</h1>
+        </div>
+        
+    </div>
+
+    <!-- Sub-Tab Navigation Bar (Horizontal Pills) -->
+    <div class="bg-white p-1.5 rounded-2xl border border-slate-200/80 shadow-sm inline-flex flex-wrap items-center gap-1.5">
+        <button type="button" @click="switchTab('profil')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'profil' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-building"></i>
+            <span>Profil Perusahaan</span>
+        </button>
+        <button type="button" @click="switchTab('pengguna')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'pengguna' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-users"></i>
+            <span>Pengguna</span>
+        </button>
+        <button type="button" @click="switchTab('hak_akses')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'hak_akses' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Hak Akses</span>
+        </button>
+        <button type="button" @click="switchTab('backup')" :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer', currentTab === 'backup' ? 'bg-blue-50 text-blue-600 border border-blue-100 shadow-sm' : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50']">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <span>Backup Data</span>
+        </button>
+    </div>
+
+    <!-- Konten Sub-Modul Pengguna -->
+                        <div v-if="currentTab === 'pengguna'" class="space-y-6">
+                            <!-- Action Bar Pengguna -->
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                                <div class="flex flex-wrap items-center gap-3">
+                                    <button type="button" @click="openModalPengguna()" class="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-lg shadow-blue-600/25 flex items-center gap-2 transition-all cursor-pointer">
+                                        <i class="fa-solid fa-plus text-white"></i> Tambah Pengguna Baru
+                                    </button>
+                                    <div class="relative w-72">
+                                        <i class="fa-solid fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                        <input v-model="searchPengguna" type="text" placeholder="Cari nama atau username..." class="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    </div>
+                                    <select v-model="filterStatusPengguna" class="px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                        <option value="semua">Semua Status</option>
+                                        <option value="Aktif">Aktif</option>
+                                        <option value="Nonaktif">Nonaktif</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-[11px] font-bold text-slate-400 hidden sm:inline">Akun terproteksi & tersinkronisasi</span>
+                                    <span class="px-3.5 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-600 text-xs font-black">{{ filteredPengguna.length }} akun</span>
+                                </div>
+                            </div>
+
+                            <!-- Tabel Daftar Pengguna Sistem -->
+                            <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+                                <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+                                    <h3 class="font-black text-slate-900 text-base">Daftar Pengguna Sistem</h3>
+                                    <span class="text-xs text-slate-400 font-semibold">Tersimpan di database MySQL</span>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr class="border-b border-slate-100 bg-slate-50/60 text-[11px] font-black uppercase tracking-wider text-slate-500">
+                                                <th class="py-4 px-6">USERNAME</th>
+                                                <th class="py-4 px-6">NAMA LENGKAP</th>
+                                                <th class="py-4 px-6">EMAIL</th>
+                                                <th class="py-4 px-6">ROLE</th>
+                                                <th class="py-4 px-6">STATUS</th>
+                                                <th class="py-4 px-6 text-right">AKSI</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 text-xs">
+                                            <tr v-for="u in filteredPengguna" :key="u.id" class="hover:bg-slate-50/60 transition-colors">
+                                                <td class="py-4 px-6 font-mono font-bold text-slate-900">{{ u.username }}</td>
+                                                <td class="py-4 px-6 font-semibold text-slate-700">{{ u.nama || '-' }}</td>
+                                                <td class="py-4 px-6 text-slate-500">{{ u.email || '-' }}</td>
+                                                <td class="py-4 px-6">
+                                                    <span class="px-3 py-1 rounded-full text-[11px] font-black tracking-wide" :class="u.role_id === 'ROLE-OWNER_SUPER_ADMIN' ? 'bg-cyan-50 text-cyan-700 border border-cyan-200' : 'bg-blue-50 text-blue-700 border border-blue-200'">
+                                                        {{ u.role_id === 'ROLE-OWNER_SUPER_ADMIN' ? 'ROLE-OWNER_SUPER_ADMIN' : (u.role_id || 'User') }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-4 px-6">
+                                                    <span class="px-3 py-1 rounded-full text-[11px] font-black" :class="u.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'">
+                                                        {{ u.status || 'Aktif' }}
+                                                    </span>
+                                                </td>
+                                                <td class="py-4 px-6 text-right">
+                                                    <div class="flex items-center justify-end gap-2">
+                                                        <button type="button" @click="openModalPengguna(u)" class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer">
+                                                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                                                        </button>
+                                                        <button type="button" @click="openResetPassword(u)" class="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 text-xs font-black transition-all flex items-center gap-1.5 shadow-sm cursor-pointer">
+                                                            <i class="fa-solid fa-key"></i> Reset Password
+                                                        </button>
+                                                        <button v-if="u.username !== 'owner'" type="button" @click="hapusPengguna(u)" class="p-1.5 rounded-xl text-slate-400 hover:text-red-600 transition-colors cursor-pointer" title="Hapus Akun">
+                                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr v-if="!filteredPengguna.length">
+                                                <td colspan="6" class="py-12 text-center text-slate-400 font-bold">
+                                                    <i class="fa-solid fa-user-slash text-3xl mb-2 text-slate-300 block"></i>
+                                                    Tidak ada data pengguna ditemukan
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+</div>
