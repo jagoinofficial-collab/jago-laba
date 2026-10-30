@@ -109,13 +109,11 @@ final class SchemaManager {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
             "CREATE TABLE IF NOT EXISTS idempotency_keys (
                 id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                company_key VARCHAR(120) NULL,
-                idempotency_key VARCHAR(255) NOT NULL,
+                idempotency_key VARCHAR(255) NOT NULL UNIQUE,
                 module VARCHAR(100) NULL,
                 reference_id VARCHAR(190) NULL,
                 response_json LONGTEXT NULL,
-                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE KEY uq_idempotency_scope(company_key,module,idempotency_key)
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
         ];
         foreach ($sql as $q) $pdo->exec($q);
@@ -126,7 +124,6 @@ final class SchemaManager {
         self::repairBackupSchema($pdo);
         self::repairAuditSchema($pdo);
         self::repairSettingsSchema($pdo);
-        self::repairIdempotencySchema($pdo);
     }
 
     private static function columns(PDO $pdo, string $table): array {
@@ -221,54 +218,6 @@ final class SchemaManager {
         $cols = self::columns($pdo, 'system_settings');
         self::addColumn($pdo,'system_settings',$cols,'setting_value','LONGTEXT NULL');
         self::addColumn($pdo,'system_settings',$cols,'updated_at','DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP');
-    }
-
-    public static function repairIdempotencySchema(PDO $pdo): void {
-        $cols = self::columns($pdo, 'idempotency_keys');
-        if (!isset($cols['idempotency_key'])) {
-            throw new RuntimeException('Schema idempotency_keys lama tidak kompatibel: kolom idempotency_key tidak ditemukan.');
-        }
-
-        self::addColumn($pdo, 'idempotency_keys', $cols, 'company_key', 'VARCHAR(120) NULL');
-        self::addColumn($pdo, 'idempotency_keys', $cols, 'module', 'VARCHAR(100) NULL');
-
-        // Existing rows predate company scope. Keep them isolated from new
-        // receipts instead of guessing which company owns the old request.
-        $pdo->exec("UPDATE idempotency_keys SET company_key='LEGACY-GLOBAL' WHERE company_key IS NULL OR company_key=''");
-        $pdo->exec("UPDATE idempotency_keys SET module='legacy' WHERE module IS NULL OR module=''");
-
-        $indexes = [];
-        foreach ($pdo->query("SHOW INDEX FROM `idempotency_keys`") as $row) {
-            $name = (string)($row['Key_name'] ?? '');
-            if ($name === '') continue;
-            $indexes[$name]['unique'] = (int)($row['Non_unique'] ?? 1) === 0;
-            $indexes[$name]['columns'][(int)($row['Seq_in_index'] ?? 0)] = (string)($row['Column_name'] ?? '');
-        }
-        foreach ($indexes as $name => $index) {
-            ksort($index['columns']);
-            if ($index['unique'] && $index['columns'] === ['idempotency_key'] && strtoupper($name) !== 'PRIMARY') {
-                $pdo->exec("ALTER TABLE `idempotency_keys` DROP INDEX `" . str_replace('`', '', $name) . "`");
-            }
-        }
-
-        $indexes = [];
-        foreach ($pdo->query("SHOW INDEX FROM `idempotency_keys`") as $row) {
-            $name = (string)($row['Key_name'] ?? '');
-            if ($name === '') continue;
-            $indexes[$name]['unique'] = (int)($row['Non_unique'] ?? 1) === 0;
-            $indexes[$name]['columns'][(int)($row['Seq_in_index'] ?? 0)] = (string)($row['Column_name'] ?? '');
-        }
-        $scoped = false;
-        foreach ($indexes as $index) {
-            ksort($index['columns']);
-            if ($index['unique'] && $index['columns'] === ['company_key', 'module', 'idempotency_key']) {
-                $scoped = true;
-                break;
-            }
-        }
-        if (!$scoped) {
-            $pdo->exec('ALTER TABLE `idempotency_keys` ADD UNIQUE KEY `uq_idempotency_scope` (`company_key`,`module`,`idempotency_key`)');
-        }
     }
 
     private static function normalizeStatus(string $status): string {

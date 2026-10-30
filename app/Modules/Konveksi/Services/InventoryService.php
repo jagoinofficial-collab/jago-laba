@@ -1,12 +1,7 @@
 <?php
 final class InventoryService {
-    private const IDEMPOTENCY_MODULE='konveksi.inventory';
     private PDO $pdo; private CollectionStore $store;
     public function __construct(PDO $pdo,CollectionStore $store){$this->pdo=$pdo;$this->store=$store;}
-    private function companyKey(): string {
-        $candidate=$_SESSION['company_key']??$_SESSION['company_id']??getenv('JL_COMPANY_KEY')?:'LOCAL-COMPANY';
-        $key=trim((string)$candidate);return $key!==''?substr($key,0,120):'LOCAL-COMPANY';
-    }
     private function id(string $p): string{return $p.'-'.date('Ymd').'-'.strtoupper(substr(bin2hex(random_bytes(5)),0,8));}
     private function now(): string{return date(DATE_ATOM);}
     private static function sku(array $r): string{return (string)($r['kode_sku']??$r['sku_varian']??$r['kode']??'');}
@@ -32,7 +27,7 @@ final class InventoryService {
     }
     public function postMovement(array $p): array {
         $qtyIn=max(0,(float)($p['qty_masuk']??0));$qtyOut=max(0,(float)($p['qty_keluar']??0));if($qtyIn<=0&&$qtyOut<=0)throw new RuntimeException('Qty mutasi harus lebih dari 0.');
-        $key=trim((string)($p['idempotency_key']??''));$company=$this->companyKey();if($key!==''){$st=$this->pdo->prepare('SELECT response_json FROM idempotency_keys WHERE company_key=? AND module=? AND idempotency_key=? LIMIT 1');$st->execute([$company,self::IDEMPOTENCY_MODULE,$key]);$prev=$st->fetchColumn();if($prev)return json_decode($prev,true)?:['status'=>'success','code'=>'DUPLICATE_IGNORED'];}
+        $key=trim((string)($p['idempotency_key']??''));if($key!==''){$st=$this->pdo->prepare('SELECT response_json FROM idempotency_keys WHERE idempotency_key=? LIMIT 1');$st->execute([$key]);$prev=$st->fetchColumn();if($prev)return json_decode($prev,true)?:['status'=>'success','code'=>'DUPLICATE_IGNORED'];}
         $lockName='jago_laba_inventory';$lk=$this->pdo->prepare('SELECT GET_LOCK(?,10)');$lk->execute([$lockName]);if((int)$lk->fetchColumn()!==1)throw new RuntimeException('Inventory sedang diproses transaksi lain.');
         try{
             $produk=$this->store->get('produk');$master=$this->store->get('master_stok');$mut=$this->store->get('mutasi_stok');$mi=$this->findIndex($master,$p);$pi=$this->findIndex($produk,$p);
@@ -45,7 +40,7 @@ final class InventoryService {
             if($pi>=0){$produk[$pi]['stok']=$after;if(empty($produk[$pi]['id_stok_item']))$produk[$pi]['id_stok_item']=$master[$mi]['id_stok_item'];$produk[$pi]['updated_at']=$this->now();}
             $movement=array_merge($p,['id_mutasi'=>$p['id_mutasi']??$this->id('MUT'),'tanggal'=>$p['tanggal']??date('Y-m-d'),'waktu'=>$p['waktu']??date('H:i:s'),'id_stok_item'=>$master[$mi]['id_stok_item'],'id_produk'=>$master[$mi]['id_produk']??($p['id_produk']??''),'kode_sku'=>$master[$mi]['kode_sku']??($p['kode_sku']??''),'qty_masuk'=>$qtyIn,'qty_keluar'=>$qtyOut,'stok_sebelum'=>$before,'stok_setelah'=>$after,'saldo_berjalan'=>$after,'operator'=>$p['operator']??($_SESSION['username']??'system'),'created_at'=>$this->now()]);$mut[]=$movement;
             $this->store->putMany(['master_stok'=>$master,'produk'=>$produk,'mutasi_stok'=>$mut]);$res=['status'=>'success','code'=>'STOCK_MOVEMENT_POSTED','data'=>['movement'=>$movement,'stok_sebelum'=>$before,'stok_setelah'=>$after]];
-            if($key!==''){$st=$this->pdo->prepare('INSERT IGNORE INTO idempotency_keys(company_key,idempotency_key,module,reference_id,response_json) VALUES(?,?,?,?,?)');$st->execute([$company,$key,self::IDEMPOTENCY_MODULE,(string)($p['id_referensi']??''),json_encode($res)]);}AuditService::log($this->pdo,'INVENTORY_MOVEMENT','Inventory',$movement['id_mutasi'],(string)($p['id_referensi']??''),null,$movement);return $res;
+            if($key!==''){$st=$this->pdo->prepare('INSERT IGNORE INTO idempotency_keys(idempotency_key,module,reference_id,response_json) VALUES(?,?,?,?)');$st->execute([$key,'Inventory',(string)($p['id_referensi']??''),json_encode($res)]);}AuditService::log($this->pdo,'INVENTORY_MOVEMENT','Inventory',$movement['id_mutasi'],(string)($p['id_referensi']??''),null,$movement);return $res;
         }finally{$rel=$this->pdo->prepare('SELECT RELEASE_LOCK(?)');$rel->execute([$lockName]);}
     }
 }
