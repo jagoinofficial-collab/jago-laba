@@ -8,12 +8,14 @@ Dokumen audit dan rancangan di bawah merupakan baseline sebelum implementasi; an
 
 Dokumen:
 
-1. [Struktur aktual dan temuan](current-structure.md).
-2. [Struktur tujuan](target-structure.md).
-3. [Peta dan tahap migrasi](file-migration-map.md).
-4. [Persiapan produksi .com](../deployment/production-guide.md).
-5. [Referensi environment](../deployment/environment-reference.md).
-6. [Backup, restore dan rollback](../recovery/backup-restore-rollback.md).
+1. [ADR-001: baseline stack dan batas migrasi](adr/ADR-001-laravel-modernization-stack.md).
+2. [Matriks inventaris endpoint](endpoint-inventory-matrix.md).
+3. [Struktur aktual dan temuan](current-structure.md).
+4. [Struktur tujuan](target-structure.md).
+5. [Peta dan tahap migrasi](file-migration-map.md).
+6. [Persiapan produksi .com](../deployment/production-guide.md).
+7. [Referensi environment](../deployment/environment-reference.md).
+8. [Backup, restore dan rollback](../recovery/backup-restore-rollback.md).
 
 Bukti pendukung:
 
