@@ -15,7 +15,7 @@ Status: **PARTIAL — database restored; private files and key not supplied**
 
 | Source domain | Target database | Result |
 |---|---|---|
-| Main / Marketplace | `jl_staging_restore_20261030` | Imported successfully; 80 tables |
+| Main application DB (Marketplace/shared) | `jl_staging_restore_20261030` | Imported successfully; 117 base tables (count revalidated 2026-11-01) |
 | Konveksi | `jl_staging_restore_konveksi_20261030` | Imported successfully; 43 tables |
 
 The source databases `jago_laba` and `jago_laba_konveksi` were not modified.
@@ -48,3 +48,21 @@ authoritative legacy key was supplied. A dedicated non-root staging database use
 and an application-readable outbound/scheduler-disabled control must be configured
 before application smoke tests. Do not attach production traffic or provider Live
 credentials to these targets.
+
+## Table-count correction (revalidated 2026-11-01)
+
+The original `80 tables` figure above was unsupported by a saved command,
+query, or import log and could not be reproduced. The exact source dump still
+has SHA-256
+`445EE9B2DB2C78A9AB8C952773076C733FCC63B43AD80BDD06B15445CC3A7B64` and
+contains 117 `CREATE TABLE` statements. Read-only inspection of the isolated
+target `jl_staging_restore_20261030` in the Step 11 temporary MariaDB datadir
+also counted 117 base tables. Therefore this is a documentation/counting error
+in the earlier evidence, not a demonstrated 37-table restore loss. The
+original method that produced 80 cannot be established from available logs;
+do not infer a filtering rule from the number alone.
+
+For context, the 117-table main dump is a mixed application database, not 117
+Marketplace-prefixed tables: it contains 43 `marketplace_*` tables, 38
+`jl_data_*` tables, and 36 other/shared tables. The separate Konveksi dump and
+its 43-table target remain counted independently.

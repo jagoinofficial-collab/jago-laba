@@ -39,9 +39,11 @@ The read-only investigation and owner decision sheet are in the
 | Migration tables | Absent in both schemas. `php artisan migrate:status` returned “Migration table not found”; it did not create a migration table. No migration was run. |
 
 The earlier [database-only restore note](./restore-rehearsal-20261030-database-only.md)
-reported 80 Marketplace tables. This rehearsal and the SQL dump both count 117
-base tables. Treat the old count as an unresolved evidence discrepancy; the
-selected row-count parity above does not explain the 37-table difference.
+reported 80 tables without a saved count command/log. Revalidation found 117
+`CREATE TABLE` statements in the exact-hash dump and 117 base tables in the
+isolated `jl_staging_restore_20261030` target. The old 80 figure is corrected
+as an unsupported documentation/counting error; available evidence cannot
+establish how it was produced. No 37-table restore loss is demonstrated.
 
 ## Laravel smoke
 
