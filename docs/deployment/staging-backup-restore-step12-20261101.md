@@ -36,6 +36,19 @@ owner accepts or rejects this rehearsal. Do not enable provider calls from it.
 - No Laravel application, HTTP server, scheduler, queue worker, provider request, or OAuth flow was started. No migration or seed ran.
 - MariaDB was shut down after checks; port 3318 has no listener.
 
+## Repeated post-check (2026-11-01)
+
+The restored schemas were restarted only on loopback for a fresh read-only
+post-check, then shut down again. Table totals and selected row counts still
+match the dump evidence (117/43 tables; Marketplace users/stores/orders/items
+1/6/1,938/1,948; Konveksi table maps/products/materials 35/5/22), and no Laravel
+`migrations` table exists. The integrity gate **fails**: 17 orphan inventory
+references remain, affecting 1,720 units and an implied value of 62,494,000.
+The staged private directory still contains only the encryption-key copy; no
+private-file archive was restored. Therefore login, tenant/store authorization,
+HPP/profit reconciliation, and authorized download tests were **not started**;
+they are gated on owner disposition and a complete private-file restore.
+
 ## Outstanding gates
 
 1. Obtain the authorized private-file backup and checksum/manifest; restore into
