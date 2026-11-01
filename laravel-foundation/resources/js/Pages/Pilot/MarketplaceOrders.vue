@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
+import WorkspaceNavigation from '../../Components/WorkspaceNavigation.vue';
 import { Head, router } from '@inertiajs/vue3';
 
 type Store = Record<string, any>;
@@ -75,6 +76,7 @@ function dateLabel(value: unknown): string {
 </script>
 
 <template>
+    <WorkspaceNavigation workspace="marketplace" :store-id="scope.store_id" />
     <Head title="Pesanan Marketplace · Read-only" />
     <main class="min-h-screen bg-slate-50 p-4 text-slate-900 md:p-8">
         <header class="mx-auto flex max-w-7xl flex-wrap items-start justify-between gap-4">

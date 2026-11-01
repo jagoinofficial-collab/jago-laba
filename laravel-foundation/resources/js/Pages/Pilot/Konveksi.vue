@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
+import WorkspaceNavigation from '../../Components/WorkspaceNavigation.vue';
 
 const props = defineProps<{
     read_only: boolean;
@@ -14,6 +15,7 @@ const visible = ['bahan', 'produk', 'pegawai', 'supplier', 'rekening', 'keuangan
 </script>
 
 <template>
+    <WorkspaceNavigation workspace="konveksi" />
     <Head title="Pilot Konveksi · Read-only" />
     <main class="pilot-shell">
         <header class="pilot-header">

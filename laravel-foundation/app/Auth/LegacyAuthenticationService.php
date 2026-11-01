@@ -3,16 +3,29 @@
 namespace App\Auth;
 
 use App\Policies\RolePolicy;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 
 final class LegacyAuthenticationService
 {
     public function attempt(Request $request, string $username, string $password): ?LegacyUser
     {
+        $key = 'legacy-login:'.hash('sha256', strtolower(trim($username)).'|'.$request->ip());
+        if (RateLimiter::tooManyAttempts($key, 5)) {
+            throw new HttpResponseException(response()->json([
+                'message' => 'Terlalu banyak percobaan masuk. Silakan coba lagi sebentar.',
+                'code' => 'LOGIN_THROTTLED',
+            ], 429)->header('Retry-After', (string) RateLimiter::availableIn($key)));
+        }
         if (! Auth::guard('web')->attempt(['username' => $username, 'password' => $password])) {
+            RateLimiter::hit($key, 60);
+
             return null;
         }
+
+        RateLimiter::clear($key);
 
         $request->session()->forget(['workspace', 'store_id', 'workspace_filters']);
         $user = Auth::guard('web')->user();

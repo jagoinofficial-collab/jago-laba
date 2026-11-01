@@ -84,8 +84,14 @@ async function selectWorkspace(workspace: string) {
 }
 
 async function logout() {
-    await fetch('/auth/logout', { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() } });
-    window.location.reload();
+    error.value = '';
+    try {
+        const response = await fetch('/auth/logout', { method: 'POST', headers: { Accept: 'application/json', 'X-CSRF-TOKEN': csrfToken() } });
+        if (!response.ok) throw new Error('Belum berhasil keluar. Silakan coba lagi.');
+        window.location.reload();
+    } catch (exception) {
+        error.value = exception instanceof Error ? exception.message : 'Belum berhasil keluar.';
+    }
 }
 </script>
 
@@ -93,10 +99,10 @@ async function logout() {
     <Head :title="authenticated ? 'Pilih ruang kerja · Jago Laba' : 'Login · Jago Laba'" />
     <main class="foundation-shell">
         <section class="foundation-card">
-            <div class="foundation-brand"><span class="foundation-mark">JL</span><span><strong>JAGO LABA</strong><small>Laravel Foundation</small></span></div>
+            <div class="foundation-brand"><span class="foundation-mark">JL</span><span><strong>JAGO LABA</strong><small>Ruang kerja bisnis Anda</small></span></div>
 
             <template v-if="!authenticated">
-                <div class="foundation-heading"><span class="eyebrow">Akses aplikasi</span><h1>Masuk ke Jago Laba</h1><p>Gunakan akun lama Anda. Laravel akan membaca user dan password hash melalui adapter yang sama.</p></div>
+                <div class="foundation-heading"><span class="eyebrow">Akses aplikasi</span><h1>Masuk ke Jago Laba</h1><p>Masuk menggunakan akun Jago Laba Anda.</p></div>
                 <form class="foundation-form" @submit.prevent="login">
                     <label>Username<input v-model="username" autocomplete="username" required placeholder="Username" /></label>
                     <label>Password<input v-model="password" autocomplete="current-password" required type="password" placeholder="Password" /></label>
@@ -106,7 +112,7 @@ async function logout() {
             </template>
 
             <template v-else>
-                <div class="foundation-heading"><span class="eyebrow">Jago Laba · Ruang kerja</span><h1>Selamat datang{{ user?.name ? `, ${user.name}` : '' }}</h1><p>Pilih ruang kerja untuk melanjutkan ke aplikasi yang sudah memiliki guard company, store, role, dan workspace.</p></div>
+                <div class="foundation-heading"><span class="eyebrow">Jago Laba · Ruang kerja</span><h1>Selamat datang{{ user?.name ? `, ${user.name}` : '' }}</h1><p>Pilih ruang kerja yang ingin Anda gunakan.</p></div>
                 <div class="workspace-cards">
                     <button v-if="workspaces.includes('konveksi')" class="workspace-card workspace-konveksi" :disabled="selecting !== null" type="button" @click="selectWorkspace('konveksi')"><span class="workspace-icon">K</span><strong>Manajemen Konveksi</strong><small>Produk, bahan baku, HPP, persediaan, dan keuangan konveksi.</small><b>{{ selecting === 'konveksi' ? 'Membuka…' : 'Masuk ke Konveksi →' }}</b></button>
                     <button v-if="workspaces.includes('marketplace')" class="workspace-card workspace-marketplace" :disabled="selecting !== null" type="button" @click="selectWorkspace('marketplace')"><span class="workspace-icon">M</span><strong>Manajemen Marketplace</strong><small>Pesanan, laba, pengeluaran, pencairan dana, dan retur marketplace.</small><b>{{ selecting === 'marketplace' ? 'Membuka…' : 'Masuk ke Marketplace →' }}</b></button>

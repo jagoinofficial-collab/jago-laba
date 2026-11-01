@@ -1,0 +1,561 @@
+{
+    "registry_id": "JL-STEP1-4-REGISTRY-20261101",
+    "generated_at": "2026-11-01T12:44:05+00:00",
+    "scope": "Local diagnostic staging only; production and release baseline approval NOT granted",
+    "targets": {
+        "main": "jl_s14_market",
+        "konveksi": "jl_s14_konveksi",
+        "schema_experiment": "jl_s14_schema_rehearsal_v2"
+    },
+    "read_baseline_required_migrations": [],
+    "read_baseline_reason": "Existing Laravel read pilots query restored legacy tables; no DDL required.",
+    "execution_guard": "Runtime script checks fixed localhost port 3320 and disposable schema; never executes default users migration.",
+    "baseline_write_gate": "BLOCKED until orphan disposition, ledger reconciliation and staging acceptance",
+    "entries": [
+        {
+            "migration_id": "0001_01_01_000000_create_users_table",
+            "dependency_order": 1,
+            "owner": "platform-foundation",
+            "source": "laravel-foundation/database/migrations/0001_01_01_000000_create_users_table.php",
+            "sha256": "10d79883bc08ce46510f9ad8b1830b4d06d586dc56ae2c8bac3b3e491f69a90f",
+            "status": "blocked_collision_do_not_execute",
+            "required_for": [],
+            "scope": "Laravel default users/password_reset_tokens/sessions tables",
+            "precondition_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME IN ('users','password_reset_tokens','sessions');",
+            "precondition_result": "Legacy users exists; do not execute up/down. Sessions split into independent migration.",
+            "post_check_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME IN ('users','password_reset_tokens','sessions');",
+            "rollback": "Do not run down() on the restored legacy target; it would drop the legacy users table. Use a disposable database rebuild instead.",
+            "collision_policy": "Hold permanently for the legacy target. Use legacy auth adapter and separate Laravel-owned database if native auth tables are later required.",
+            "precondition_observed_at": "2026-11-01T12:44:05+00:00"
+        },
+        {
+            "migration_id": "0001_01_01_000001_create_cache_table",
+            "dependency_order": 2,
+            "owner": "platform-foundation",
+            "source": "laravel-foundation/database/migrations/0001_01_01_000001_create_cache_table.php",
+            "sha256": "fbb4665e5a977e71df4e74ec75b3c06ca4f17ad0de7138fe9786639189978e77",
+            "status": "rehearsed_disposable_clone_only",
+            "required_for": [
+                "database cache/locks; Step 10 scheduler locks"
+            ],
+            "scope": "Laravel database cache and cache locks",
+            "precondition_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME IN ('cache','cache_locks');",
+            "precondition_result": "cache and cache_locks absent in read baseline",
+            "post_check_sql": "SELECT COUNT(*) AS cache_table_count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME IN ('cache','cache_locks');",
+            "rollback": "Only on a disposable database after confirming no application cache data is needed; never drop shared legacy tables.",
+            "collision_policy": "Do not run for MKT-READ-001. Re-open only when database cache is explicitly selected and the target owner is recorded.",
+            "precondition_observed_at": "2026-11-01T12:44:05+00:00"
+        },
+        {
+            "migration_id": "0001_01_01_000002_create_jobs_table",
+            "dependency_order": 3,
+            "owner": "platform-foundation",
+            "source": "laravel-foundation/database/migrations/0001_01_01_000002_create_jobs_table.php",
+            "sha256": "df4910687180313a14a3f96a8bddd808ae145ed1b107cd772caf865c0dc2b746",
+            "status": "rehearsed_disposable_clone_only",
+            "required_for": [
+                "database queue; Step 10"
+            ],
+            "scope": "Laravel database queue, batches, and failed jobs",
+            "precondition_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME IN ('jobs','job_batches','failed_jobs');",
+            "precondition_result": "jobs, job_batches and failed_jobs absent in read baseline",
+            "post_check_sql": "SELECT COUNT(*) AS queue_table_count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME IN ('jobs','job_batches','failed_jobs');",
+            "rollback": "Only after worker shutdown and queue drain review; preserve failed-job evidence before any disposable-target rebuild.",
+            "collision_policy": "Do not run for read-only pilots. Re-open only under G6 with scheduler disabled, one-worker proof, and queue ownership approval.",
+            "precondition_observed_at": "2026-11-01T12:44:05+00:00"
+        },
+        {
+            "migration_id": "2026_10_30_000003_scope_idempotency_keys",
+            "dependency_order": 4,
+            "owner": "marketplace-expense-pilot",
+            "source": "laravel-foundation/database/migrations/2026_10_30_000003_scope_idempotency_keys.php",
+            "sha256": "8d1e6f3e2b9fc6b4455853248f2c8e4673796a45bae9d1691237fe0f4458b347",
+            "status": "rehearsed_disposable_clone_only",
+            "required_for": [
+                "expense mutation; Step 7 and scoped Konveksi receipts after connection-specific review"
+            ],
+            "scope": "Adds company_key, scopes module, and replaces global unique idempotency key",
+            "precondition_sql": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME = 'idempotency_keys' AND COLUMN_NAME IN ('company_key','module'); SELECT INDEX_NAME,NON_UNIQUE,COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME = 'idempotency_keys';",
+            "precondition_result": "Read-baseline columns/index evidence attached separately; scoped DDL rehearsed only on diagnostic clone",
+            "post_check_sql": "SELECT COUNT(*) AS missing_scope_rows FROM jl_s14_market.idempotency_keys WHERE company_key IS NULL OR company_key = '' OR module IS NULL OR module = ''; SELECT INDEX_NAME,NON_UNIQUE,COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = 'jl_s14_market' AND TABLE_NAME = 'idempotency_keys' AND INDEX_NAME = 'uq_idempotency_scope';",
+            "rollback": "Migration down() must refuse rollback if duplicate idempotency_key values exist after scoping. Rehearse on a disposable copy before any staging write.",
+            "collision_policy": "Never assign legacy rows to a real company automatically. Use LEGACY-GLOBAL/legacy only after explicit write-gate approval; reject any post-scope duplicate before applying the unique index.",
+            "precondition_observed_at": "2026-11-01T12:44:05+00:00"
+        },
+        {
+            "migration_id": "2026_11_01_000004_create_laravel_sessions_table",
+            "dependency_order": 5,
+            "owner": "platform-foundation",
+            "source": "laravel-foundation/database/migrations/2026_11_01_000004_create_laravel_sessions_table.php",
+            "sha256": "0587d9f473a04ac70f24ada1e20e295587ff651489f8074f47921e6376d5515e",
+            "status": "rehearsed_disposable_clone_only",
+            "required_for": [
+                "database session; Step 5"
+            ],
+            "precondition_sql": "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='jl_s14_market' AND TABLE_NAME='laravel_sessions'",
+            "precondition_result": "laravel_sessions absent; legacy users migration explicitly excluded; configure SESSION_TABLE=laravel_sessions",
+            "post_check_sql": "SELECT COLUMN_NAME,COLUMN_TYPE,IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='jl_s14_schema_rehearsal_v2' AND TABLE_NAME='laravel_sessions' ORDER BY ORDINAL_POSITION",
+            "rollback": "Stop login/writers first; preserve sessions if needed. Dropping laravel_sessions logs out its users. Existing users/sessions tables untouched. Rehearsed only on disposable clone.",
+            "collision_policy": "Fail on existing laravel_sessions; review ownership and exact schema rather than silently adopting or dropping an existing table."
+        }
+    ],
+    "observations": {
+        "jl_s14_market": {
+            "columns": [
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "id",
+                    "COLUMN_TYPE": "bigint(20) unsigned",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "idempotency_key",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "module",
+                    "COLUMN_TYPE": "varchar(100)",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "reference_id",
+                    "COLUMN_TYPE": "varchar(190)",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "response_json",
+                    "COLUMN_TYPE": "longtext",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "created_at",
+                    "COLUMN_TYPE": "datetime",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "id",
+                    "COLUMN_TYPE": "bigint(20) unsigned",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "user_uuid",
+                    "COLUMN_TYPE": "varchar(60)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "role_id",
+                    "COLUMN_TYPE": "varchar(50)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "username",
+                    "COLUMN_TYPE": "varchar(50)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "name",
+                    "COLUMN_TYPE": "varchar(100)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "email",
+                    "COLUMN_TYPE": "varchar(100)",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "password_hash",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "status",
+                    "COLUMN_TYPE": "enum('Aktif','Nonaktif')",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "last_login_at",
+                    "COLUMN_TYPE": "datetime",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "created_at",
+                    "COLUMN_TYPE": "datetime",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "users",
+                    "COLUMN_NAME": "updated_at",
+                    "COLUMN_TYPE": "datetime",
+                    "IS_NULLABLE": "NO"
+                }
+            ],
+            "idempotency_indexes": [
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "INDEX_NAME": "idempotency_key",
+                    "NON_UNIQUE": 0,
+                    "COLUMN_NAME": "idempotency_key",
+                    "SEQ_IN_INDEX": 1
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "INDEX_NAME": "PRIMARY",
+                    "NON_UNIQUE": 0,
+                    "COLUMN_NAME": "id",
+                    "SEQ_IN_INDEX": 1
+                }
+            ]
+        },
+        "jl_s14_konveksi": {
+            "columns": [
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "id",
+                    "COLUMN_TYPE": "bigint(20) unsigned",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "idempotency_key",
+                    "COLUMN_TYPE": "varchar(255)",
+                    "IS_NULLABLE": "NO"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "module",
+                    "COLUMN_TYPE": "varchar(100)",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "reference_id",
+                    "COLUMN_TYPE": "varchar(190)",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "response_json",
+                    "COLUMN_TYPE": "longtext",
+                    "IS_NULLABLE": "YES"
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "COLUMN_NAME": "created_at",
+                    "COLUMN_TYPE": "datetime",
+                    "IS_NULLABLE": "NO"
+                }
+            ],
+            "idempotency_indexes": [
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "INDEX_NAME": "idempotency_key",
+                    "NON_UNIQUE": 0,
+                    "COLUMN_NAME": "idempotency_key",
+                    "SEQ_IN_INDEX": 1
+                },
+                {
+                    "TABLE_NAME": "idempotency_keys",
+                    "INDEX_NAME": "PRIMARY",
+                    "NON_UNIQUE": 0,
+                    "COLUMN_NAME": "id",
+                    "SEQ_IN_INDEX": 1
+                }
+            ]
+        }
+    },
+    "legacy_migration_sources": [
+        {
+            "source": "database/migrations/marketplace/migration_advanced_marketplace.php",
+            "sha256": "9a12b590d8ea0fdbf7559fc56c0178f2ec2912c1bb15bb935823b45dcc424d9b",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_expenses_and_api.sql",
+            "sha256": "90daf394be61e5e25ee4a6a4d7bdeb6056c401ca886a06823a319fd0665858db",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketing_ads.php",
+            "sha256": "9fb37228f0ba90c95bfb9e5eebfbcfe78e49fe500ec902026c788da045d67d8e",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_active_catalog.php",
+            "sha256": "f945f3cf0b8e28703e3d5dc30bd18d541a2d84787aa611d68e4a2dbd68659615",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_auto_sync.php",
+            "sha256": "fd292c371fa65b459e30ecc3a5aaf2d4fefb5a60435d9d9a081c646a22d8ddb2",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_background_sync.php",
+            "sha256": "52e417aab9b52ea8c2b51ed5c5275dce2f5858b87effb6408b3fe4412ede8a97",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_branding.php",
+            "sha256": "b79d2be99cbd9923f9ad4e52b9b362b0da16d973f2c70ba63e76513cf1865878",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_catalog.php",
+            "sha256": "f8d93a5c1d866460b65a13ad977b09f5fd91935d1cff5b4d3008041bfdc380c2",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_engine.sql",
+            "sha256": "27e9dee91ca92ab4d2ac18bc7ec76aade1bbe61be3a38f44443a535ad79400cd",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_finance_auto.php",
+            "sha256": "21302a90abc7ea8cb2f6b5ccbf306426a49dca9d98849d4b227540451f88bf70",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_fulfillment.php",
+            "sha256": "3cedfe835bde731ee2c23423fa8a17ad75036754857b416f17b71e954c14a30e",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_incremental_sync.php",
+            "sha256": "3684d82cadf20f4be9cd4b52970e2a6bbab022acddbd904dc27d3c4a53dedb3d",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_integration_review.sql",
+            "sha256": "2c276ca2264c7d76972fa0a4d8360cc9dace1de11382aa504aad2febdee432c1",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_integration_runtime.php",
+            "sha256": "2ba6f151d9f724fcc03b1d7b6e8f498ea467703fbfc4fe143bfc4a92bdc97389",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_oauth.php",
+            "sha256": "1e920b6ad369013ba2cdc9a445145c68cab2f8ede32e2951eda1f079fc410aee",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_oauth.sql",
+            "sha256": "ba9c9784a8e004ed75693b49bb6fc5bf9b454e58fb8995d7316336d1923e7439",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_order_status_index.php",
+            "sha256": "7bf49ce4c471e73e6636f4c2163152dcaba00e76bd85ef1752f9c4d729820fc4",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_price_editor.php",
+            "sha256": "45cc22890afeced5ef9b59edfee0b149d602141e95fc465b1f379919638a8e50",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_scope.php",
+            "sha256": "bfd26a6a9fdf911fa5686d346d4a605b0990f4c6508db75b3d9a79a504985719",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_shipping_documents.php",
+            "sha256": "e524fc7879e716f394d2d94e0aa92575eedc3ffb5ddad6e4528dc21ae80cef15",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_shipping_packing_slip.php",
+            "sha256": "6813c4b88d574fabe2c8c3b4edb4d805611eb80e30e16065364d3461236224bd",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_stock.php",
+            "sha256": "78228c6245c21ac771f1d580fc1f9954bc741c8317eeb5b2e38f655ef181bc9e",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_store_archive.php",
+            "sha256": "2bc0c09455a84a0b57b8b54625ef41ccc6cf6c73a2a198b98dae6a5f35072aba",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_sync_calendar.php",
+            "sha256": "8d81211366a4cdb764e3774b5809718e2674b47542f0342646cb77ee0597deb6",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_sync_worker.php",
+            "sha256": "b8aa16ce4f626759d2331cf7daccabdedd8501f6bb74991a2369591293f99739",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_transaction_detail.php",
+            "sha256": "ad09793f05d5e05718320f8a7a19a6d9c8ae7b19108ad582a0d1d779de7797b6",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_withdrawals.php",
+            "sha256": "b15109ed9fddc0e6b0e89fb7ccc6778c02cc67f64fef61be0f4a7cf2df3f09be",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_marketplace_withdrawal_xlsx.php",
+            "sha256": "740666faa59d66dfe11279a24a3032775df02faffb1ce488a72b3678a404015b",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/marketplace/migration_settings_and_stores.php",
+            "sha256": "69bc4255c54780b48e0461cbeb7b64ff39db97486c22faa23b94c80a9e7ff8a8",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/shared/migration_normalized_3nf.sql",
+            "sha256": "5298e25ecb4e8e0608d68040bd1df35a1ef2aed85ba44c328260ba444d605a27",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        },
+        {
+            "source": "database/migrations/shared/migration_workspace_review.sql",
+            "sha256": "f789fbeccab5f0488c9423bbf2a087e4ad08acc602c58322240d94c0f4743a80",
+            "status": "NOT approved for replay; restored schema already contains legacy objects; derive changes per future feature task"
+        }
+    ],
+    "rehearsal": {
+        "target": "jl_s14_schema_rehearsal_v2",
+        "kind": "independent disposable schema rehearsal; NOT release approval",
+        "operations": [
+            {
+                "path": "database/migrations/0001_01_01_000001_create_cache_table.php",
+                "sha256": "fbb4665e5a977e71df4e74ec75b3c06ca4f17ad0de7138fe9786639189978e77",
+                "exit": 0
+            },
+            {
+                "path": "database/migrations/0001_01_01_000002_create_jobs_table.php",
+                "sha256": "df4910687180313a14a3f96a8bddd808ae145ed1b107cd772caf865c0dc2b746",
+                "exit": 0
+            },
+            {
+                "path": "database/migrations/2026_10_30_000003_scope_idempotency_keys.php",
+                "sha256": "8d1e6f3e2b9fc6b4455853248f2c8e4673796a45bae9d1691237fe0f4458b347",
+                "exit": 0
+            },
+            {
+                "path": "database/migrations/2026_11_01_000004_create_laravel_sessions_table.php",
+                "sha256": "0587d9f473a04ac70f24ada1e20e295587ff651489f8074f47921e6376d5515e",
+                "exit": 0
+            }
+        ],
+        "all_original_table_data_preserved": true,
+        "added_tables": [
+            "cache",
+            "cache_locks",
+            "failed_jobs",
+            "job_batches",
+            "jobs",
+            "laravel_sessions"
+        ],
+        "idempotency_scope_columns": [
+            {
+                "Field": "company_key",
+                "Type": "varchar(120)",
+                "Null": "YES",
+                "Key": "MUL",
+                "Default": null,
+                "Extra": ""
+            },
+            {
+                "Field": "module",
+                "Type": "varchar(100)",
+                "Null": "YES",
+                "Key": "",
+                "Default": null,
+                "Extra": ""
+            }
+        ],
+        "idempotency_indexes": [
+            {
+                "Table": "idempotency_keys",
+                "Non_unique": 0,
+                "Key_name": "PRIMARY",
+                "Seq_in_index": 1,
+                "Column_name": "id",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "idempotency_keys",
+                "Non_unique": 0,
+                "Key_name": "uq_idempotency_scope",
+                "Seq_in_index": 1,
+                "Column_name": "company_key",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "YES",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "idempotency_keys",
+                "Non_unique": 0,
+                "Key_name": "uq_idempotency_scope",
+                "Seq_in_index": 2,
+                "Column_name": "module",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "YES",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            },
+            {
+                "Table": "idempotency_keys",
+                "Non_unique": 0,
+                "Key_name": "uq_idempotency_scope",
+                "Seq_in_index": 3,
+                "Column_name": "idempotency_key",
+                "Collation": "A",
+                "Cardinality": 0,
+                "Sub_part": null,
+                "Packed": null,
+                "Null": "",
+                "Index_type": "BTREE",
+                "Comment": "",
+                "Index_comment": ""
+            }
+        ],
+        "users_table_untouched": true,
+        "rerun_exit": 0,
+        "session_round_trip": true,
+        "rollback_exit": 0,
+        "rollback_data_matches_before": true,
+        "migration_repository_rows_after_rollback": 0,
+        "production_commands_executed": false
+    }
+}

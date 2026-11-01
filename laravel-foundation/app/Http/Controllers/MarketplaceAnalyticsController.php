@@ -20,11 +20,36 @@ final class MarketplaceAnalyticsController
         $companyKey = (string) $request->attributes->get('company_key');
 
         try {
-            return Inertia::render('Pilot/MarketplaceAnalytics', $this->analytics->overview(
+            $payload = $this->analytics->overview(
                 $companyKey,
                 $request->storeId(),
                 $request->filters(),
-            ));
+            );
+            $format = $request->validated('format');
+            if ($format === 'xlsx') {
+                require_once dirname(__DIR__, 4).'/app/Modules/Marketplace/Services/MarketplaceAnalyticsXlsx.php';
+                $report = $payload['analytics'];
+
+                return response(\MarketplaceAnalyticsXlsx::bytes($report), 200, [
+                    'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-Disposition' => 'attachment; filename="analitik-toko-'.$report['start'].'-'.$report['end'].'.xlsx"',
+                    'Cache-Control' => 'no-store, private',
+                ]);
+            }
+            if ($format === 'csv') {
+                require_once dirname(__DIR__, 4).'/app/Modules/Marketplace/Services/MarketplaceAnalyticsCsv.php';
+                $report = $payload['analytics'];
+
+                return response()->streamDownload(function () use ($report): void {
+                    $out = fopen('php://output', 'w');
+                    \MarketplaceAnalyticsCsv::write($out, $report);
+                    fclose($out);
+                }, 'analitik-global-'.$report['start'].'-'.$report['end'].'.csv', [
+                    'Content-Type' => 'text/csv; charset=utf-8', 'Cache-Control' => 'no-store, private',
+                ]);
+            }
+
+            return Inertia::render('Pilot/MarketplaceAnalytics', $payload);
         } catch (Throwable $exception) {
             if ($exception instanceof InvalidArgumentException) {
                 return Inertia::render('Pilot/MarketplaceAnalytics', [

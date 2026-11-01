@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Laravel Foundation: PHP 8.4 OpenSSL local server",
+			"type": "shell",
+			"command": "php",
+			"args": [
+				"-d",
+				"extension=C:\\Users\\PT JAGO LABA\\AppData\\Local\\Microsoft\\WinGet\\Packages\\PHP.PHP.8.4_Microsoft.Winget.Source_8wekyb3d8bbwe\\ext\\php_openssl.dll",
+				"-S",
+				"127.0.0.1:8002",
+				"-t",
+				"D:\\xampp\\htdocs\\jago-laba\\laravel-foundation\\public",
+				"D:\\xampp\\htdocs\\jago-laba\\.vscode\\laravel-foundation-router.php"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}

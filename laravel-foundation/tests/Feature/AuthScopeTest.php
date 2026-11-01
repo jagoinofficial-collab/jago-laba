@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Auth\LegacyUser;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 final class AuthScopeTest extends TestCase
@@ -196,5 +198,91 @@ final class AuthScopeTest extends TestCase
             'method' => 'prosesLoginBackend',
             'args' => [$username, $password],
         ])->assertOk()->assertJsonPath('result.status', 'success');
+    }
+
+    public function test_login_throttle_is_shared_by_native_and_legacy_login_routes(): void
+    {
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->postJson('/auth/login', ['username' => 'throttle-owner', 'password' => 'wrong'])->assertUnauthorized();
+        }
+        $this->postJson('/api/rpc.php', ['method' => 'prosesLoginBackend', 'args' => ['THROTTLE-OWNER', 'wrong']])
+            ->assertStatus(429)->assertJsonPath('code', 'LOGIN_THROTTLED')->assertHeader('Retry-After');
+    }
+
+    public function test_login_rotates_session_and_logout_revokes_the_session(): void
+    {
+        $this->get('/login')->assertOk();
+        $before = session()->getId();
+        $this->postJson('/auth/login', ['username' => 'owner', 'password' => 'owner-secret'])->assertOk();
+        $this->assertNotSame($before, session()->getId());
+        $this->get('/workspace.php')->assertOk();
+        $this->postJson('/auth/logout')->assertOk();
+        $this->getJson('/auth/me')->assertUnauthorized();
+    }
+
+    public function test_disabled_user_cannot_login_and_secrets_are_not_serialized(): void
+    {
+        DB::table('auth_users_v2')->where('username', 'owner')->update(['status' => 'disabled']);
+        $this->postJson('/auth/login', ['username' => 'owner', 'password' => 'owner-secret'])->assertUnauthorized();
+        $user = new LegacyUser(['id' => 1, 'username' => 'safe', 'password_hash' => 'secret', 'api_key' => 'private', 'company_key' => 'COMPANY-A']);
+        $this->assertArrayNotHasKey('api_key', $user->toArray());
+        $this->assertArrayNotHasKey('password_hash', $user->toArray());
+        $this->assertSame('COMPANY-A', $user->withLegacyContext(['company_key' => 'COMPANY-B'])->getCompanyKey());
+    }
+
+    public function test_company_context_rejects_malformed_or_conflicting_scope_selectors(): void
+    {
+        $this->loginAs('owner', 'owner-secret');
+        $this->getJson('/_test/company-context?company_key[]=LOCAL-COMPANY')->assertForbidden();
+        $this->withHeader('X-Company-Key', 'OTHER-COMPANY')
+            ->getJson('/_test/company-context?company_key=LOCAL-COMPANY')->assertForbidden();
+    }
+
+    public function test_explicit_workspace_registry_overrides_role_defaults_and_clears_store_context(): void
+    {
+        Schema::create('workspace_user_access', function (Blueprint $table): void {
+            $table->string('user_key');
+            $table->string('workspace');
+        });
+        DB::table('workspace_user_access')->insert(['user_key' => 'AUTHV2-1', 'workspace' => 'konveksi']);
+        $this->loginAs('owner', 'owner-secret');
+        $this->postJson('/api/workspace.php', ['workspace' => 'marketplace'])->assertForbidden();
+        $this->withSession(['store_id' => 'store-local', 'workspace_filters' => ['secret' => 'old']])
+            ->postJson('/api/workspace.php', ['workspace' => 'konveksi'])->assertOk();
+        $this->assertNull(session('store_id'));
+        $this->assertNull(session('workspace_filters'));
+    }
+
+    #[DataProvider('roleMatrix')]
+    public function test_all_legacy_roles_have_the_expected_finance_boundary(string $role, bool $allowed): void
+    {
+        DB::table('auth_users_v2')->where('username', 'owner')->update(['role_id' => $role]);
+        $this->loginAs('owner', 'owner-secret');
+        $this->getJson('/_test/finance')->assertStatus($allowed ? 200 : 403);
+    }
+
+    public static function roleMatrix(): array
+    {
+        return [
+            'owner' => ['ROLE-OWNER_SUPER_ADMIN', true],
+            'administrator' => ['ROLE-ADMINISTRATOR', true],
+            'finance' => ['ROLE-KEUANGAN', true],
+            'operations' => ['ROLE-OPERASIONAL', false],
+            'reader' => ['ROLE-PEMBACA', false],
+            'unrecognized' => ['ROLE-UNRECOGNIZED', false],
+        ];
+    }
+
+    public function test_store_selection_requires_workspace_csrf_and_same_company_non_archived_store(): void
+    {
+        $this->loginAs('owner', 'owner-secret');
+        $this->postJson('/auth/store', ['store_id' => 'store-local'])->assertForbidden();
+        $this->postJson('/auth/workspace', ['workspace' => 'marketplace'])->assertOk();
+        $this->withHeader('X-CSRF-TOKEN', 'bad')->postJson('/auth/store', ['store_id' => 'store-local'])->assertStatus(419);
+        $this->withHeader('X-CSRF-TOKEN', csrf_token())->postJson('/auth/store', ['store_id' => 'store-foreign'])->assertForbidden();
+        $this->postJson('/auth/store', ['store_id' => 'store-local'])->assertOk()->assertJsonPath('store_id', 'store-local');
+        $this->assertSame('store-local', session('store_id'));
+        DB::table('marketplace_stores')->where('id', 'store-local')->update(['archived_at' => now()]);
+        $this->postJson('/auth/store', ['store_id' => 'store-local'])->assertForbidden();
     }
 }

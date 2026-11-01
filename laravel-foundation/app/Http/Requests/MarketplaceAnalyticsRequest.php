@@ -17,6 +17,7 @@ final class MarketplaceAnalyticsRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'format' => ['nullable', 'in:csv,xlsx'],
             'store' => ['nullable', 'string', 'max:120'],
             'store_id' => ['nullable', 'string', 'max:120'],
             'period' => ['nullable', 'string', 'in:today,yesterday,week,month,last_month,custom'],

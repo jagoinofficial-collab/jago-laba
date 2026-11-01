@@ -127,6 +127,9 @@ final class LegacyUser implements Authenticatable, JsonSerializable
         $attributes = $this->attributes;
 
         foreach (['company_key', 'company_id', 'workspace', 'store_id'] as $key) {
+            if (in_array($key, ['company_key', 'company_id'], true) && $this->getCompanyKey() !== null) {
+                continue;
+            }
             if (isset($context[$key]) && is_scalar($context[$key]) && trim((string) $context[$key]) !== '') {
                 $attributes[$key] = (string) $context[$key];
             }
@@ -140,10 +143,10 @@ final class LegacyUser implements Authenticatable, JsonSerializable
      */
     public function toArray(): array
     {
-        $safe = $this->attributes;
-        unset($safe['password_hash'], $safe['auth_identifier']);
-
-        return $safe;
+        return array_intersect_key($this->attributes, array_flip([
+            'id', 'source', 'username', 'name', 'role_id', 'status',
+            'company_key', 'company_id', 'workspace', 'store_id',
+        ]));
     }
 
     public function jsonSerialize(): array

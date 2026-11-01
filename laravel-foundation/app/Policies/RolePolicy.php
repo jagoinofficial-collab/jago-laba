@@ -11,6 +11,12 @@ final class RolePolicy
 
     public const ADMINISTRATOR = 'ADMINISTRATOR';
 
+    private const ALL_ACTIONS = [
+        'store.delete', 'settings.manage', 'user.manage', 'integration.manage',
+        'finance.manage', 'hpp.edit', 'expense.manage', 'withdrawal.manage', 'bank.reconcile',
+        'orders.manage', 'shipping.fulfill', 'inventory.manage', 'price.manage', 'sync.trigger', 'report.view',
+    ];
+
     /**
      * @var array<string, list<string>>
      */
@@ -20,7 +26,7 @@ final class RolePolicy
             'hpp.edit',
             'expense.manage',
             'withdrawal.manage',
-            'bank.manage',
+            'bank.reconcile',
             'sync.trigger',
             'report.view',
         ],
@@ -47,11 +53,11 @@ final class RolePolicy
         $action = strtolower(trim($action));
 
         if ($role === self::OWNER) {
-            return $action !== '';
+            return in_array($action, self::ALL_ACTIONS, true);
         }
 
         if ($role === self::ADMINISTRATOR) {
-            return $action !== 'store.delete' && $action !== '';
+            return $action !== 'store.delete' && in_array($action, self::ALL_ACTIONS, true);
         }
 
         return in_array($action, self::ACTIONS[$role] ?? [], true);

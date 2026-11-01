@@ -22,7 +22,7 @@ final class AuthController
     {
         $data = $request->validate([
             'username' => ['required', 'string', 'max:120'],
-            'password' => ['required', 'string'],
+            'password' => ['required', 'string', 'max:4096'],
         ]);
 
         $user = $this->authentication->attempt($request, $data['username'], $data['password']);

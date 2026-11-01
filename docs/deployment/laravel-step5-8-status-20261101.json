@@ -1,0 +1,31 @@
+{
+  "scope": "Step 5-8; satu alur bisnis per task; local isolated fixtures only until staging data acceptance",
+  "tasks": [
+    {
+      "id": "AUTH-LOGIN-001",
+      "flow": "login, logout, disabled identity, session rotation, shared login throttling",
+      "implementation": "complete",
+      "local_tests": "PASS: AuthScopeTest 19 cases/88 assertions including role and company fixtures",
+      "staging": "not_run; existing staging HTTP allowlist intentionally denies auth writes",
+      "production": "not_deployed"
+    },
+    {
+      "id": "AUTH-SCOPE-002",
+      "flow": "workspace registry, company identity and all canonical role/action permissions",
+      "implementation": "complete",
+      "local_tests": "PASS: same-fixture legacy RolePolicy parity; unknown actions denied; malformed/conflicting company selectors denied",
+      "staging": "not_run",
+      "production": "not_deployed"
+    },
+    {
+      "id": "AUTH-STORE-003",
+      "flow": "select active store with workspace, company and CSRF guards",
+      "implementation": "complete",
+      "local_tests": "PASS: same-company success; foreign/archived store, wrong workspace and CSRF rejected; RolePolicyParityTest plus store test 2 tests/118 assertions",
+      "staging": "not_run",
+      "production": "not_deployed"
+    }
+  ],
+  "unresolved_data_gates": ["17 inventory FK orphans including stock 4/32 collision", "5 orphan order items", "5 Konveksi products missing stock identities"],
+  "overall": "in_progress; no step marked migrated merely because code exists"
+}

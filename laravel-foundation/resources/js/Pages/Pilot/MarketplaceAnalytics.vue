@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive } from 'vue';
+import WorkspaceNavigation from '../../Components/WorkspaceNavigation.vue';
 import { Head, router } from '@inertiajs/vue3';
 
 type Store = Record<string, any>;
@@ -106,6 +107,7 @@ function dateLabel(value: unknown): string {
 </script>
 
 <template>
+    <WorkspaceNavigation workspace="marketplace" :store-id="scope.store_id" />
     <Head title="Pilot Marketplace · Analitik" />
     <main class="analytics-page">
         <header class="analytics-header">
@@ -147,6 +149,9 @@ function dateLabel(value: unknown): string {
         </section>
 
         <template v-if="analytics && active_store">
+            <div class="panel" style="display:flex;gap:1rem;margin-bottom:1rem">
+                <a v-for="format in ['csv','xlsx']" :key="format" :href="`/marketplace/analytics/export?store=${encodeURIComponent(scope.store_id ?? '')}&period=${filters.period ?? 'month'}&date_start=${filters.date_start ?? ''}&date_end=${filters.date_end ?? ''}&date_basis=${filters.date_basis ?? 'created'}&analytics_mode=${filters.analytics_mode ?? 'all'}&format=${format}`">Unduh {{ format.toUpperCase() }}</a>
+            </div>
             <section class="analytics-hero panel">
                 <div>
                     <span class="eyebrow">{{ active_store.platform }} · {{ active_store.authorization_label }}</span>

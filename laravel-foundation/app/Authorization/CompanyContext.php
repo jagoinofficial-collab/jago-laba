@@ -23,12 +23,23 @@ final class CompanyContext
 
     public function matchesRequest(Request $request, ?Authenticatable $user): bool
     {
-        $company = $this->requestValue($request);
         $context = $this->key($user);
 
         $request->attributes->set('company_key', $context);
 
-        return $company === null || ($context !== null && hash_equals($context, $company));
+        if ($context === null) {
+            return false;
+        }
+        foreach ([$request->route('company_key'), $request->input('company_key'), $request->header('X-Company-Key')] as $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+            if (! is_scalar($value) || ! hash_equals($context, trim((string) $value))) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function requestValue(Request $request): ?string

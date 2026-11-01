@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import WorkspaceNavigation from '../../Components/WorkspaceNavigation.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
 
 type Store = Record<string, any>;
@@ -157,6 +158,7 @@ function barWidth(valueToMeasure: unknown, values: Array<Record<string, any>>, k
 </script>
 
 <template>
+    <WorkspaceNavigation workspace="marketplace" :store-id="scope.store_id" />
     <Head title="Pilot Marketplace · Read-only" />
     <main class="marketplace-app">
         <aside class="marketplace-sidebar" aria-label="Navigasi Marketplace">

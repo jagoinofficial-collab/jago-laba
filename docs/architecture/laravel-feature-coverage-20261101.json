@@ -1,0 +1,17 @@
+{
+    "items": 178,
+    "kinds": {
+        "ajax": 29,
+        "api-action": 27,
+        "konveksi-menu": 24,
+        "marketplace-view": 36,
+        "public": 31,
+        "rpc": 27,
+        "worker": 4
+    },
+    "frontend_occurrences": 722,
+    "frontend_file_tasks": 79,
+    "source_hashes_valid": true,
+    "unique_task_ids": true,
+    "runtime_parity_claimed": false
+}

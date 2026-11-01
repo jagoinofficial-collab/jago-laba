@@ -311,6 +311,59 @@ final class PilotReadOnlyTest extends TestCase
         $this->inertiaGet('/pilot/marketplace/analytics?store=store-foreign')->assertForbidden();
     }
 
+    public function test_analytics_csv_export_matches_the_legacy_writer_on_the_same_fixture(): void
+    {
+        $this->loginAndSelect('marketplace');
+        $filters = ['period' => 'custom', 'date_start' => '2026-10-01', 'date_end' => '2026-10-31', 'date_basis' => 'created', 'analytics_mode' => 'all'];
+        $report = $this->legacyMarketplaceAnalyticsReport('store-a', $filters);
+        require_once dirname(__DIR__, 3).'/app/Modules/Marketplace/Services/MarketplaceAnalyticsCsv.php';
+        $out = fopen('php://temp', 'w+');
+        \MarketplaceAnalyticsCsv::write($out, $report);
+        rewind($out);
+        $expected = stream_get_contents($out);
+        fclose($out);
+        $response = $this->get('/marketplace/analytics/export?'.http_build_query($filters + ['store' => 'store-a', 'format' => 'csv']));
+        $response->assertOk()->assertDownload('analitik-global-2026-10-01-2026-10-31.csv');
+        $withoutClock = static fn ($s) => preg_replace('/^"Dibuat \(WIB\)".*$/m', '', $s);
+        $this->assertSame($withoutClock($expected), $withoutClock($response->streamedContent()));
+    }
+
+    public function test_analytics_xlsx_export_preserves_legacy_workbook_cells_and_rejects_foreign_store(): void
+    {
+        $this->loginAndSelect('marketplace');
+        $filters = ['period' => 'custom', 'date_start' => '2026-10-01', 'date_end' => '2026-10-31', 'date_basis' => 'created', 'analytics_mode' => 'all'];
+        $report = $this->legacyMarketplaceAnalyticsReport('store-a', $filters);
+        require_once dirname(__DIR__, 3).'/app/Modules/Marketplace/Services/MarketplaceAnalyticsXlsx.php';
+        $expected = \MarketplaceAnalyticsXlsx::bytes($report);
+        $response = $this->get('/marketplace/analytics/export?'.http_build_query($filters + ['store' => 'store-a', 'format' => 'xlsx']))->assertOk();
+        $files = [];
+        try {
+            foreach ([$expected, $response->getContent()] as $bytes) {
+                $path = tempnam(sys_get_temp_dir(), 'jl-export-test-');
+                $files[] = $path;
+                file_put_contents($path, $bytes);
+            }
+            $before = new \ZipArchive;
+            $after = new \ZipArchive;
+            $this->assertTrue($before->open($files[0]));
+            $this->assertTrue($after->open($files[1]));
+            $this->assertSame($before->numFiles, $after->numFiles);
+            // Sheet 1 contains the generation clock; compare every financial/product sheet byte-for-byte.
+            foreach (['xl/workbook.xml', 'xl/worksheets/sheet2.xml', 'xl/worksheets/sheet3.xml', 'xl/worksheets/sheet4.xml', 'xl/worksheets/sheet5.xml'] as $entry) {
+                $this->assertSame($before->getFromName($entry), $after->getFromName($entry), $entry);
+            }
+            $before->close();
+            $after->close();
+        } finally {
+            foreach ($files as $path) {
+                if (is_file($path)) {
+                    unlink($path);
+                }
+            }
+        }
+        $this->get('/marketplace/analytics/export?'.http_build_query($filters + ['store' => 'store-foreign', 'format' => 'xlsx']))->assertForbidden();
+    }
+
     public function test_marketplace_analytics_pilot_preserves_unknown_finance_as_null(): void
     {
         $this->loginAndSelect('marketplace');

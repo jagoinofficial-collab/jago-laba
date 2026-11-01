@@ -6,29 +6,37 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\KonveksiPilotController;
 use App\Http\Controllers\LegacyPilotPageController;
 use App\Http\Controllers\LegacyRpcController;
-use App\Http\Controllers\MarketplaceExpenseController;
 use App\Http\Controllers\MarketplaceAnalyticsController;
+use App\Http\Controllers\MarketplaceCatalogController;
+use App\Http\Controllers\MarketplaceExpenseController;
 use App\Http\Controllers\MarketplaceOAuthController;
 use App\Http\Controllers\MarketplaceOrderController;
 use App\Http\Controllers\MarketplacePilotController;
 use App\Http\Controllers\MarketplaceSyncController;
 use App\Http\Controllers\MarketplaceWithdrawalPreviewController;
 use App\Http\Controllers\SandboxMarketplaceOAuthController;
+use App\Http\Controllers\StoreSelectionController;
 use App\Http\Controllers\WorkspaceController;
-use App\Http\Responses\LegacyResponse;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', FoundationController::class)->name('foundation');
 Route::get('/foundation', FoundationController::class)->name('foundation.read');
+Route::get('/login', FoundationController::class)->name('login');
 Route::get('/api/health.php', HealthController::class)->name('legacy.health');
 
 Route::middleware(['auth', 'company.context'])->group(function (): void {
+    Route::get('/marketplace/expenses', \App\Http\Controllers\MarketplaceExpensesReadController::class)
+        ->middleware(['workspace.context:marketplace', 'role.action:report.view'])->name('marketplace.expenses.read');
+    Route::get('/marketplace/catalog', MarketplaceCatalogController::class)
+        ->middleware(['workspace.context:marketplace', 'role.action:report.view'])->name('marketplace.catalog');
     Route::get('/pilot/marketplace', MarketplacePilotController::class)
         ->middleware('workspace.context:marketplace')
         ->name('pilot.marketplace');
     Route::get('/pilot/marketplace/analytics', MarketplaceAnalyticsController::class)
         ->middleware('workspace.context:marketplace')
         ->name('pilot.marketplace.analytics');
+    Route::get('/marketplace/analytics/export', MarketplaceAnalyticsController::class)
+        ->middleware(['workspace.context:marketplace', 'role.action:report.view'])->name('marketplace.analytics.export');
     Route::get('/pilot/marketplace/orders', [MarketplaceOrderController::class, 'index'])
         ->middleware('workspace.context:marketplace')
         ->name('pilot.marketplace.orders');
@@ -79,6 +87,9 @@ Route::prefix('auth')->group(function (): void {
         Route::get('/me', [AuthController::class, 'me'])->name('auth.me');
         Route::post('/logout', [AuthController::class, 'logout'])->name('auth.logout');
         Route::post('/workspace', [WorkspaceController::class, 'select'])->name('auth.workspace.select');
+        Route::post('/store', StoreSelectionController::class)
+            ->middleware(['company.context', 'workspace.context:marketplace', 'store.context:store_id', 'browser.csrf'])
+            ->name('auth.store.select');
     });
 });
 
@@ -91,10 +102,7 @@ Route::middleware('legacy.session')->group(function (): void {
         ->get('/marketplace.php', [LegacyPilotPageController::class, 'marketplace'])
         ->name('legacy.marketplace.page');
 
-    // Other URL reservations cannot perform legacy business operations yet.
-    foreach (['workspace.php'] as $path) {
-        Route::get('/'.$path, fn () => LegacyResponse::unavailable('page'));
-    }
+    Route::get('/workspace.php', FoundationController::class)->middleware('auth')->name('legacy.workspace.page');
 
     // Login remains available under the old RPC contract. Other methods stay
     // reserved until their business adapter is migrated.

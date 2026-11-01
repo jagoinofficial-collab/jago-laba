@@ -29,4 +29,6 @@ Pilot queue Marketplace menyediakan checkpoint scan order lokal/sandbox pada `/p
 
 ## Batas schema dan operasi
 
+Eksekusi 1 November menambahkan migration khusus `laravel_sessions` dan contoh `SESSION_TABLE=laravel_sessions`, agar tidak menjalankan migration default users terhadap tabel legacy. Empat migration terpilih telah diuji apply/rerun/rollback hanya pada clone diagnostik terisolasi; database aplikasi tidak dimigrasikan. Detail dan gate data ada pada [laporan Step 1–4](../../docs/deployment/laravel-step1-4-execution-20261101.md).
+
 Migration skeleton Laravel belum dijalankan. Jangan jalankan `migrate`, seed, atau repair pada database legacy. Sebelum menggunakan database session/cache/queue, review nama tabel dan jalankan migration yang diperlukan hanya pada staging terisolasi. Queue pilot mengasumsikan tabel `jobs`, `failed_jobs`, serta tabel Marketplace legacy sudah tersedia; task ini tidak mengubah schema production.

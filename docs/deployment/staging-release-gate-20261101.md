@@ -2,6 +2,8 @@
 
 ## Decision
 
+Pembaruan eksekusi Step 1–4: [laporan terbaru](./laravel-step1-4-execution-20261101.md). Source suite terbaru lulus 59 tests / 539 assertions; rehearsal empat migration pada clone lulus apply/rerun/rollback. Audit menyeluruh menemukan 22 baris orphan (17 stok dan 5 item pesanan), serta 5 produk Konveksi tanpa ID stok. Temuan yang sama masih ada pada source aktif. Backup privat lokal sudah dibuat, tetapi baseline data dan hosting HTTPS belum lulus. Artifact r4 di bawah adalah bukti build sebelumnya dan belum memuat migration sesi baru; **NO-GO tetap berlaku**.
+
 **BLOCKED untuk staging restore dan cutover produksi.** Build/source lokal sudah
 terverifikasi dan artifact r4 tersedia. Tidak ada bukti yang mengizinkan
 pernyataan restore/live-operation/cutover selesai. Status blocker ini adalah
