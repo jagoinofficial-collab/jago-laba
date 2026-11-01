@@ -7,9 +7,12 @@ use App\Http\Controllers\KonveksiPilotController;
 use App\Http\Controllers\LegacyPilotPageController;
 use App\Http\Controllers\LegacyRpcController;
 use App\Http\Controllers\MarketplaceExpenseController;
+use App\Http\Controllers\MarketplaceAnalyticsController;
 use App\Http\Controllers\MarketplaceOAuthController;
+use App\Http\Controllers\MarketplaceOrderController;
 use App\Http\Controllers\MarketplacePilotController;
 use App\Http\Controllers\MarketplaceSyncController;
+use App\Http\Controllers\MarketplaceWithdrawalPreviewController;
 use App\Http\Controllers\SandboxMarketplaceOAuthController;
 use App\Http\Controllers\WorkspaceController;
 use App\Http\Responses\LegacyResponse;
@@ -23,6 +26,15 @@ Route::middleware(['auth', 'company.context'])->group(function (): void {
     Route::get('/pilot/marketplace', MarketplacePilotController::class)
         ->middleware('workspace.context:marketplace')
         ->name('pilot.marketplace');
+    Route::get('/pilot/marketplace/analytics', MarketplaceAnalyticsController::class)
+        ->middleware('workspace.context:marketplace')
+        ->name('pilot.marketplace.analytics');
+    Route::get('/pilot/marketplace/orders', [MarketplaceOrderController::class, 'index'])
+        ->middleware('workspace.context:marketplace')
+        ->name('pilot.marketplace.orders');
+    Route::get('/pilot/marketplace/orders/{order}/detail', [MarketplaceOrderController::class, 'detail'])
+        ->middleware('workspace.context:marketplace')
+        ->name('pilot.marketplace.orders.detail');
     Route::get('/pilot/konveksi', KonveksiPilotController::class)
         ->middleware('workspace.context:konveksi')
         ->name('pilot.konveksi');
@@ -32,6 +44,9 @@ Route::middleware(['auth', 'company.context'])->group(function (): void {
     Route::post('/pilot/marketplace/sync', MarketplaceSyncController::class)
         ->middleware(['workspace.context:marketplace', 'role.action:sync.trigger', 'store.context:store_id', 'browser.csrf'])
         ->name('pilot.marketplace.sync');
+    Route::post('/pilot/marketplace/withdrawals/preview', MarketplaceWithdrawalPreviewController::class)
+        ->middleware(['workspace.context:marketplace', 'role.action:withdrawal.manage', 'store.context:store_id', 'browser.csrf'])
+        ->name('pilot.marketplace.withdrawals.preview');
     Route::get('/pilot/marketplace/oauth/status', MarketplaceOAuthController::class)
         ->defaults('oauth_action', 'status')
         ->middleware('workspace.context:marketplace')

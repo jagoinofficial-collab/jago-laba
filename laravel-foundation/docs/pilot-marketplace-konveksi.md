@@ -32,6 +32,12 @@ Adapter Laravel mempertahankan:
 - `__meta.versions`, `domain`, `reset_epoch`, `health`, dan `company_bound`;
 - pembacaan tabel dinamis hanya setelah nama tabel lolos allowlist `jl_data_[a-z0-9_]+`.
 
+## Keputusan koneksi Konveksi
+
+Target Konveksi diputuskan memakai database terisolasi sesuai konfigurasi deployment legacy (`isolated=true` dan company binding `LOCAL-COMPANY`). Adapter Laravel tidak lagi menganggap koneksi default sebagai database Konveksi: pada runtime non-testing adapter membaca konfigurasi private Konveksi, membangun koneksi read-only dinamis, memeriksa company binding, dan berhenti jika konfigurasi isolated tidak valid. Nilai credential tidak dikirim ke props, log, atau response.
+
+Fixture test sengaja memakai koneksi SQLite in-memory agar parity tidak menyentuh database aplikasi. Verifikasi database aktual dilakukan pada instance MariaDB staging sementara di port 3307 menggunakan dump Konveksi yang sama; adapter tidak melakukan fallback diam-diam ke database default.
+
 ## Bukti verifikasi
 
 `tests/Feature/PilotReadOnlyTest.php` sekarang menjalankan parity runtime read-only pada satu database SQLite in-memory dan fixture yang sama:
@@ -49,6 +55,8 @@ vendor/bin/phpunit --filter PilotReadOnlyTest
 
 Hasil terakhir: `15 tests, 172 assertions, OK` pada PHP `8.4.27`.
 
+Validasi tambahan adapter Konveksi mencakup penolakan company asing sebelum query dan penolakan mapping `system_table_map` di luar allowlist. Regression legacy pada dump staging lulus, dan read Laravel pada database yang sama menghasilkan 36 collection domain, 5 produk, 19 master stok, `duplicate_stock_ids=0`, dan `negative_stock=0`. Instance XAMPP lama pada port 3306 tetap memiliki risiko metadata replication/master-info; tidak ada file data, relay log, atau schema yang diperbaiki/dihapus.
+
 Fixture parity tidak menjalankan provider Marketplace/OAuth dan tidak melakukan write ke database aplikasi; parity memakai SQLite in-memory. Regression smoke legacy terpisah hanya menulis ke database MySQL sementara yang dihapus setelah test.
 
 ## Pilot mutasi lokal: Marketplace expense
@@ -65,6 +73,12 @@ Baseline mutasi adalah action `add_expense` pada `app/Modules/Marketplace/Contro
 - Error validation, role, CSRF, foreign store, duplicate request, duplicate key lintas company/module, database failure/rollback, dan refresh dashboard diuji pada `tests/Feature/PilotReadOnlyTest.php`.
 
 Migration scope idempotency ini tidak mengubah provider, data bisnis, atau endpoint lama; migration production belum dijalankan sebagai bagian task ini. Tabel `idempotency_keys` dan `system_audit_logs` tetap dipakai melalui adapter; bila migration scope belum diterapkan, write berhenti dengan error tanpa fallback write.
+
+Evidence staging untuk mutasi ini ada di
+[marketplace-expense-write-evidence-20261101.md](../../docs/deployment/marketplace-expense-write-evidence-20261101.md).
+Restore MariaDB membuktikan write, replay idempotent, conflict, company/store
+scope, audit, dan rollback tanpa provider Live. Fixture staging dibersihkan
+setelah uji.
 
 ## Boundary OAuth/provider sandbox
 

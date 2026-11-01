@@ -12,13 +12,39 @@ $tiktokRegion = strtolower((string) env('JL_TIKTOK_SHOP_REGION', 'row'));
 $tiktokAuthHost = $tiktokRegion === 'us'
     ? 'services.us.tiktokshop.com'
     : 'services.tiktokshop.com';
+$konveksiDatabaseConfigPath = (string) env(
+    'JL_KONVEKSI_DATABASE_CONFIG',
+    dirname(__DIR__, 2).'/storage/private/konveksi/database.php',
+);
+$konveksiFileIsolated = false;
+if (is_file($konveksiDatabaseConfigPath)) {
+    $konveksiConfig = require $konveksiDatabaseConfigPath;
+    $konveksiFileIsolated = is_array($konveksiConfig)
+        && filter_var($konveksiConfig['isolated'] ?? false, FILTER_VALIDATE_BOOL);
+}
+$konveksiIsolated = filter_var(
+    env('JL_KONVEKSI_DATABASE_ISOLATED', $konveksiFileIsolated ? 'true' : 'false'),
+    FILTER_VALIDATE_BOOL,
+);
 
 return [
     'company_key' => env('JL_COMPANY_KEY', 'LOCAL-COMPANY'),
-    'konveksi_database_isolated' => filter_var(env('JL_KONVEKSI_DATABASE_ISOLATED', false), FILTER_VALIDATE_BOOL),
+    'konveksi_database_isolated' => $konveksiIsolated,
+    'konveksi_database_config_path' => $konveksiDatabaseConfigPath,
     'legacy_session' => [
         'cookie' => env('JL_LEGACY_SESSION_COOKIE', 'JAGO_LABA_LOCAL_SESSION'),
         'save_path' => env('JL_LEGACY_SESSION_PATH'),
+    ],
+    'hosting' => [
+        'document_root_public' => filter_var(env('JL_DOCUMENT_ROOT_PUBLIC', 'true'), FILTER_VALIDATE_BOOL),
+        'allowed_hosts' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('JL_ALLOWED_HOSTS', '')),
+        ))),
+        'trusted_proxies' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('JL_TRUSTED_PROXIES', '')),
+        ))),
     ],
     'integration' => [
         'base_url' => $appBaseUrl !== '' ? $appBaseUrl : null,

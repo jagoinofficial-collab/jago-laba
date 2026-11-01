@@ -18,7 +18,8 @@ Isi konfigurasi umum berikut pada environment PHP/Apache atau service manager. K
 
 Wajib umum:
 
-- `JL_APP_BASE_URL` — base URL yang dipercaya, misalnya `https://staging.example.com/jago-laba` atau `http://localhost/jago-laba` untuk uji lokal.
+- `JL_APP_BASE_URL` — base URL canonical yang dipercaya. Untuk document root public, misalnya `https://staging.example.com`; untuk XAMPP legacy dengan document root parent, misalnya `http://localhost/jago-laba`.
+- `JL_DOCUMENT_ROOT_PUBLIC` — gunakan true bila document root web-server sudah menunjuk ke public; gunakan false hanya untuk layout legacy lokal yang memang membutuhkan /public.
 - `JL_MARKETPLACE_TOKEN_ENCRYPTION_KEY` — base64 dari 32 byte acak untuk enkripsi autentikasi. Buat satu key per environment dan simpan di secret manager.
 
 Pada XAMPP Windows, bila `SetEnv` Apache belum terbaca oleh PHP, aplikasi juga dapat membaca kunci yang sama dari `C:/xampp/apache/conf/extra/jago-laba-marketplace.key` (di luar `htdocs`). Simpan hanya nilai base64 32 byte di file tersebut. Untuk lokasi lain, set `JL_MARKETPLACE_TOKEN_ENCRYPTION_KEY_FILE` ke path absolut. Jangan membuat kunci baru jika sudah ada token terenkripsi dengan kunci lama.
@@ -48,12 +49,12 @@ Webhook opsional:
 
 ## URL yang didaftarkan
 
-Dengan base URL `https://staging.example.com/jago-laba`, daftarkan callback persis berikut:
+Untuk Laravel/shared hosting dengan document root public dan base URL `https://staging.example.com`, daftarkan callback persis berikut:
 
-- Shopee: `https://staging.example.com/jago-laba/public/api/marketplace-oauth.php?platform=Shopee`
-- TikTok Shop Seller: `https://staging.example.com/jago-laba/public/api/marketplace-oauth.php?platform=TikTok%20Shop`
+- Shopee: `https://staging.example.com/api/marketplace-oauth.php?platform=Shopee`
+- TikTok Shop Seller: `https://staging.example.com/api/marketplace-oauth.php?platform=TikTok%20Shop`
 
-Untuk contoh localhost, bentuknya adalah `http://localhost/jago-laba/public/api/marketplace-oauth.php?platform=Shopee` dan callback TikTok dengan `platform=TikTok%20Shop`. Platform dapat menolak localhost atau HTTP; gunakan HTTPS staging/tunnel yang dikonfigurasi manual dan didaftarkan di console. Aplikasi tidak membuka tunnel otomatis.
+Untuk contoh XAMPP legacy dengan JL_DOCUMENT_ROOT_PUBLIC=false, bentuknya tetap `http://localhost/jago-laba/public/api/marketplace-oauth.php?platform=Shopee` dan callback TikTok dengan `platform=TikTok%20Shop`. Platform dapat menolak localhost atau HTTP; gunakan HTTPS staging/tunnel yang dikonfigurasi manual dan didaftarkan di console. Aplikasi tidak membuka tunnel otomatis.
 
 Webhook harus memakai URL HTTPS yang sama-sama sudah didaftarkan pada Partner Center/console platform. Karena handler webhook lama belum mengimplementasikan verifikasi signature per platform, statusnya tetap non-operasional dan tidak boleh dipakai untuk mengklaim event berhasil.
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Pilots\Konveksi\KonveksiPilotReadService;
 use App\Pilots\Marketplace\MarketplacePilotReadService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -260,6 +261,165 @@ final class PilotReadOnlyTest extends TestCase
         $this->inertiaGet('/pilot/marketplace?store=store-foreign')->assertForbidden();
     }
 
+    public function test_marketplace_analytics_pilot_matches_legacy_finance_contract_and_is_read_only(): void
+    {
+        $this->loginAndSelect('marketplace');
+        $beforeOrders = DB::table('marketplace_orders')->count();
+        $beforeExpenses = DB::table('marketplace_expenses')->count();
+        $filters = [
+            'period' => 'custom',
+            'date_start' => '2026-10-01',
+            'date_end' => '2026-10-31',
+            'date_basis' => 'created',
+            'analytics_mode' => 'all',
+        ];
+
+        $legacy = $this->legacyMarketplaceAnalyticsReport('store-a', $filters);
+        unset($legacy['generated_at']);
+
+        $response = $this->inertiaGet('/pilot/marketplace/analytics?store=store-a&period=custom&date_start=2026-10-01&date_end=2026-10-31&date_basis=created&analytics_mode=all');
+        $response->assertOk()
+            ->assertJsonPath('component', 'Pilot/MarketplaceAnalytics')
+            ->assertJsonPath('props.read_only', true)
+            ->assertJsonPath('props.workspace', 'marketplace')
+            ->assertJsonPath('props.scope.company_key', 'LOCAL-COMPANY')
+            ->assertJsonPath('props.scope.store_id', 'store-a')
+            ->assertJsonPath('props.query.provider_call', false)
+            ->assertJsonPath('props.query.write', false)
+            ->assertJsonPath('props.query.where.source_kind.0', 'api')
+            ->assertJsonPath('props.query.where.source_kind.1', 'import')
+            ->assertJsonPath('props.analytics.current.all.final_orders', 1)
+            ->assertJsonPath('props.analytics.current.all.estimated_orders', 1)
+            ->assertJsonPath('props.analytics.current.all.missing_income', 1)
+            ->assertJsonPath('props.analytics.current.all.missing_hpp', 1);
+
+        $laravel = $response->json('props.analytics');
+        unset($laravel['generated_at']);
+        $this->assertSame(
+            $this->normalizeParityValue($legacy),
+            $this->normalizeParityValue($laravel),
+            'Legacy and Laravel analytics payloads diverged on the same fixture.'
+        );
+        $this->assertSame($beforeOrders, DB::table('marketplace_orders')->count());
+        $this->assertSame($beforeExpenses, DB::table('marketplace_expenses')->count());
+    }
+
+    public function test_marketplace_analytics_pilot_rejects_foreign_store(): void
+    {
+        $this->loginAndSelect('marketplace');
+
+        $this->inertiaGet('/pilot/marketplace/analytics?store=store-foreign')->assertForbidden();
+    }
+
+    public function test_marketplace_analytics_pilot_preserves_unknown_finance_as_null(): void
+    {
+        $this->loginAndSelect('marketplace');
+
+        $response = $this->inertiaGet('/pilot/marketplace/analytics?store=store-a&period=custom&date_start=2026-10-01&date_end=2026-10-31');
+
+        $response->assertOk();
+        $this->assertNull($response->json('props.analytics.current.all.net_income'));
+        $this->assertNull($response->json('props.analytics.current.all.cogs'));
+        $this->assertNull($response->json('props.analytics.current.all.gross_profit'));
+        $this->assertSame(1, $response->json('props.analytics.current.all.missing_income'));
+        $this->assertSame(1, $response->json('props.analytics.current.all.missing_hpp'));
+    }
+
+    public function test_marketplace_analytics_pilot_rejects_period_longer_than_legacy_limit(): void
+    {
+        $this->loginAndSelect('marketplace');
+
+        $this->inertiaGet('/pilot/marketplace/analytics?store=store-a&period=custom&date_start=2026-10-01&date_end=2026-11-30')
+            ->assertStatus(422);
+    }
+
+    public function test_marketplace_order_read_route_preserves_scope_filters_and_does_not_write(): void
+    {
+        $this->loginAndSelect('marketplace');
+        $beforeOrders = DB::table('marketplace_orders')->count();
+
+        $response = $this->inertiaGet('/pilot/marketplace/orders?store=store-a&period=custom&date_start=2026-10-01&date_end=2026-10-31&order_tab=all&per_page=25');
+
+        $response->assertOk()
+            ->assertJsonPath('component', 'Pilot/MarketplaceOrders')
+            ->assertJsonPath('props.read_only', true)
+            ->assertJsonPath('props.workspace', 'marketplace')
+            ->assertJsonPath('props.scope.company_key', 'LOCAL-COMPANY')
+            ->assertJsonPath('props.scope.store_id', 'store-a')
+            ->assertJsonPath('props.orders.total', 5)
+            ->assertJsonPath('props.orders.counts.new', 1)
+            ->assertJsonPath('props.orders.counts.shipped', 1)
+            ->assertJsonPath('props.orders.counts.cancelled', 1)
+            ->assertJsonPath('props.query.provider_call', false);
+        $this->assertSame('2026-10-01', $response->json('props.orders.period.start'));
+        $this->assertSame('2026-11-01', $response->json('props.orders.period.exclusive_end'));
+        $this->assertSame($beforeOrders, DB::table('marketplace_orders')->count());
+
+        $this->inertiaGet('/pilot/marketplace/orders?store=store-foreign')->assertForbidden();
+    }
+
+    public function test_marketplace_order_detail_and_return_filter_are_scoped_read_only(): void
+    {
+        Schema::create('marketplace_order_items', function (Blueprint $table): void {
+            $table->bigIncrements('id');
+            $table->string('order_id');
+            $table->string('sku')->nullable();
+            $table->string('name')->nullable();
+            $table->unsignedInteger('quantity')->nullable();
+        });
+        Schema::create('marketplace_sync_records', function (Blueprint $table): void {
+            $table->bigIncrements('id');
+            $table->string('store_id');
+            $table->string('resource_type');
+            $table->string('external_id')->nullable();
+            $table->text('payload_json')->nullable();
+            $table->dateTime('source_updated_at')->nullable();
+        });
+
+        $snapshot = json_decode((string) DB::table('marketplace_orders')->where('id', 'FINAL')->value('transaction_detail_json'), true);
+        $snapshot['items'] = [[
+            'name' => 'Produk Pilot', 'variant' => 'Biru', 'sku' => 'SKU-PILOT', 'quantity' => 2,
+            'unit_price' => 112500, 'total_price' => 225000, 'unit_cogs' => 29500, 'total_cogs' => 59000,
+        ]];
+        $snapshot['packages'] = [['id' => 'PKG-1', 'tracking_number' => 'RESI-1', 'shipping_provider_name' => 'Kurir Pilot', 'status' => 'SHIPPED']];
+        DB::table('marketplace_orders')->where('id', 'FINAL')->update(['transaction_detail_json' => json_encode($snapshot)]);
+        DB::table('marketplace_order_items')->insert(['order_id' => 'FINAL', 'sku' => 'SKU-PILOT', 'name' => 'Produk Pilot', 'quantity' => 2]);
+        DB::table('marketplace_sync_records')->insert([
+            'store_id' => 'store-a', 'resource_type' => 'return', 'external_id' => 'RETURN-1',
+            'payload_json' => json_encode([
+                'return_id' => 'RETURN-1', 'order_id' => 'FINAL', 'return_type' => 'REFUND',
+                'return_status' => 'RETURN_OR_REFUND_REQUEST_COMPLETE', 'refund_amount' => ['currency' => 'IDR', 'amount' => '120.00'],
+                'create_time' => strtotime('2026-10-15 09:00:00'), 'update_time' => strtotime('2026-10-15 10:00:00'),
+            ]),
+            'source_updated_at' => '2026-10-15 10:00:00',
+        ]);
+
+        $this->loginAndSelect('marketplace');
+        $beforeOrders = DB::table('marketplace_orders')->count();
+        $beforeReturns = DB::table('marketplace_sync_records')->count();
+
+        $detail = $this->withHeaders(['Accept' => 'application/json'])->get('/pilot/marketplace/orders/FINAL/detail?store_id=store-a');
+        $detail->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.read_only', true)
+            ->assertJsonPath('data.scope.company_key', 'LOCAL-COMPANY')
+            ->assertJsonPath('data.presentation.order_id', 'FINAL')
+            ->assertJsonPath('data.presentation.gross_amount', 225000)
+            ->assertJsonPath('data.presentation.net_profit', 45002)
+            ->assertJsonPath('data.presentation.items.0.sku', 'SKU-PILOT')
+            ->assertJsonPath('data.presentation.packages.0.tracking', 'RESI-1')
+            ->assertJsonPath('data.presentation.return_cases.0.id', 'RETURN-1');
+
+        $returns = $this->inertiaGet('/pilot/marketplace/orders?store=store-a&period=custom&date_start=2026-10-01&date_end=2026-10-31&order_tab=returns&return_type=refund');
+        $returns->assertOk()->assertJsonPath('props.orders.total', 1);
+        $this->inertiaGet('/pilot/marketplace/orders?store=store-a&period=custom&date_start=2026-10-01&date_end=2026-10-31&order_tab=returns&return_type=goods')
+            ->assertOk()->assertJsonPath('props.orders.total', 0);
+
+        $this->withHeaders(['Accept' => 'application/json'])->get('/pilot/marketplace/orders/FINAL/detail?store_id=store-foreign')->assertForbidden();
+        $this->assertSame($beforeOrders, DB::table('marketplace_orders')->count());
+        $this->assertSame($beforeReturns, DB::table('marketplace_sync_records')->count());
+    }
+
     public function test_marketplace_expense_write_success_is_scoped_audited_and_idempotent(): void
     {
         $this->loginAndSelect('marketplace');
@@ -420,6 +580,7 @@ final class PilotReadOnlyTest extends TestCase
                 'store_id' => 'store-a',
                 'description' => 'Refresh dashboard',
                 'amount' => '2500',
+                'expense_date' => '2026-10-15',
                 'affects_profit' => true,
             ])
             ->assertStatus(303)
@@ -512,6 +673,23 @@ final class PilotReadOnlyTest extends TestCase
             ->assertJsonPath('result.__meta.domain', 'konveksi');
     }
 
+    public function test_konveksi_adapter_rejects_a_foreign_company_before_reading_data(): void
+    {
+        config()->set('jago.konveksi_database_isolated', false);
+
+        $this->expectException(\DomainException::class);
+        app(KonveksiPilotReadService::class)->overview('OTHER-COMPANY');
+    }
+
+    public function test_konveksi_adapter_rejects_a_table_mapping_outside_the_allowlist(): void
+    {
+        DB::table('system_table_map')->where('api_key', 'bahan')->update(['table_name' => 'jl_data_unexpected']);
+        config()->set('jago.konveksi_database_isolated', false);
+
+        $this->expectException(\RuntimeException::class);
+        app(KonveksiPilotReadService::class)->overview('LOCAL-COMPANY');
+    }
+
     public function test_pilot_routes_require_the_selected_workspace(): void
     {
         $this->postJson('/api/rpc.php', ['method' => 'prosesLoginBackend', 'args' => ['owner', 'owner-secret']])->assertOk();
@@ -547,6 +725,38 @@ final class PilotReadOnlyTest extends TestCase
         require_once $root.'/app/Modules/Marketplace/Services/MarketplaceDashboardService.php';
 
         return (new \MarketplaceDashboardService(DB::connection()->getPdo()))->report($storeId, $filters);
+    }
+
+    /**
+     * Execute the actual legacy Marketplace analytics read against this test's
+     * PDO. Session scope is restored immediately after the read.
+     *
+     * @return array<string, mixed>
+     */
+    private function legacyMarketplaceAnalyticsReport(string $storeId, array $filters): array
+    {
+        $root = dirname(__DIR__, 3);
+        require_once $root.'/app/Shared/Companies/MarketplaceScopeService.php';
+        require_once $root.'/app/Modules/Marketplace/Services/MarketplaceOrderPresentation.php';
+        require_once $root.'/app/Modules/Marketplace/Services/MarketplaceAnalyticsService.php';
+
+        $hadCompany = array_key_exists('company_key', $_SESSION ?? []);
+        $previousCompany = $_SESSION['company_key'] ?? null;
+        $_SESSION['company_key'] = 'LOCAL-COMPANY';
+
+        try {
+            return (new \MarketplaceAnalyticsService(DB::connection()->getPdo()))->report($filters + [
+                'store_id' => $storeId,
+                'analytics_stores' => [],
+                'include_disconnected' => false,
+            ]);
+        } finally {
+            if ($hadCompany) {
+                $_SESSION['company_key'] = $previousCompany;
+            } else {
+                unset($_SESSION['company_key']);
+            }
+        }
     }
 
     /**

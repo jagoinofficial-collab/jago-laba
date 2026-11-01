@@ -2,8 +2,9 @@
 
 namespace App\Pilots\Konveksi;
 
+use DomainException;
+use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
-use Illuminate\Support\Facades\Schema;
 use RuntimeException;
 use Throwable;
 
@@ -18,6 +19,11 @@ final class KonveksiPilotReadService
         'mutasi_stok_konveksi', 'hutangsupplier', 'hutang_supplier',
     ];
 
+    private ?Connection $readConnection = null;
+
+    /** @var array<string, mixed>|null */
+    private ?array $databaseConfig = null;
+
     public function __construct(private readonly DatabaseManager $database) {}
 
     /**
@@ -25,6 +31,7 @@ final class KonveksiPilotReadService
      */
     public function overview(string $companyKey, string $tab = 'dashboard'): array
     {
+        $this->assertCompany($companyKey);
         $collections = $this->allKnown();
 
         return [
@@ -91,7 +98,7 @@ final class KonveksiPilotReadService
      */
     private function get(string $key): array
     {
-        $mapping = $this->database->connection()->table('system_table_map')
+        $mapping = $this->connection()->table('system_table_map')
             ->where(function ($query) use ($key): void {
                 $query->where('api_key', $key)
                     ->orWhereRaw('LOWER(sheet_name) = LOWER(?)', [$key]);
@@ -107,7 +114,18 @@ final class KonveksiPilotReadService
             throw new RuntimeException('Pemetaan tabel Konveksi tidak valid.');
         }
 
-        return $this->database->connection()->table($table)
+        $expectedTables = ['jl_data_'.$key];
+        if ($key === 'hutangsupplier') {
+            $expectedTables[] = 'jl_data_hutang_supplier';
+        }
+        if (! in_array($table, $expectedTables, true)) {
+            throw new RuntimeException('Pemetaan tabel Konveksi berada di luar allowlist.');
+        }
+        if (! $this->connection()->getSchemaBuilder()->hasTable($table)) {
+            throw new RuntimeException('Tabel Konveksi yang dipetakan tidak ditemukan.');
+        }
+
+        return $this->connection()->table($table)
             ->orderBy('_row_order')
             ->orderBy('_row_id')
             ->pluck('_data_json')
@@ -124,13 +142,86 @@ final class KonveksiPilotReadService
     private function resetEpoch(): string
     {
         try {
-            if (! Schema::hasTable('system_settings')) {
+            if (! $this->connection()->getSchemaBuilder()->hasTable('system_settings')) {
                 return '0';
             }
 
-            return (string) ($this->database->connection()->table('system_settings')->where('setting_key', 'KONVEKSI_RESET_EPOCH')->value('setting_value') ?? '0');
+            return (string) ($this->connection()->table('system_settings')->where('setting_key', 'KONVEKSI_RESET_EPOCH')->value('setting_value') ?? '0');
         } catch (Throwable) {
             return '0';
         }
+    }
+
+    private function assertCompany(string $companyKey): void
+    {
+        $expected = (string) config('jago.company_key', 'LOCAL-COMPANY');
+        if ((bool) config('jago.konveksi_database_isolated', false)) {
+            $config = $this->legacyDatabaseConfig();
+            if (! filter_var($config['isolated'] ?? false, FILTER_VALIDATE_BOOL)) {
+                throw new RuntimeException('Konfigurasi Konveksi mengklaim isolated tetapi sumber database tidak menandainya demikian.');
+            }
+            $expected = trim((string) ($config['company_key'] ?? $expected));
+        }
+        if ($expected !== '' && ! hash_equals($expected, $companyKey)) {
+            throw new DomainException('Data Konveksi perusahaan ini belum dimigrasikan.');
+        }
+    }
+
+    private function connection(): Connection
+    {
+        if ($this->readConnection !== null) {
+            return $this->readConnection;
+        }
+
+        if (! (bool) config('jago.konveksi_database_isolated', false) || app()->environment('testing')) {
+            return $this->readConnection = $this->database->connection();
+        }
+
+        $config = $this->legacyDatabaseConfig();
+        if (! filter_var($config['isolated'] ?? false, FILTER_VALIDATE_BOOL)) {
+            throw new RuntimeException('Database Konveksi isolated belum diaktifkan secara eksplisit.');
+        }
+
+        $driver = strtolower((string) ($config['driver'] ?? 'mysql'));
+        if (! in_array($driver, ['mysql', 'mariadb'], true)) {
+            throw new RuntimeException('Driver database Konveksi tidak didukung oleh adapter read-only.');
+        }
+
+        return $this->readConnection = $this->database->build([
+            'name' => 'konveksi_pilot_isolated',
+            'driver' => $driver,
+            'host' => (string) ($config['host'] ?? '127.0.0.1'),
+            'port' => (int) ($config['port'] ?? 3306),
+            'database' => (string) ($config['name'] ?? ''),
+            'username' => (string) ($config['user'] ?? ''),
+            'password' => (string) ($config['pass'] ?? ''),
+            'unix_socket' => (string) ($config['socket'] ?? ''),
+            'charset' => (string) ($config['charset'] ?? 'utf8mb4'),
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => [],
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function legacyDatabaseConfig(): array
+    {
+        if ($this->databaseConfig !== null) {
+            return $this->databaseConfig;
+        }
+
+        $path = (string) config('jago.konveksi_database_config_path', '');
+        if ($path === '' || ! is_file($path)) {
+            throw new RuntimeException('Konfigurasi database Konveksi tidak ditemukan.');
+        }
+        $config = require $path;
+        if (! is_array($config)) {
+            throw new RuntimeException('Konfigurasi database Konveksi tidak valid.');
+        }
+
+        return $this->databaseConfig = $config;
     }
 }

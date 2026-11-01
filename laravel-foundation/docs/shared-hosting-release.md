@@ -1,6 +1,6 @@
 # Shared-hosting release artifact
 
-Tanggal verifikasi: 2026-10-30
+Tanggal verifikasi: 2026-11-01
 
 Dokumen ini mencatat paket runtime Laravel foundation untuk shared hosting. Paket
 ini belum melakukan cutover, deployment production, atau migration production.
@@ -15,15 +15,19 @@ npm ci
 npm run build
 ```
 
-Hasil:
+Hasil artifact r4 terbaru:
 
 - Composer production install berhasil dengan PHP 8.4.27 dan menghasilkan
   `vendor/autoload.php`.
 - `npm ci` berhasil; 54 package ditambahkan dan audit melaporkan 0 vulnerability.
 - `npm run build` berhasil; `public/build/manifest.json` dan asset Vite produksi
   tersedia.
-- `php artisan about` pada paket upload berhasil dengan Laravel 13.39.0, PHP
-  8.4.27, dan environment production.
+- `php artisan about` pada paket r4 berhasil dengan Laravel 13.39.0, PHP
+  8.4.27, dan environment production; `route:list` mencatat 31 route dan HTTP
+  GET `/` dari paket mengembalikan 200.
+- ZIP r4 memuat host allowlist (`trustHosts`) dan opsi `JL_DOCUMENT_ROOT_PUBLIC`;
+  scan final menghasilkan 0 file terlarang. Bukti hash dan scan tercatat pada
+  [r4 build evidence](../../docs/deployment/laravel-foundation-shared-hosting-r4-evidence-20261101.md).
 - `php artisan optimize` sengaja tidak dijalankan pada mesin build. Jalankan di
   host hanya setelah `.env`, PHP CLI, koneksi database, dan permission sudah
   diverifikasi.
@@ -63,5 +67,7 @@ log, atau storage runtime yang tidak diperlukan.
    upload yang dibuat sebelum migration scope ini harus dibuild ulang sebelum
    dipakai.
 
-Artifact dan daftar file yang diperiksa dicatat di
-`release-artifacts/laravel-foundation-shared-hosting-20261030-upload-manifest.md`.
+Artifact untuk build terbaru:
+`release-artifacts/laravel-foundation-shared-hosting-20261101-r4.zip`.
+Artifact r3 tanggal 30 Oktober dipertahankan hanya sebagai rekaman historis;
+jangan gunakan untuk rilis baru.

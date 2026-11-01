@@ -1,0 +1,96 @@
+{
+  "registry_id": "JL-STAGING-MIGRATION-REGISTRY-20261030",
+  "generated_at": "2026-10-30",
+  "task_id": "DB-REGISTRY-001",
+  "owner": "platform-foundation",
+  "review_status": "read-only-precondition-complete",
+  "production_commands_executed": false,
+  "migration_commands_executed": false,
+  "targets": {
+    "main": "jl_staging_restore_20261030",
+    "konveksi": "jl_staging_restore_konveksi_20261030"
+  },
+  "next_read_slice": "MKT-READ-001",
+  "decision": {
+    "required_migrations_for_next_read_slice": [],
+    "reason": "MKT-READ-001 reads restored legacy tables and must not create or alter schema.",
+    "global_rule": "Never run php artisan migrate against a restored legacy database without an approved registry row and a recorded precondition result."
+  },
+  "precondition_observed_at": "2026-10-30",
+  "precondition_observations": {
+    "main_migrations_table": false,
+    "main_users_table": true,
+    "main_idempotency_keys_table": true,
+    "main_idempotency_keys_has_company_key": false,
+    "main_idempotency_keys_has_module": true,
+    "main_idempotency_keys_has_global_unique_key": true,
+    "main_cache_tables": false,
+    "main_queue_tables": false,
+    "main_marketplace_sync_jobs": true,
+    "main_system_audit_logs": true,
+    "konveksi_migrations_table": false,
+    "konveksi_idempotency_keys_table": true
+  },
+  "entries": [
+    {
+      "migration_id": "0001_01_01_000000_create_users_table",
+      "dependency_order": 1,
+      "owner": "platform-foundation",
+      "source": "laravel-foundation/database/migrations/0001_01_01_000000_create_users_table.php",
+      "sha256": "10D79883BC08CE46510F9AD8B1830B4D06D586DC56AE2C8BAC3B3E491F69A90F",
+      "status": "blocked_collision",
+      "required_for": [],
+      "scope": "Laravel default users/password_reset_tokens/sessions tables",
+      "precondition_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME IN ('users','password_reset_tokens','sessions');",
+      "precondition_result": "users exists with legacy columns; password_reset_tokens and sessions are absent",
+      "post_check_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME IN ('users','password_reset_tokens','sessions');",
+      "rollback": "Do not run down() on the restored legacy target; it would drop the legacy users table. Use a disposable database rebuild instead.",
+      "collision_policy": "Hold permanently for the legacy target. Use legacy auth adapter and separate Laravel-owned database if native auth tables are later required."
+    },
+    {
+      "migration_id": "0001_01_01_000001_create_cache_table",
+      "dependency_order": 2,
+      "owner": "platform-foundation",
+      "source": "laravel-foundation/database/migrations/0001_01_01_000001_create_cache_table.php",
+      "sha256": "FBB4665E5A977E71DF4E74EC75B3C06CA4F17AD0DE7138FE9786639189978E77",
+      "status": "deferred",
+      "required_for": [],
+      "scope": "Laravel database cache and cache locks",
+      "precondition_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME IN ('cache','cache_locks');",
+      "precondition_result": "both tables absent; current read-only staging uses file cache",
+      "post_check_sql": "SELECT COUNT(*) AS cache_table_count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME IN ('cache','cache_locks');",
+      "rollback": "Only on a disposable database after confirming no application cache data is needed; never drop shared legacy tables.",
+      "collision_policy": "Do not run for MKT-READ-001. Re-open only when database cache is explicitly selected and the target owner is recorded."
+    },
+    {
+      "migration_id": "0001_01_01_000002_create_jobs_table",
+      "dependency_order": 3,
+      "owner": "platform-foundation",
+      "source": "laravel-foundation/database/migrations/0001_01_01_000002_create_jobs_table.php",
+      "sha256": "DF4910687180313A14A3F96A8BDDD808AE145ED1B107CD772CAF865C0DC2B746",
+      "status": "deferred_queue_gate",
+      "required_for": [],
+      "scope": "Laravel database queue, batches, and failed jobs",
+      "precondition_sql": "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME IN ('jobs','job_batches','failed_jobs');",
+      "precondition_result": "all three tables absent; no worker is attached to the restored database",
+      "post_check_sql": "SELECT COUNT(*) AS queue_table_count FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME IN ('jobs','job_batches','failed_jobs');",
+      "rollback": "Only after worker shutdown and queue drain review; preserve failed-job evidence before any disposable-target rebuild.",
+      "collision_policy": "Do not run for read-only pilots. Re-open only under G6 with scheduler disabled, one-worker proof, and queue ownership approval."
+    },
+    {
+      "migration_id": "2026_10_30_000003_scope_idempotency_keys",
+      "dependency_order": 4,
+      "owner": "marketplace-expense-pilot",
+      "source": "laravel-foundation/database/migrations/2026_10_30_000003_scope_idempotency_keys.php",
+      "sha256": "8D1E6F3E2B9FC6B4455853248F2C8E4673796A45BAE9D1691237FE0F4458B347",
+      "status": "deferred_write_gate",
+      "required_for": ["W1", "Marketplace expense mutation"],
+      "scope": "Adds company_key, scopes module, and replaces global unique idempotency key",
+      "precondition_sql": "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME = 'idempotency_keys' AND COLUMN_NAME IN ('company_key','module'); SELECT INDEX_NAME,NON_UNIQUE,COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME = 'idempotency_keys';",
+      "precondition_result": "company_key absent; module present; global unique index on idempotency_key present; zero rows currently stored",
+      "post_check_sql": "SELECT COUNT(*) AS missing_scope_rows FROM jl_staging_restore_20261030.idempotency_keys WHERE company_key IS NULL OR company_key = '' OR module IS NULL OR module = ''; SELECT INDEX_NAME,NON_UNIQUE,COLUMN_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = 'jl_staging_restore_20261030' AND TABLE_NAME = 'idempotency_keys' AND INDEX_NAME = 'uq_idempotency_scope';",
+      "rollback": "Migration down() must refuse rollback if duplicate idempotency_key values exist after scoping. Rehearse on a disposable copy before any staging write.",
+      "collision_policy": "Never assign legacy rows to a real company automatically. Use LEGACY-GLOBAL/legacy only after explicit write-gate approval; reject any post-scope duplicate before applying the unique index."
+    }
+  ]
+}

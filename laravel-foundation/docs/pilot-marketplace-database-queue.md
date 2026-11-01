@@ -58,3 +58,17 @@ Retry queue Laravel mengulang payload job. Untuk membuat percobaan sinkronisasi 
 ## Bukti yang diuji
 
 Feature test memeriksa bounded page, company/store scope, duplicate prevention, atomic dispatch awal, atomic enqueue page berikutnya, rollback saat insert queue gagal, overlap pada checkpoint yang masih ber-lease, restart setelah lease kedaluwarsa, final failed state, manual/browser CSRF dan role, serta registrasi scheduler. Tidak ada test yang memanggil provider live.
+
+## Evidence staging
+
+QUEUE-STG-001 juga sudah dijalankan pada restore MariaDB terisolasi dengan PHP
+8.4.27. Migration yang dijalankan hanya migration queue Laravel untuk `jobs`,
+`job_batches`, dan `failed_jobs`. Dispatch duplicate, worker bounded 20 page,
+restart setelah source sementara unavailable, retry dua kali ke `failed_jobs`,
+`queue:retry all`, pemulihan sampai `success_count=1935`, queue kosong, dan satu
+entry scheduler semuanya lulus. Detail dan post-check ada di
+[marketplace-queue-staging-evidence-20261101.md](../../docs/deployment/marketplace-queue-staging-evidence-20261101.md).
+
+Pilot ini menyimpan checkpoint/heartbeat sandbox pada `marketplace_sync_jobs`.
+Tabel `marketplace_sync_checkpoints` legacy tetap tersedia pada restore, tetapi
+jalur provider/incremental legacy tidak diaktifkan pada task ini.

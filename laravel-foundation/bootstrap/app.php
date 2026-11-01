@@ -21,6 +21,23 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withCommands([__DIR__.'/../app/Console/Commands'])
     ->withMiddleware(function (Middleware $middleware): void {
+        $allowedHosts = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('JL_ALLOWED_HOSTS', '')),
+        )));
+        if ($allowedHosts !== []) {
+            $middleware->trustHosts(array_map(
+                static fn (string $host): string => '^'.preg_quote($host, '/').'$',
+                $allowedHosts,
+            ), false);
+        }
+
+        $trustedProxies = array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('JL_TRUSTED_PROXIES', '')),
+        )));
+        $middleware->trustProxies($trustedProxies === [] ? null : $trustedProxies);
+
         $middleware->redirectGuestsTo(fn (): string => route('foundation'));
         $middleware->alias([
             'legacy.session' => LegacySessionBridge::class,

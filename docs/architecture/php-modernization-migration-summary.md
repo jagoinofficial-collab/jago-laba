@@ -2,6 +2,8 @@
 
 Dokumen ini adalah ringkasan dari [rencana migrasi Laravel](./php-modernization-migration-plan.md). Rencana lengkap tetap menjadi sumber kerja utama.
 
+Untuk pekerjaan setelah foundation/pilot, gunakan [Rencana Lanjutan Migrasi — Agent Execution Plan](./php-modernization-next-phase-agent-plan.md). Dokumen tersebut adalah backlog operasional agent dengan task ID, dependency, batas file/tabel, kontrak, test, acceptance criteria, rollback, dan kondisi stop.
+
 ## Keputusan target
 
 Migrasi diarahkan ke **Laravel 13** secara bertahap dengan compatibility layer. Target runtime ditetapkan **PHP 8.4** agar sesuai dengan shared hosting yang dipilih.

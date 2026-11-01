@@ -8,7 +8,11 @@ $env = static function (string $name, string $default = ''): string {
     return $value === false ? $default : trim((string)$value);
 };
 $baseUrl = rtrim($env('JL_APP_BASE_URL'), '/');
-$callbackUrl = $baseUrl === '' ? '' : $baseUrl . '/public/api/marketplace-oauth.php';
+$documentRootIsPublic = filter_var($env('JL_DOCUMENT_ROOT_PUBLIC', 'false'), FILTER_VALIDATE_BOOLEAN);
+$callbackPath = $documentRootIsPublic
+    ? '/api/marketplace-oauth.php'
+    : '/public/api/marketplace-oauth.php';
+$callbackUrl = $baseUrl === '' ? '' : $baseUrl . $callbackPath;
 $shopeeRegion = strtolower($env('JL_SHOPEE_REGION', 'live'));
 $shopeeAuthDefault = $shopeeRegion === 'sandbox' ? 'https://open.sandbox.test-stable.shopee.com/auth' : 'https://open.shopee.com/auth';
 $shopeeApiDefault = $shopeeRegion === 'sandbox' ? 'https://openplatform.sandbox.test-stable.shopee.sg' : 'https://partner.shopeemobile.com';
@@ -21,6 +25,7 @@ return [
     'credentials_exposed_to_client' => false,
     'oauth' => [
         'base_url' => $baseUrl,
+        'document_root_public' => $documentRootIsPublic,
         'callback_url' => $callbackUrl,
         'webhook_url' => $env('JL_MARKETPLACE_WEBHOOK_URL'),
         'state_ttl_seconds' => 600,

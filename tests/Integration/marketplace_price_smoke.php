@@ -13,7 +13,7 @@ try{
  $pdo->prepare('INSERT INTO marketplace_partner_settings(platform,settings_encrypted) VALUES (?,?)')->execute(['TikTok Shop',MarketplaceTokenVault::encrypt(json_encode(['app_key'=>'TESTKEY','app_secret'=>'TESTSECRET','service_id'=>'TESTSERVICE','region'=>'row']))]);
  $pdo->exec("INSERT INTO marketplace_hpp_history(store_id,marketplace_sku,unit_hpp,effective_from,source,changed_by) VALUES ('S','SKU',20,CURDATE(),'MANUAL','test')");
  $_SESSION=['company_key'=>'A','user_id'=>'TEST','role'=>'OWNER'];
- $pdo->exec("INSERT INTO marketplace_catalog_variants(store_id,external_product_id,external_variant_id,product_name,sku,variant_name,price,source_status) VALUES ('S','P','V1','Tas','SKU','Hitam',100,'ACTIVATE'),('S','P','V2','Tas','BLUE','Biru',100,'ACTIVATE')");
+ $pdo->exec("INSERT INTO marketplace_catalog_variants(store_id,external_product_id,external_variant_id,product_name,sku,variant_name,price,source_status,source_updated_at) VALUES ('S','P','V1','Tas','SKU','Hitam',100,'ACTIVATE',NOW()),('S','P','V2','Tas','BLUE','Biru',100,'ACTIVATE',NOW())");
  $fake=new class {
    public array $prices=['V1'=>'100.00','V2'=>'100.00'];public array $activities=[];public int $writes=0;public bool $deny=false;
    public function call($method,$path,$query,$token,$body=null):array {
@@ -36,7 +36,7 @@ try{
  $display['promotions'][0]['status']='ONGOING';unset($display['promotions'][0]['product']['skus'][0]['activity_price']);syncCheck(MarketplacePriceService::promotionCaption($display)==='Sedang promo · harga belum tersedia','missing SKU price replaced with unrelated SKU price');
  $prepared=$service->prepare('S','P');syncCheck(count($prepared['rows'])===2&&$prepared['rows'][0]['base_price']==='100.00','prepare failed');
  $pdo->exec("INSERT INTO marketplace_oauth_connections(company_key,store_id,platform,external_store_id,external_shop_cipher,external_store_name,access_token_encrypted,token_expires_at,authorized_at,verified_at,status) SELECT company_key,'LIVE',platform,'live-id',external_shop_cipher,'Actual Shop',access_token_encrypted,token_expires_at,NOW(),NOW(),'verified' FROM marketplace_oauth_connections WHERE store_id='S'");
- $pdo->exec("INSERT INTO marketplace_catalog_variants(store_id,external_product_id,external_variant_id,product_name,sku,variant_name,price,source_status) VALUES ('LIVE','P','V1','Live Bag','SKU','Hitam',90,'ACTIVATE')");
+ $pdo->exec("INSERT INTO marketplace_catalog_variants(store_id,external_product_id,external_variant_id,product_name,sku,variant_name,price,source_status,source_updated_at) VALUES ('LIVE','P','V1','Live Bag','SKU','Hitam',90,'ACTIVATE',NOW())");
  $writes=$fake->writes;$live=$service->prepare('LIVE','P');syncCheck($live['store_name']==='Actual Shop'&&$live['rows'][0]['base_price']==='100.00','live store did not load remote price');syncCheck($fake->writes===$writes,'prepare changed marketplace prices');
  $pdo->exec("UPDATE marketplace_oauth_connections SET status='revoked' WHERE store_id='LIVE'");$blocked=false;try{$service->prepare('LIVE','P');}catch(DomainException $e){$blocked=true;}syncCheck($blocked,'revoked store read allowed');
  $base=['mode'=>'base','operation_key'=>'base-test-123456789','changes'=>[['variant_id'=>'V1','price'=>'120']]];

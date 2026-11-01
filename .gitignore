@@ -26,3 +26,6 @@
 # Local runtimes and archives; do not upload to GitHub.
 /docs/oracleJdk-27/
 /jago-laba.zip
+/release-artifacts/
+/storage/sess_*
+/storage/sync-worker/

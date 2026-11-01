@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\MarketplaceOrderRequest;
+use App\Pilots\Marketplace\OrderReadService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+use Throwable;
+
+final class MarketplaceOrderController
+{
+    public function __construct(private readonly OrderReadService $orders) {}
+
+    public function index(MarketplaceOrderRequest $request): Response
+    {
+        $companyKey = (string) $request->attributes->get('company_key');
+
+        try {
+            return Inertia::render('Pilot/MarketplaceOrders', $this->orders->overview($companyKey, $request->storeId(), $request->filters()));
+        } catch (Throwable $exception) {
+            if ($exception instanceof \DomainException && $exception->getCode() === OrderReadService::NO_INTEGRATED_STORE) {
+                return Inertia::render('Pilot/MarketplaceOrders', [
+                    'read_only' => true, 'workspace' => 'marketplace',
+                    'scope' => ['company_key' => $companyKey, 'store_id' => null],
+                    'stores' => $this->orders->stores($companyKey), 'active_store' => null,
+                    'filters' => $request->filters(), 'orders' => null,
+                    'query' => ['tab' => 'pesanan', 'read_only' => true],
+                    'message' => 'Belum ada store Marketplace yang terhubung.',
+                ]);
+            }
+            if ($exception instanceof \DomainException && $exception->getCode() === OrderReadService::STORE_SELECTION_REQUIRED) {
+                return Inertia::render('Pilot/MarketplaceOrders', [
+                    'read_only' => true, 'workspace' => 'marketplace',
+                    'scope' => ['company_key' => $companyKey, 'store_id' => null],
+                    'stores' => $this->orders->stores($companyKey), 'active_store' => null,
+                    'filters' => $request->filters(), 'orders' => null,
+                    'query' => ['tab' => 'pesanan', 'read_only' => true], 'message' => $exception->getMessage(),
+                ]);
+            }
+            if ($exception instanceof \DomainException && $exception->getCode() === OrderReadService::STORE_FORBIDDEN) {
+                abort(403, $exception->getMessage());
+            }
+            throw $exception;
+        }
+    }
+
+    public function detail(Request $request, string $order): JsonResponse
+    {
+        $companyKey = (string) $request->attributes->get('company_key');
+        $storeId = trim((string) $request->query('store_id', $request->query('store', '')));
+        if ($storeId === '') {
+            return response()->json(['success' => false, 'message' => 'Toko aktif wajib dipilih.'], 422);
+        }
+
+        try {
+            $data = $this->orders->detail($companyKey, $storeId, $order);
+            if ($data === null) {
+                return response()->json(['success' => false, 'message' => 'Pesanan tidak ditemukan.'], 404);
+            }
+
+            return response()->json(['success' => true, 'data' => $data]);
+        } catch (\DomainException $exception) {
+            if ($exception->getCode() === OrderReadService::STORE_FORBIDDEN) {
+                return response()->json(['success' => false, 'message' => $exception->getMessage()], 403);
+            }
+            throw $exception;
+        }
+    }
+}

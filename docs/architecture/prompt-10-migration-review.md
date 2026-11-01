@@ -1,6 +1,6 @@
 # Prompt 10 — Migration review
 
-Tanggal review: 2026-10-30
+Tanggal review: 2026-11-01 (pembaruan)
 Target branch: `codex/prompt-10-migration-review`
 Scope: Laravel foundation, auth/scope bridge, pilot Marketplace dan Konveksi, expense mutation lokal, OAuth sandbox boundary, database queue, dan release documentation.
 
@@ -22,6 +22,8 @@ Tidak ada blocker kode pada scope pilot setelah review ulang. Status bukan `PASS
 | Database queue | `MarketplaceQueueTest.php`, `MarketplaceQueueAtomicityTest.php` | Bounded page, checkpoint, lease, retry, failed job, duplicate prevention, scheduler, initial dispatch atomicity, dan next-page enqueue atomicity lulus. |
 | Migration safety | `laravel-foundation/tests/Unit/IdempotencyScopeMigrationTest.php` | Precondition, backfill/post-check, rollback sukses, dan rollback refusal saat scoped collision diuji. |
 | Secret/log/private storage | `laravel-foundation/docs/pilot-marketplace-oauth-sandbox.md`, `shared-hosting-release.md` | Token tidak dipanggil/log; artifact release tidak memasukkan `.env`, secret, dump, backup, `.git`, atau runtime storage. |
+| Hosting/callback contract | `laravel-foundation/tests/Unit/HostingContractTest.php`, `docs/deployment/marketplace-oauth-callback-evidence-20261101.md` | `trustHosts`, proxy config, dan pilihan document-root diuji; callback sandbox mengarah ke root-public path tanpa segmen `/public`. Registrasi URL provider dan HTTPS staging aktual belum dibuktikan. |
+| Release artifact | `docs/deployment/laravel-foundation-shared-hosting-r4-evidence-20261101.md` | Artifact r4 dibangun dari lockfile; host allowlist dan `JL_DOCUMENT_ROOT_PUBLIC` terverifikasi dalam ZIP. Scan ZIP final menghasilkan 0 file terlarang. |
 
 ## Database precondition, post-check, dan rollback
 
@@ -54,10 +56,14 @@ Dispatch awal memasukkan row `marketplace_sync_jobs` dan payload `jobs` dalam tr
 
 ## Verification result
 
-- Full Laravel suite setelah penambahan migration-safety assertions: `46 tests, 415 assertions, OK`.
+- Full Laravel suite saat review ini: `58 tests, 532 assertions, OK`.
 - Queue dan atomicity suite: `11 tests, 55 assertions, OK`.
 - Migration safety suite setelah penambahan evidence: `4 tests, 11 assertions, OK`.
 - Pint dan diagnostik file yang diubah: lulus/tidak ada error.
 - Regression legacy sebelumnya: project structure, Marketplace dashboard smoke, dan Konveksi integrity lulus.
 
-Production migration, restore drill, permission live, provider Live, dan cutover tetap bukan bagian dari review lokal ini.
+Route list artifact terbaru: 31 route. HTTP GET `/` dari artifact r4 mengembalikan 200.
+
+Production/staging-host restore drill, permission live, HTTPS aktual, cron/worker
+live, callback registration pada console provider, provider Live, migration
+production, dan cutover tetap belum dibuktikan dan memerlukan approval operasional.
