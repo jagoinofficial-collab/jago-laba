@@ -8,6 +8,8 @@ were rehearsed in a new disposable MariaDB 10.4.32 instance bound to
 authoritative key are absent, and restored Marketplace data has 17 rows with a
 `product_variant_id` that does not match `product_variants.id`. Do not use this
 database as a GO/cutover baseline until the data owner reconciles the FK gap.
+The read-only investigation and owner decision sheet are in the
+[orphan-variant reconciliation packet](./orphan-variant-owner-reconciliation-20261101.md).
 
 ## Inputs and isolation
 
