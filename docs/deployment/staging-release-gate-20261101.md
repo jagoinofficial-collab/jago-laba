@@ -20,6 +20,7 @@ gate operasional eksternal, bukan kegagalan build lokal.
   tidak ada registrasi callback/provider Live.
 - Detail checksum/build: [r4 build evidence](./laravel-foundation-shared-hosting-r4-evidence-20261101.md).
 - Step 11 rehearsal lokal: [isolated staging evidence](./staging-rehearsal-step11-20261101.md).
+- Step 12 backup/restore lokal: [isolated backup and restore evidence](./staging-backup-restore-step12-20261101.md).
 - Catatan rilis 30 Oktober tetap tersimpan sebagai historical snapshot di
   [gate lama](./staging-release-gate-20261030.md).
 
@@ -28,7 +29,7 @@ gate operasional eksternal, bukan kegagalan build lokal.
 | Gate | Status | Yang sudah ada | Bukti yang masih dibutuhkan |
 |---|---|---|---|
 | Artifact | PASS lokal | ZIP r4, hash, allowlist, exclusion scan, smoke HTTP | Validasi ulang pada mesin/OS target jika berbeda |
-| Restore database, private files, key | BLOCKED | Dump DB direstore di datadir disposable; selected row counts match; 17 FK orphans found and detailed in [owner decision packet](./orphan-variant-owner-reconciliation-20261101.md); private files/key absent | Owner-approved mapping/disposition and ledger reconciliation; authoritative private-file/key backup; full isolated restore, post-check, rollback record |
+| Restore database, private files, key | BLOCKED | Both DB dumps restored and configured legacy encryption key copied to ACL-restricted local temp staging; 17 FK orphans found and detailed in [owner decision packet](./orphan-variant-owner-reconciliation-20261101.md); private-file archive absent | Owner-approved orphan mapping/disposition and ledger reconciliation; authorized private-file backup + checksum and restore; Konveksi staging-only connection config; full post-check/rollback and host security review |
 | Scheduler dan outbound write benar-benar mati | PARTIAL local only | No scheduler/worker started; OAuth sandbox mode, blank provider secrets, no outbound call in local rehearsal | Host-level proof that all scheduler, worker, browser trigger and outbound write paths are disabled |
 | Migration dependency/registry | PARTIAL | Registry approves no migration for read-only slice; `migrate:status` reports missing migrations table; no schema migration run; old 80-table note corrected to 117 from exact-hash dump and isolated target | Approve exact migration set before any write slice; keep migrations deferred until authorized staging baseline exists |
 | Login, workspace, tenant/store, HPP/laba, XLSX/download | PARTIAL | Feature/regression tests pass; SELECT-only DB user reads schema; health endpoint returns 200 | Authorized identity and full data/file smoke on staging; reconcile HPP/nominal; test Konveksi isolated connection |
