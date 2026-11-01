@@ -21,6 +21,7 @@ gate operasional eksternal, bukan kegagalan build lokal.
 - Detail checksum/build: [r4 build evidence](./laravel-foundation-shared-hosting-r4-evidence-20261101.md).
 - Step 11 rehearsal lokal: [isolated staging evidence](./staging-rehearsal-step11-20261101.md).
 - Step 12 backup/restore lokal: [isolated backup and restore evidence](./staging-backup-restore-step12-20261101.md).
+- Step 13 host verification: [staging HTTPS/callback/queue evidence](./staging-host-verification-step13-20261101.md).
 - Catatan rilis 30 Oktober tetap tersimpan sebagai historical snapshot di
   [gate lama](./staging-release-gate-20261030.md).
 
@@ -33,10 +34,10 @@ gate operasional eksternal, bukan kegagalan build lokal.
 | Scheduler dan outbound write benar-benar mati | PARTIAL local only | No scheduler/worker started; OAuth sandbox mode, blank provider secrets, no outbound call in local rehearsal | Host-level proof that all scheduler, worker, browser trigger and outbound write paths are disabled |
 | Migration dependency/registry | PARTIAL | Registry approves no migration for read-only slice; `migrate:status` reports missing migrations table; no schema migration run; old 80-table note corrected to 117 from exact-hash dump and isolated target | Approve exact migration set before any write slice; keep migrations deferred until authorized staging baseline exists |
 | Login, workspace, tenant/store, HPP/laba, XLSX/download | PARTIAL | Feature/regression tests pass; SELECT-only DB user reads schema; health endpoint returns 200 | Authorized identity and full data/file smoke on staging; reconcile HPP/nominal; test Konveksi isolated connection |
-| HTTPS, cookie, proxy, host allowlist, absolute URL | PARTIAL | `trustHosts`, proxy/host config, contract test, dan document-root option masuk r4; rehearsal hanya HTTP loopback | Uji pada hostname HTTPS staging aktual di belakang proxy/web server target |
-| OAuth callback | PARTIAL | Sandbox callback path root-public benar; callback legacy dapat dikonfigurasi untuk document root | Registrasi URL pada console masing-masing provider dan callback test sandbox di hostname target |
+| HTTPS, cookie, proxy, host allowlist, absolute URL | PARTIAL | Full suite 58/532 and focused hosting contract tests pass locally; no host request made | Actual staging origin, proxy/TLS config, operator access, and observed HTTPS/cookie/host-allowlist evidence |
+| OAuth callback | PARTIAL | Sandbox callback/path and boundary tests pass locally; no provider request made | Sandbox app registration for exact staging HTTPS callback, sandbox identity, and callback test evidence on target |
 | OAuth Live/seller consent | BLOCKED | Platform boundary sandbox tersedia; token tidak ada dalam paket | Approval seller, app/provider approval, dan task Live terpisah dengan credential disimpan di secret manager host |
-| Cron/worker retry/restart/heartbeat | PARTIAL | DB queue, bounded job, retry/checkpoint, scheduler diuji pada fixture; tidak ada worker dijalankan saat rehearsal | Cron entry, worker run/stop, overlap/restart/failure/retry, dan heartbeat dibuktikan pada host staging |
+| Cron/worker retry/restart/heartbeat | PARTIAL | Queue/scheduler contract, bounded job, retry/checkpoint tests pass on fixtures; no host worker started | Operator access, single cron trigger, worker run/stop, overlap/restart/failure/retry, and heartbeat evidence on staging |
 | Production migration/cutover | BLOCKED | Tidak dilakukan | Go/no-go tertulis, backup final, rollback plan, maintenance window, dan smoke setelah cutover |
 
 ## Callback contract terkini
